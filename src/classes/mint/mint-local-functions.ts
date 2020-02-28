@@ -207,7 +207,7 @@ export const deleteExecutableCacheForModelLocally = async(modelid: string,
     await deletePathwayEnsembles(ensembleids);
 
     // Delete cached model directory and zip file
-    let modeldir = getModelCacheDirectory(model.wcm_uri, prefs);
+    let modeldir = getModelCacheDirectory(model.wcm_uri, model.model_configuration, prefs);
     if(modeldir != null) {
         fs.remove(modeldir);
         fs.remove(modeldir + ".zip");

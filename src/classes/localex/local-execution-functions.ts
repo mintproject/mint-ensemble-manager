@@ -189,14 +189,14 @@ const _getModelDetails = (model: Model, modeldir: string) => {
 }
 
 
-export const getModelCacheDirectory = (url: string, prefs: MintPreferences) => {
+export const getModelCacheDirectory = (url: string, model_configuration: string, prefs: MintPreferences) => {
     // Get zip file name from url
     let plainurl = url.replace(/\?.*$/, '');
     let zipfile = plainurl.replace(/.+\//, "");
     let compname = zipfile.replace(/\.zip/i, "");
 
     let codedir = prefs.localex.codedir;
-    let modeldir = codedir + "/" + compname;
+    let modeldir = codedir + "/" + model_configuration + '_' + compname;
     return modeldir;
 }
 
