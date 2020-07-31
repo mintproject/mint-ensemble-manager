@@ -7,6 +7,7 @@ import { Component } from "./local-execution-types";
 import { runImage } from "./docker-functions";
 import { Container } from "dockerode";
 
+const tmp_dir_name = "ensemble_manager"
 module.exports = async function (job: any) {
     // Run the model seed (model config + bindings)
     var scenario_id: string = job.data.scenario_id;
@@ -20,7 +21,7 @@ module.exports = async function (job: any) {
 
     // Create temporary directory
     let ostmp = os.tmpdir();
-    let tmpprefix = ostmp + "/" + seed.ensemble.modelid.replace(/.*\//, '');
+    let tmpprefix = ostmp + "/" + tmp_dir_name + '/' + seed.ensemble.modelid.replace(/.*\//, '');
     let tempdir = fs.mkdtempSync(tmpprefix);
 
     // Copy component run directory to tempdir
