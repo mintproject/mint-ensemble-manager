@@ -192,6 +192,13 @@ export interface ExecutableEnsemble {
     selected: boolean
 }
 
+export interface Output {
+    id: string
+    name: string
+    location: string
+    url: string
+}
+
 export interface InputBindings {
     [input: string]: string | DataResource
 }

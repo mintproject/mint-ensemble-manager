@@ -10,7 +10,7 @@ import v1ExecutionQueService from './api/api-v1/services/executionQueueService';
 import v1MonitorsService from './api/api-v1/services/monitorsService';
 import v1LogsService from './api/api-v1/services/logsService';
 import v1ThreadsService from './api/api-v1/services/threadsService';
-
+import v1OutputsService from './api/api-v1/services/outputsService';
 
 import { initialize } from "express-openapi";
 import { getResource } from "./classes/wings/xhr-requests";
@@ -40,7 +40,8 @@ initialize({
         executionQueueService: v1ExecutionQueService,
         monitorsService: v1MonitorsService,
         logsService: v1LogsService,
-        threadsService: v1ThreadsService
+        threadsService: v1ThreadsService,
+        outputsService: v1OutputsService
     },
     paths: path.resolve(__dirname, './api/api-v1/paths'),
     routesGlob: '**/*.{ts,js}',
