@@ -3,12 +3,12 @@ import { getModelInputEnsembles, getModelInputConfigurations, deleteAllPathwayEn
 import { runModelEnsemblesLocally, loadModelWCM, getModelCacheDirectory } from "../localex/local-execution-functions";
 
 import fs from "fs-extra";
-
+import archiver from "archiver";
+import path from "path";
 import Queue from "bull";
 import {MONITOR_QUEUE_NAME, REDIS_URL } from "../../config/redis";
 import { monitorThread } from "../localex/thread-execution-monitor";
 import { DEVMODE } from "../../config/app";
-
 let monitorQueue = new Queue(MONITOR_QUEUE_NAME, REDIS_URL);
 monitorQueue.process((job) => monitorThread(job));
 
@@ -243,6 +243,29 @@ export const compress_ensemble_files = async(ensembleids: string[]) => {
         return ensemble.results
     })
     console.dir(results);
+}
+
+export const compressFiles = async(outputPaths: any[], zipFileName: string) => {
+    const compressDirectory = "/tmp/"
+    var output = fs.createWriteStream(compressDirectory + zipFileName);
+    var archive = archiver('zip', {
+      zlib: { level: 9 } // Sets the compression level.
+    });
+
+    output.on('close', function() {
+        console.log(archive.pointer() + ' total bytes');
+        console.log('archiver has been finalized and the output file descriptor has closed.');
+    });
+
+    output.on('end', function() {
+        console.log('Data has been drained');
+    });
+
+    outputPaths.map(outputPath => {
+      archive.append(fs.createReadStream(outputPath), { name: path.basename(outputPath) });
+    })
+    archive.finalize();
+    return true
 }
 
 

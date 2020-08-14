@@ -14,7 +14,7 @@ import { Md5 } from "ts-md5";
 
 var appDir = path.dirname(require.main.filename);
 let executionQueue = new Queue(EXECUTION_QUEUE_NAME, REDIS_URL);
-executionQueue.process(CONCURRENCY, appDir + '/../dist/classes/localex/seed-execution.js');
+//executionQueue.process(CONCURRENCY, appDir + '/../dist/classes/localex/seed-execution.js');
 
 // You can listen to global events to get notified when jobs are processed
 /*executionQueue.on('global:completed', (jobId, result) => {
