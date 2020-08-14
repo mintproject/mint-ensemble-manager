@@ -6,7 +6,7 @@
     "start": "node --inspect=5858 -r ts-node/register ./src/server.ts",
     "start:watch": "nodemon",
     "build": "tsc --build tsconfig.json",
-    "test": "mocha --reporter spec  --require ts-node/register 'src/**/*.spec.ts'"
+    "test": "mocha --require ts-node/register 'src/**/*.spec.ts'"
   },
   "nodemonConfig": {
     "ignore": [
