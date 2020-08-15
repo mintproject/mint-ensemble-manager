@@ -3,18 +3,29 @@ import { expect } from 'chai';
 import 'mocha';
 import { exception } from 'console';
  
+
+
 describe('Compress tests', () => {
- 
-  it('Enable to compress', async ( ) => {
-      const paths = ["/tmp/resources/file1.txt", "/tmp/resources/file2.txt"]
-      const zipFileName = "test.zip"
-      let r = await compressFiles(paths, zipFileName)
+  it('Test', async ( ) => {
+      const test_ensemble = [
+        {
+          location: "/tmp/resources/file1.txt",
+          id: 'economic-land-use',
+          name: 'economic-land-use-a57b3e939d44f633f9bc2cc52e68ba50',
+          url: 'https://data.mint.isi.edu/files/local-execution/economic-land-use-a57b3e939d44f633f9bc2cc52e68ba50',
+          ensemble_id: '000143845d48ea94a9dec8d2aebc3156'
+        },
+        {
+          name: 'cycles_season-2c63648e703dabbed57542d40748a7fd',
+          id: 'cycles_season',
+          url: 'https://data.mint.isi.edu/files/local-execution/cycles_season-2c63648e703dabbed57542d40748a7fd',
+          location: '/tmp/resources/file2.txt',
+          ensemble_id: '0001bfb4435afc66b33b7df4bad4ac3e'
+        }
+      ] 
+    const zipFileName = "topoflow.3.6.0"
+    let r = await compressFiles(test_ensemble, zipFileName)
   }); 
 
-  it('Failing compress tests', async ( ) => {
-    const paths = ["/tmp/resources/file1.txt", "/tmp/resources/file.txt"]
-    const zipFileName = "test.zip"
-    let r = await compressFiles(paths, zipFileName)
-  }); 
 
 });

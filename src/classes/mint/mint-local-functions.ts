@@ -3,6 +3,8 @@ import { getModelInputEnsembles, getModelInputConfigurations, deleteAllPathwayEn
 import { runModelEnsemblesLocally, loadModelWCM, getModelCacheDirectory } from "../localex/local-execution-functions";
 
 import fs from "fs-extra";
+import archiver from "archiver";
+import path from "path";
 import Queue from "bull";
 import { MONITOR_QUEUE_NAME, REDIS_URL } from "../../config/redis";
 import { monitorThread } from "../localex/thread-execution-monitor";
@@ -238,87 +240,14 @@ export const deleteExecutableCacheForModelLocally = async (modelid: string,
 export const compress_ensemble_files = async (ensembleids: string[]) => {
     let all_ensembles = await listEnsembles(ensembleids);
     const results = all_ensembles.map(ensemble => {
-        return ensemble.results
+        const values : Output[] = [];
+        for (const value of Object.values(ensemble.results)){
+            let output: Output = value
+            output.ensemble_id = ensemble.id
+            values.push(output)
+        }
+        
+        return values
     })
-    console.dir(results);
+    return results.reduce((acc, val) => acc.concat(val), []);
 }
-
-export const hernanTeQuiero = (outputPaths: string[], zipFileName: string) : boolean => {
-    return true
-}
-
-
-/*
-[
-  {
-    'calibration-output': {
-      id: 'calibration-output',
-      location: '/data/storage/mint/data-catalog/production/local-execution/calibration-output-a57b3e939d44f633f9bc2cc52e68ba50',
-      name: 'calibration-output-a57b3e939d44f633f9bc2cc52e68ba50',
-      url: 'https://data.mint.isi.edu/files/local-execution/calibration-output-a57b3e939d44f633f9bc2cc52e68ba50'
-    },
-    'economic-land-use': {
-      name: 'economic-land-use-a57b3e939d44f633f9bc2cc52e68ba50',
-      location: '/data/storage/mint/data-catalog/production/local-execution/economic-land-use-a57b3e939d44f633f9bc2cc52e68ba50',
-      url: 'https://data.mint.isi.edu/files/local-execution/economic-land-use-a57b3e939d44f633f9bc2cc52e68ba50',
-      id: 'economic-land-use'
-    }
-  },
-  {
-    cycles_soilProfile: {
-      id: 'cycles_soilProfile',
-      name: 'cycles_soilProfile-2c63648e703dabbed57542d40748a7fd',
-      url: 'https://data.mint.isi.edu/files/local-execution/cycles_soilProfile-2c63648e703dabbed57542d40748a7fd',
-      location: '/data/storage/mint/data-catalog/production/local-execution/cycles_soilProfile-2c63648e703dabbed57542d40748a7fd'
-    },
-    cycles_som: {
-      location: '/data/storage/mint/data-catalog/production/local-execution/cycles_som-2c63648e703dabbed57542d40748a7fd',
-      name: 'cycles_som-2c63648e703dabbed57542d40748a7fd',
-      id: 'cycles_som',
-      url: 'https://data.mint.isi.edu/files/local-execution/cycles_som-2c63648e703dabbed57542d40748a7fd'
-    },
-    cycles_nitrogen: {
-      location: '/data/storage/mint/data-catalog/production/local-execution/cycles_nitrogen-2c63648e703dabbed57542d40748a7fd',
-      url: 'https://data.mint.isi.edu/files/local-execution/cycles_nitrogen-2c63648e703dabbed57542d40748a7fd',
-      id: 'cycles_nitrogen',
-      name: 'cycles_nitrogen-2c63648e703dabbed57542d40748a7fd'
-    },
-    cycles_summary: {
-      location: '/data/storage/mint/data-catalog/production/local-execution/cycles_summary-2c63648e703dabbed57542d40748a7fd',
-      url: 'https://data.mint.isi.edu/files/local-execution/cycles_summary-2c63648e703dabbed57542d40748a7fd',
-      id: 'cycles_summary',
-      name: 'cycles_summary-2c63648e703dabbed57542d40748a7fd'
-    },
-    cycles_season: {
-      id: 'cycles_season',
-      name: 'cycles_season-2c63648e703dabbed57542d40748a7fd',
-      url: 'https://data.mint.isi.edu/files/local-execution/cycles_season-2c63648e703dabbed57542d40748a7fd',
-      location: '/data/storage/mint/data-catalog/production/local-execution/cycles_season-2c63648e703dabbed57542d40748a7fd'
-    },
-    cycles_water: {
-      name: 'cycles_water-2c63648e703dabbed57542d40748a7fd',
-      location: '/data/storage/mint/data-catalog/production/local-execution/cycles_water-2c63648e703dabbed57542d40748a7fd',
-      url: 'https://data.mint.isi.edu/files/local-execution/cycles_water-2c63648e703dabbed57542d40748a7fd',
-      id: 'cycles_water'
-    },
-    cycles_crop: {
-      location: '/data/storage/mint/data-catalog/production/local-execution/cycles_crop-2c63648e703dabbed57542d40748a7fd',
-      name: 'cycles_crop-2c63648e703dabbed57542d40748a7fd',
-      url: 'https://data.mint.isi.edu/files/local-execution/cycles_crop-2c63648e703dabbed57542d40748a7fd',
-      id: 'cycles_crop'
-    },
-    cycles_outputs: {
-      location: '/data/storage/mint/data-catalog/production/local-execution/cycles_outputs-2c63648e703dabbed57542d40748a7fd',
-      name: 'cycles_outputs-2c63648e703dabbed57542d40748a7fd',
-      id: 'cycles_outputs',
-      url: 'https://data.mint.isi.edu/files/local-execution/cycles_outputs-2c63648e703dabbed57542d40748a7fd'
-    },
-    cycles_weatherOutput: {
-      location: '/data/storage/mint/data-catalog/production/local-execution/cycles_weatherOutput-2c63648e703dabbed57542d40748a7fd',
-      id: 'cycles_weatherOutput',
-      url: 'https://data.mint.isi.edu/files/local-execution/cycles_weatherOutput-2c63648e703dabbed57542d40748a7fd',
-      name: 'cycles_weatherOutput-2c63648e703dabbed57542d40748a7fd'
-    }
-  }
-]
-*/

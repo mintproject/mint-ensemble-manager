@@ -192,11 +192,16 @@ export interface ExecutableEnsemble {
     selected: boolean
 }
 
+export type RunOutput = Map<string, Output> // Map of response variable to models
+
+
+
 export interface Output {
     id: string
     name: string
     location: string
     url: string
+    ensemble_id: string
 }
 
 export interface InputBindings {
