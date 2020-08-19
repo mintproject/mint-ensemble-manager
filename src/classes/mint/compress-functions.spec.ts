@@ -7,6 +7,8 @@ import { exception } from 'console';
 
 describe('Compress tests', () => {
   it('Test', async ( ) => {
+      const email = "maxiosorio@gmail.com"
+      const threadId = "thread_id"
       const test_ensemble = [
         {
           location: "src/tests/file1.txt",
@@ -24,7 +26,7 @@ describe('Compress tests', () => {
         }
       ] 
     const zipFileName = "topoflow.3.6.0"
-    await Promise.all([compresSend(test_ensemble, zipFileName)])
+    await Promise.all([compresSend(test_ensemble, threadId, email)])
   }); 
 
 
