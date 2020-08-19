@@ -3,15 +3,14 @@ import path from "path";
 import fs from "fs-extra";
 import { Output } from "./mint-types";
 import { COMPRESSDIRECTORY } from "../../../src/config/app";
+import sgMail from "@sendgrid/mail"
 
 export const helloTest = (): boolean => {
     return true;
 }
 
 
-
-
-export const compresSend = async (outputEnsemble: Output[], zipFileName: string, email :string) => {
+export const compresSend = async (outputEnsemble: Output[], zipFileName: string, email :string) : Promise<string> => {
     const output = fs.createWriteStream(COMPRESSDIRECTORY + zipFileName + ".zip");
     const archive = archiver('zip', {
         zlib: { level: 0 } // Sets the compression level.
@@ -20,8 +19,7 @@ export const compresSend = async (outputEnsemble: Output[], zipFileName: string,
     return new Promise((resolve, reject) => {
         archive.pipe(output);
         output.on('close', () => {
-            resolve()
-            sendMail(email)
+            resolve("path")
         })
 
         output.on('end', function () {
@@ -40,6 +38,15 @@ export const compresSend = async (outputEnsemble: Output[], zipFileName: string,
     })
 }
 
-export const sendMail = async(email: string) => {
-    console.log("email")
+export const sendMail = async(email: string, thread_id: string, link: string) => {
+    console.log(process.env.SENDGRID_API_KEY)
+    sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+    const msg = {
+      to: email,
+      from: "noreply@mint.isi.edu",
+      subject: 'Sending with Twilio SendGrid is Fun',
+      text: 'and easy to do anywhere, even with Node.js',
+      html: '<strong>and easy to do anywhere, even with Node.js</strong>',
+    };
+    await sgMail.send(msg);
 }

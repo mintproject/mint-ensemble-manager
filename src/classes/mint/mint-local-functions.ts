@@ -241,15 +241,19 @@ export const deleteExecutableCacheForModelLocally = async (modelid: string,
 export const getEnsemblesCompress = async (ensembleids: string[], threadId: string, email: string) => {
     let all_ensembles = await listEnsembles(ensembleids);
     const results = all_ensembles.map(ensemble => {
-        const values : Output[] = [];
-        for (const value of Object.values(ensemble.results)){
+        const values: Output[] = [];
+        for (const value of Object.values(ensemble.results)) {
             let output: Output = value
             output.ensemble_id = ensemble.id
             values.push(output)
         }
-        
+
         return values
     })
     const runOutputDetails = results.reduce((acc, val) => acc.concat(val), []);
-    Promise.all([compresSend(runOutputDetails, threadId, email)])
+    const promise1: Promise<string> = compresSend(runOutputDetails, threadId, email)
+
+    promise1.then((value) => {
+        console.log(value);
+    });
 }
