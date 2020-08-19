@@ -9,7 +9,7 @@ import Queue from "bull";
 import { MONITOR_QUEUE_NAME, REDIS_URL } from "../../config/redis";
 import { monitorThread } from "../localex/thread-execution-monitor";
 import { DEVMODE } from "../../config/app";
-import { compressFiles } from "./compress-functions";
+import { compresSend } from "./compress-functions";
 let monitorQueue = new Queue(MONITOR_QUEUE_NAME, REDIS_URL);
 monitorQueue.process((job) => monitorThread(job));
 
@@ -238,7 +238,7 @@ export const deleteExecutableCacheForModelLocally = async (modelid: string,
     await updatePathwayExecutionSummary(scenario.id, pathway.id, modelid, summary);
 }
 
-export const compress_ensemble_files = async (ensembleids: string[]) => {
+export const getEnsemblesCompress = async (ensembleids: string[], threadId: string, email: string) => {
     let all_ensembles = await listEnsembles(ensembleids);
     const results = all_ensembles.map(ensemble => {
         const values : Output[] = [];
@@ -251,5 +251,5 @@ export const compress_ensemble_files = async (ensembleids: string[]) => {
         return values
     })
     const runOutputDetails = results.reduce((acc, val) => acc.concat(val), []);
-    compressFiles(runOutputDetails, "test").then( (success) => console.log("done"))
+    Promise.all([compresSend(runOutputDetails, threadId, email)])
 }

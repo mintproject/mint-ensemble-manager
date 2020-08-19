@@ -11,7 +11,7 @@ export const helloTest = (): boolean => {
 
 
 
-export const compressFiles = async (outputEnsemble: Output[], zipFileName: string) => {
+export const compresSend = async (outputEnsemble: Output[], zipFileName: string, email :string) => {
     const output = fs.createWriteStream(COMPRESSDIRECTORY + zipFileName + ".zip");
     const archive = archiver('zip', {
         zlib: { level: 0 } // Sets the compression level.
@@ -21,7 +21,7 @@ export const compressFiles = async (outputEnsemble: Output[], zipFileName: strin
         archive.pipe(output);
         output.on('close', () => {
             resolve()
-            console.log(archive.pointer() + ' total bytes');
+            sendMail(email)
         })
 
         output.on('end', function () {
@@ -38,4 +38,8 @@ export const compressFiles = async (outputEnsemble: Output[], zipFileName: strin
         }
         archive.finalize();
     })
+}
+
+export const sendMail = async(email: string) => {
+    console.log("email")
 }
