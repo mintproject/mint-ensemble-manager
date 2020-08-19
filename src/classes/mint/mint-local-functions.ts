@@ -9,6 +9,7 @@ import Queue from "bull";
 import { MONITOR_QUEUE_NAME, REDIS_URL } from "../../config/redis";
 import { monitorThread } from "../localex/thread-execution-monitor";
 import { DEVMODE } from "../../config/app";
+import { compressFiles } from "./compress-functions";
 let monitorQueue = new Queue(MONITOR_QUEUE_NAME, REDIS_URL);
 monitorQueue.process((job) => monitorThread(job));
 
@@ -249,5 +250,6 @@ export const compress_ensemble_files = async (ensembleids: string[]) => {
         
         return values
     })
-    return results.reduce((acc, val) => acc.concat(val), []);
+    const runOutputDetails = results.reduce((acc, val) => acc.concat(val), []);
+    compressFiles(runOutputDetails, "test").then( (success) => console.log("done"))
 }
