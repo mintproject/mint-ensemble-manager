@@ -1,3 +1,5 @@
+import { type } from "os";
+
 module.exports = {
     openapi: '3.0.0',
     info: {
@@ -10,6 +12,31 @@ module.exports = {
     ],
     components:{
       schemas: {
+        EnsembleDownloadRequest: {
+          description: 'Request body to download the outputs of a thread',
+          type: 'object',
+          required:[
+            'email', 'ensemble_id', 'thread_id'
+          ],
+          properties: {
+            thread_id: {
+              description: "The modeling thread id",
+              type: 'string'
+            },
+            ensemble_id: {
+              description: "The ensemble ids",
+              type: "array",
+              items: {
+                  type: 'string'
+              }
+            },
+            email: {
+              description: "Email address to send",
+              type: "string" 
+            }
+          },
+
+        },
         ModelThread: {
           description: '',
           required:[

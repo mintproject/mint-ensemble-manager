@@ -15,10 +15,13 @@
         }
     },
     "include": [
-        "src/**/*.ts", "paths"
+        "src/**/*.ts", 
+        "tests/**/*.ts",
+        "paths"
     ],
     "exclude": [
         "node_modules",
-        ".vscode"
+        ".vscode",
+        "./dist/"
     ]
 }

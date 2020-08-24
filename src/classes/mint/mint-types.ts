@@ -192,6 +192,23 @@ export interface ExecutableEnsemble {
     selected: boolean
 }
 
+export type RunOutput = Map<string, Output> // Map of response variable to models
+
+export interface EnsembleRequestDownload {
+    thread_id: string
+    ensemble_id: string[]
+    email: string
+}
+
+
+export interface Output {
+    id: string
+    name: string
+    location: string
+    url: string
+    ensemble_id: string
+}
+
 export interface InputBindings {
     [input: string]: string | DataResource
 }
