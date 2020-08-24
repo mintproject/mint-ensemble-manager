@@ -71,6 +71,7 @@
     "@types/yauzl": "^2.9.1",
     "body-parser": "^1.19.0",
     "chai": "^4.2.0",
+    "codecov": "^3.7.2",
     "cookie-parser": "^1.4.4",
     "eslint": "^6.6.0",
     "eslint-plugin-import": "^2.18.2",
