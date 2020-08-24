@@ -10,7 +10,7 @@ export const helloTest = (): boolean => {
 }
 
 
-export const compresSend = async (outputEnsemble: Output[], zipFileName: string, email :string) : Promise<string> => {
+export const compressAction = async (outputEnsemble: Output[], zipFileName: string, email :string) : Promise<string> => {
     const output = fs.createWriteStream(COMPRESSDIRECTORY + zipFileName + ".zip");
     const archive = archiver('zip', {
         zlib: { level: 0 } // Sets the compression level.
@@ -32,6 +32,8 @@ export const compresSend = async (outputEnsemble: Output[], zipFileName: string,
             if (fs.existsSync(location)) {
                 console.log(location)
                 archive.append(fs.createReadStream(location), { name: destination });
+            } else {
+                console.log("Missing file " + location)
             }
         }
         archive.finalize();
@@ -39,14 +41,15 @@ export const compresSend = async (outputEnsemble: Output[], zipFileName: string,
 }
 
 export const sendMail = async(email: string, thread_id: string, link: string) => {
-    console.log(process.env.SENDGRID_API_KEY)
     sgMail.setApiKey(process.env.SENDGRID_API_KEY);
     const msg = {
       to: email,
       from: "noreply@mint.isi.edu",
-      subject: 'Sending with Twilio SendGrid is Fun',
-      text: 'and easy to do anywhere, even with Node.js',
-      html: '<strong>and easy to do anywhere, even with Node.js</strong>',
+      subject: 'Your results are ready',
+      templateId: 'd-44f0657038734faab4134c252f96da15',
+      dynamicTemplateData: {
+        url: link
+      }
     };
     await sgMail.send(msg);
 }

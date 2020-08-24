@@ -1,4 +1,4 @@
-import { compresSend, sendMail } from './compress-functions';
+import { compressAction, sendMail } from './compress-functions';
 import { expect } from 'chai';
 import 'mocha';
 import { exception } from 'console';
@@ -26,7 +26,7 @@ describe('Compress tests', () => {
       }
     ]
     const zipFileName = "topoflow.3.6.0"
-    const string: string = await compresSend(test_ensemble, threadId, email)
+    const string: string = await compressAction(test_ensemble, threadId, email)
     console.log(string);
   }),
   it('Test email', async () => {

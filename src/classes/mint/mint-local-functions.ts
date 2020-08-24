@@ -1,4 +1,4 @@
-import { Pathway, Model, DataEnsembleMap, Scenario, MintPreferences, ExecutableEnsembleSummary, ExecutableEnsemble, Output } from "./mint-types";
+import { Pathway, Model, DataEnsembleMap, Scenario, MintPreferences, ExecutableEnsembleSummary, ExecutableEnsemble, Output, EnsembleRequestDownload } from "./mint-types";
 import { getModelInputEnsembles, getModelInputConfigurations, deleteAllPathwayEnsembleIds, setPathwayEnsembleIds, getEnsembleHash, successfulEnsembleIds, getAllPathwayEnsembleIds, listEnsembles, updatePathwayEnsembles, updatePathway, setPathwayEnsembles, deletePathwayEnsembles, updatePathwayExecutionSummary } from "./firebase-functions";
 import { runModelEnsemblesLocally, loadModelWCM, getModelCacheDirectory } from "../localex/local-execution-functions";
 
@@ -9,7 +9,7 @@ import Queue from "bull";
 import { MONITOR_QUEUE_NAME, REDIS_URL } from "../../config/redis";
 import { monitorThread } from "../localex/thread-execution-monitor";
 import { DEVMODE } from "../../config/app";
-import { compresSend } from "./compress-functions";
+import { compressAction } from "./compress-functions";
 let monitorQueue = new Queue(MONITOR_QUEUE_NAME, REDIS_URL);
 monitorQueue.process((job) => monitorThread(job));
 
@@ -238,20 +238,23 @@ export const deleteExecutableCacheForModelLocally = async (modelid: string,
     await updatePathwayExecutionSummary(scenario.id, pathway.id, modelid, summary);
 }
 
-export const getEnsemblesCompress = async (ensembleids: string[], threadId: string, email: string) => {
-    let all_ensembles = await listEnsembles(ensembleids);
-    const results = all_ensembles.map(ensemble => {
+export const getEnsemblesCompress = async (request: EnsembleRequestDownload) => {
+    let all_ensembles = await listEnsembles(request.ensemble_id);
+    const results = await all_ensembles.map(ensemble => {
         const values: Output[] = [];
-        for (const value of Object.values(ensemble.results)) {
-            let output: Output = value
-            output.ensemble_id = ensemble.id
-            values.push(output)
+        if ( ensemble != undefined) {
+            for (const value of Object.values(ensemble.results)) {
+                let output: Output = value
+                output.ensemble_id = ensemble.id
+                values.push(output)
+            }
+    
+            return values
         }
 
-        return values
     })
-    const runOutputDetails = results.reduce((acc, val) => acc.concat(val), []);
-    const promise1: Promise<string> = compresSend(runOutputDetails, threadId, email)
+    const runOutputDetails = await results.reduce((acc, val) => val ?? acc.concat(val), []);
+    const promise1: Promise<string> = compressAction(runOutputDetails, request.thread_id, request.email)
 
     promise1.then((value) => {
         console.log(value);

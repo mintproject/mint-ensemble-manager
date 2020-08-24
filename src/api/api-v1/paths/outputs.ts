@@ -24,10 +24,7 @@ export default function(outputsService: any) {
         content: {
           'application/json': {
             schema: {
-                type: 'array',
-                items: {
-                  type: 'string',
-                }
+                $ref: '#/components/schemas/EnsembleDownloadRequest'
             }
           }
         }
