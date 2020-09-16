@@ -9,6 +9,7 @@ import v1ExecutionsLocalService from './api/api-v1/services/executionsLocalServi
 import v1ExecutionQueService from './api/api-v1/services/executionQueueService';
 import v1MonitorsService from './api/api-v1/services/monitorsService';
 import v1LogsService from './api/api-v1/services/logsService';
+import v1ThreadsService from './api/api-v1/services/threadsService';
 
 
 import { initialize } from "express-openapi";
@@ -46,7 +47,8 @@ initialize({
         executionsLocalService: v1ExecutionsLocalService,
         executionQueueService: v1ExecutionQueService,
         monitorsService: v1MonitorsService,
-        logsService: v1LogsService
+        logsService: v1LogsService,
+        threadsService: v1ThreadsService
     },
     paths: path.resolve(__dirname, './api/api-v1/paths'),
     routesGlob: '**/*.{ts,js}',

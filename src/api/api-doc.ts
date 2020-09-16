@@ -26,6 +26,23 @@ module.exports = {
               type: 'string'
             }
           }
+        },
+        RepeatedThread: {
+          description: '',
+          required:[
+            'thread_id'
+          ],
+          type: 'object',
+          properties: {
+            thread_id: {
+              description: 'The Modeling thread id',
+              type: 'string'
+            },
+            model_id: {
+              description: 'The Model id (optional. Set to null to run all)',
+              type: 'string'
+            }
+          }
         }
       },
     },
