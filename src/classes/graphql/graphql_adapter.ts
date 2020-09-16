@@ -441,3 +441,17 @@ export const executionSummaryFromGQL = (summary: any) : ExecutionSummary => {
     let exobj = Object.assign({}, summary) as ExecutionSummary;
     return exobj;
 }
+
+export const threadInfoToGQL = (thread: ThreadInfo, taskid: string, regionid: string) => {
+    let threadobj = {
+        id: getAutoID(),
+        name: thread.name,
+        task_id: taskid,
+        start_date: toDateString(thread.dates.start_date),
+        end_date: toDateString(thread.dates.end_date),
+        region_id: regionid,
+        response_variable_id: thread.response_variables[0],
+        driving_variable_id: thread.driving_variables.length > 0 ? thread.driving_variables[0] : null
+    };
+    return threadobj;
+}

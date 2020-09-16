@@ -4,14 +4,14 @@ import { DEVMODE, DEVHOMEDIR, PORT } from "../../config/app";
 
 import {
     ProblemStatement,  Thread, Task, Model, DataResource,
-    Execution, ExecutionSummary, MintPreferences, ModelIOBindings, ThreadModelMap } from '../mint/mint-types';
+    Execution, ExecutionSummary, MintPreferences, ModelIOBindings, ThreadModelMap, ThreadInfo } from '../mint/mint-types';
 
 import { GraphQL } from '../../config/graphql';
 
 import getProblemStatementGQL from './queries/problem-statement/get.graphql';
 import getTaskGQL from './queries/task/get.graphql';
 import getThreadGQL from './queries/thread/get.graphql';
-
+import newThreadGQL from './queries/thread/new.graphql';
 import getExecutionGQL from './queries/execution/get.graphql';
 import listSuccessfulIdsGQL from './queries/execution/list-successful-ids.graphql';
 import getExecutionsGQL from './queries/execution/list.graphql';
@@ -31,7 +31,7 @@ import deleteThreadModelExecutionsGQL from './queries/execution/delete-thread-mo
 import { problemStatementFromGQL, taskFromGQL, threadFromGQL, 
     executionFromGQL,
     executionToGQL,
-    executionResultsToGQL} from './graphql_adapter';
+    executionResultsToGQL, threadInfoToGQL} from './graphql_adapter';
 import { isObject } from 'util';
 import { Md5 } from 'ts-md5';
 
@@ -133,6 +133,28 @@ export const getThread = async(threadid: string) : Promise<Thread> => {
         return null;
     });
 }
+
+export const addThread = (task:Task, thread: ThreadInfo) : Promise<string> =>  {
+    let threadobj = threadInfoToGQL(thread, task.id, task.regionid);
+    //console.log(threadobj);
+    return APOLLO_CLIENT.mutate({
+        mutation: newThreadGQL,
+        variables: {
+            object: threadobj
+        }
+    }).then((result) => {
+        if(result.errors && result.errors.length > 0) {
+            console.log("ERROR");
+            console.log(result);
+        }
+        else {
+            return result.data.insert_thread.returning[0].id;
+        }
+        return null;        
+    });
+};
+
+
 
 const MAX_CONFIGURATIONS = 1000000;
 export const getTotalConfigurations = (model: Model, bindings: ModelIOBindings, thread: Thread) => {
