@@ -31,7 +31,7 @@ import deleteThreadModelExecutionsGQL from './queries/execution/delete-thread-mo
 import { problemStatementFromGQL, taskFromGQL, threadFromGQL, 
     executionFromGQL,
     executionToGQL,
-    executionResultsToGQL, threadInfoToGQL} from './graphql_adapter';
+    executionResultsToGQL, threadInfoToGQL, threadModelsToGQL} from './graphql_adapter';
 import { isObject } from 'util';
 import { Md5 } from 'ts-md5';
 
@@ -134,25 +134,7 @@ export const getThread = async(threadid: string) : Promise<Thread> => {
     });
 }
 
-export const addThread = (task_id:string, task_region_id:string, thread: ThreadInfo) : Promise<string> =>  {
-    let threadobj = threadInfoToGQL(thread, task_id, task_region_id);
-    console.log(threadobj);
-    return APOLLO_CLIENT.mutate({
-        mutation: newThreadGQL,
-        variables: {
-            object: threadobj
-        }
-    }).then((result) => {
-        if(result.errors && result.errors.length > 0) {
-            console.log("ERROR");
-            console.log(result);
-        }
-        else {
-            return result.data.insert_thread.returning[0].id;
-        }
-        return null;        
-    });
-};
+
 
 
 
@@ -476,6 +458,42 @@ export const incrementThreadModelFailedRuns = (thread_model_id: string) =>  {
         mutation: incFailedRunsGQL,
         variables: {
             threadModelId: thread_model_id
+        }
+    });
+};
+
+
+export const addThread = (task_id:string, task_region_id:string, thread: ThreadInfo) : Promise<string> =>  {
+    let threadobj = threadInfoToGQL(thread, task_id, task_region_id);
+    console.log(threadobj);
+    return APOLLO_CLIENT.mutate({
+        mutation: newThreadGQL,
+        variables: {
+            object: threadobj
+        }
+    }).then((result) => {
+        if(result.errors && result.errors.length > 0) {
+            console.log("ERROR");
+            console.log(result);
+        }
+        else {
+            return result.data.insert_thread.returning[0].id;
+        }
+        return null;        
+    });
+};
+
+export const setThreadModels = (models: Model[], notes: string, thread: Thread) =>  {
+    let threadmodelsobj = threadModelsToGQL(models, thread.id);
+    let event = getCustomEvent("SELECT_MODELS", notes);
+    let eventobj = event;
+    eventobj["thread_id"] = thread.id;
+    return APOLLO_CLIENT.mutate({
+        mutation: updateThreadModelGQL,
+        variables: {
+            threadId: thread.id,
+            objects: threadmodelsobj,
+            event: eventobj
         }
     });
 };
