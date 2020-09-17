@@ -31,10 +31,18 @@ import deleteThreadModelExecutionsGQL from './queries/execution/delete-thread-mo
 import { problemStatementFromGQL, taskFromGQL, threadFromGQL, 
     executionFromGQL,
     executionToGQL,
-    executionResultsToGQL, threadInfoToGQL, threadModelsToGQL} from './graphql_adapter';
+    executionResultsToGQL, threadInfoToGQL, threadModelsToGQL, getCustomEvent} from './graphql_adapter';
 import { isObject } from 'util';
 import { Md5 } from 'ts-md5';
-
+import subscribeThreadGQL from './queries/thread/get-subscription.graphql';
+import updateThreadModelGQL from './queries/thread/update-models.graphql';
+import updateThreadDataGQL from './queries/thread/update-datasets.graphql';
+import updateThreadParametersGQL from './queries/thread/update-parameters.graphql';
+import updateThreadInfoGQL from './queries/thread/update-info.graphql';
+import addThreadEventGQL from './queries/thread/add-event.graphql';
+import setDatasliceResourcesGQL from './queries/thread/set-dataslice-resources.graphql';
+import deleteThreadGQL from './queries/thread/delete.graphql';
+import executionIdsForThreadGQL from './queries/execution/executionids-for-thread.graphql';
 
 const APOLLO_CLIENT = GraphQL.instance();
 
@@ -465,7 +473,6 @@ export const incrementThreadModelFailedRuns = (thread_model_id: string) =>  {
 
 export const addThread = (task_id:string, task_region_id:string, thread: ThreadInfo) : Promise<string> =>  {
     let threadobj = threadInfoToGQL(thread, task_id, task_region_id);
-    console.log(threadobj);
     return APOLLO_CLIENT.mutate({
         mutation: newThreadGQL,
         variables: {
@@ -485,9 +492,10 @@ export const addThread = (task_id:string, task_region_id:string, thread: ThreadI
 
 export const setThreadModels = (models: Model[], notes: string, thread: Thread) =>  {
     let threadmodelsobj = threadModelsToGQL(models, thread.id);
-    let event = getCustomEvent("SELECT_MODELS", notes);
+    let event = getCustomEvent("SELECT_MODELS", notes, "automated@isi.edu");
     let eventobj = event;
     eventobj["thread_id"] = thread.id;
+    console.log(threadmodelsobj[0]["model"]["type"])
     return APOLLO_CLIENT.mutate({
         mutation: updateThreadModelGQL,
         variables: {

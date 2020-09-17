@@ -4,6 +4,7 @@ import { Task, Thread, ProblemStatementInfo, ProblemStatement, ThreadInfo, MintE
 import * as crypto from 'crypto';
 import { Region } from "../mint/mint-types";
 
+
 export const regionFromGQL = (regionobj: any) : Region => {
     let region = {
         id: regionobj.id,
@@ -115,7 +116,6 @@ export const threadFromGQL = (thread: any) => {
     thread["thread_models"].forEach((tm:any) => {
         let m = tm["model"];
         let model : Model = modelFromGQL(m);
-
         fbthread.models[model.id] = model;
         let model_ensemble = modelEnsembleFromGQL(tm["data_bindings"], tm["parameter_bindings"]);
         fbthread.model_ensembles[model.id] = {
@@ -201,6 +201,10 @@ export const dataFromGQL = (d: any) => {
 
 export const modelFromGQL = (mobj: any) => {
     let m = Object.assign({}, mobj);
+    if ( typeof m['type'] === 'undefined') {
+        console.error("undefined type")
+        m["type"] = "Theory-GuidedModel"
+    }
     m["input_files"] = (m["inputs"] as any[]).map((input) => {
         return modelIOFromGQL(input);
     });
@@ -530,7 +534,8 @@ const getVariableData = (variableid) => {
 }
 const getModelIOFixedBindings = (io) => {
     let fixed_bindings_data = []
-    if ("value" in io && "resources" in io["value"]) {
+    //console.log(io)
+    if ("value" in io && io["value"] && "resources" in io["value"]) {
         io["value"]["resources"].forEach((res: any) => {
             if (!("name" in res)) {
                 res["name"] = res["url"].replace(/^.*\/(.*?)$/, "$1");
@@ -592,13 +597,14 @@ const modelParameterToGQL = (input: ModelParameter) => {
 
 export const modelToGQL = (m: Model) => {
     let namespace = m.id.replace(/(^.*\/).*$/, "$1");
+    console.log("=== " + m.model_type + " ==== ") 
     return {
         "id": m.id,
         "name": m.name,
         "category": m.category,
         "description": m.description,
         "region_name": m.region_name,
-        "type": m.model_type,
+        "type": "Theory-GuidedModel",
         "model_configuration": getNamespacedId(namespace, m.model_configuration),
         "model_version": getNamespacedId(namespace, m.model_version),
         "model_name": getNamespacedId(namespace, m.model_name),
@@ -633,4 +639,13 @@ export const modelToGQL = (m: Model) => {
             }
         }
     };
+}
+
+export const getCustomEvent = (event:string, notes: string, email: string) => {
+    return {
+        event: event,
+        timestamp: new Date(),
+        userid: email,
+        notes: notes
+    } as MintEvent;
 }
