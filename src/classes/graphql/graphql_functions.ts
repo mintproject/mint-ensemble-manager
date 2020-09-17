@@ -134,9 +134,9 @@ export const getThread = async(threadid: string) : Promise<Thread> => {
     });
 }
 
-export const addThread = (task:Task, thread: ThreadInfo) : Promise<string> =>  {
-    let threadobj = threadInfoToGQL(thread, task.id, task.regionid);
-    //console.log(threadobj);
+export const addThread = (task_id:string, task_region_id:string, thread: ThreadInfo) : Promise<string> =>  {
+    let threadobj = threadInfoToGQL(thread, task_id, task_region_id);
+    console.log(threadobj);
     return APOLLO_CLIENT.mutate({
         mutation: newThreadGQL,
         variables: {

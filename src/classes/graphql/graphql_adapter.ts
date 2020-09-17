@@ -442,6 +442,16 @@ export const executionSummaryFromGQL = (summary: any) : ExecutionSummary => {
     return exobj;
 }
 
+export const eventToGQL = (event: MintEvent) => {
+    let eventobj = {
+        event: event.event,
+        userid: event.userid,
+        timestamp: event.timestamp.toISOString(),
+        notes: event.notes
+    };
+    return eventobj;
+}
+
 export const threadInfoToGQL = (thread: ThreadInfo, taskid: string, regionid: string) => {
     let threadobj = {
         id: getAutoID(),
@@ -454,4 +464,173 @@ export const threadInfoToGQL = (thread: ThreadInfo, taskid: string, regionid: st
         driving_variable_id: thread.driving_variables.length > 0 ? thread.driving_variables[0] : null
     };
     return threadobj;
+}
+
+export const threadInfoUpdateToGQL = (thread:  ThreadInfo) => {
+    let threadobj = {
+        id: thread.id,
+        task_id: thread.task_id,
+        name: thread.name,
+        start_date: toDateString(thread.dates.start_date),
+        end_date: toDateString(thread.dates.end_date),
+        response_variable_id: thread.response_variables[0],
+        driving_variable_id: thread.driving_variables.length > 0 ? thread.driving_variables[0] : null,
+        events: {
+            data: thread.events.map(eventToGQL),
+        }
+    };
+    return threadobj;
+}
+
+
+export const threadModelsToGQL = (models: Model[], threadid: string) => {
+    return models.map((model) => {
+        return {
+            "thread_id": threadid,
+            "model": {
+                "data": modelToGQL(model),
+                "on_conflict": {
+                    "constraint": "model_pkey",
+                    "update_columns": ["name"]
+                }
+            }
+        };
+    });
+}
+
+const getNamespacedId = (namespace, id) => {
+    if(id.indexOf(namespace) == 0)
+        return id;
+    return namespace + id
+}
+
+const modelInputOutputToGQL = (io: any) => {
+    return {
+        "position": io["position"],
+        "model_io": {
+            "data": modelIOToGQL(io),
+            "on_conflict": {
+                "constraint": "model_io_pkey",
+                "update_columns": ["id"]
+            }
+        }
+    }
+}
+
+const getVariableData = (variableid) => {
+    return {
+        "data": {
+            "id": variableid
+        },
+        "on_conflict": {
+            "constraint": "variable_pkey",
+            "update_columns": ["id"]
+        }
+    }
+}
+const getModelIOFixedBindings = (io) => {
+    let fixed_bindings_data = []
+    if ("value" in io && "resources" in io["value"]) {
+        io["value"]["resources"].forEach((res: any) => {
+            if (!("name" in res)) {
+                res["name"] = res["url"].replace(/^.*\/(.*?)$/, "$1");
+                fixed_bindings_data.push({
+                    "resource": {
+                        "data": {
+                            "id": getMd5Hash(res["url"]),
+                            "name": res["name"],
+                            "url": res["url"]
+                        },
+                        "on_conflict": {
+                            "constraint": "resource_pkey",
+                            "update_columns": ["name"]
+                        }
+                    }
+                })
+            }
+        });
+    }
+    return {
+        "data": fixed_bindings_data,
+        "on_conflict": {
+            "constraint": "model_input_bindings_pkey",
+            "update_columns": ["resource_id"]
+        }
+    }
+}
+
+
+const modelIOToGQL = (io: any) => {
+    let fixed_bindings = getModelIOFixedBindings(io)
+    return {
+        "id": io["id"],
+        "name": io["name"],
+        "type": io["type"],
+        "fixed_bindings": fixed_bindings,
+        "variables": {
+            "data": io["variables"].map((v) => { 
+                return { 
+                    "variable": getVariableData(v)
+                };
+            }),
+            "on_conflict": {
+                "constraint": "model_io_variable_pkey",
+                "update_columns": ["variable_id"]
+            }
+        }
+    }
+}
+
+const modelParameterToGQL = (input: ModelParameter) => {
+    if ("default" in input && input["default"])
+        input["default"] = input["default"] + "";
+    if ("value" in input && input["value"])
+        input["fixed_value"] = input["value"] + "";
+    delete input["value"]
+    return input
+}
+
+export const modelToGQL = (m: Model) => {
+    let namespace = m.id.replace(/(^.*\/).*$/, "$1");
+    return {
+        "id": m.id,
+        "name": m.name,
+        "category": m.category,
+        "description": m.description,
+        "region_name": m.region_name,
+        "type": m.model_type,
+        "model_configuration": getNamespacedId(namespace, m.model_configuration),
+        "model_version": getNamespacedId(namespace, m.model_version),
+        "model_name": getNamespacedId(namespace, m.model_name),
+        "dimensionality": m.dimensionality,
+        "parameter_assignment": m.parameter_assignment,
+        "parameter_assignment_details": m.parameter_assignment_details,
+        "calibration_target_variable": m.calibration_target_variable,
+        "spatial_grid_resolution": m.spatial_grid_resolution,
+        "spatial_grid_type": m.spatial_grid_type,
+        "output_time_interval": m.output_time_interval,
+        "code_url": m.code_url,
+        "usage_notes": m.usage_notes,
+        "inputs": {
+            "data": m.input_files.map((input) => modelInputOutputToGQL(input)),
+            "on_conflict": {
+                "constraint": "model_input_pkey",
+                "update_columns": ["model_id"]
+            }
+        },
+        "parameters": {
+            "data": m.input_parameters.map((param) => modelParameterToGQL(param)),
+            "on_conflict": {
+                "constraint": "model_parameter_pkey",
+                "update_columns": ["model_id"]
+            }
+        },
+        "outputs": {
+            "data": m.output_files.map((output) => modelInputOutputToGQL(output)),
+            "on_conflict": {
+                "constraint": "model_output_pkey",
+                "update_columns": ["model_id"]
+            }
+        }
+    };
 }
