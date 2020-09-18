@@ -17,7 +17,7 @@ import { getResource } from "./classes/wings/xhr-requests";
 
 import Queue from "bull";
 import { UI, setQueues } from "bull-board";
-import { EXECUTION_QUEUE_NAME, REDIS_URL, MONITOR_QUEUE_NAME } from "./config/redis";
+import { EXECUTION_QUEUE_NAME, REDIS_URL, MONITOR_QUEUE_NAME, REPEATED_THREAD_QUEUE } from "./config/redis";
 import { PORT, VERSION } from "./config/app";
 
 import * as webpack from "webpack";
@@ -65,7 +65,8 @@ app.use(((err, req, res, next) => {
 // Setup Bull Queue Dashboard
 let executionQueue = new Queue(EXECUTION_QUEUE_NAME, REDIS_URL);
 let monitorQueue = new Queue(MONITOR_QUEUE_NAME, REDIS_URL);
-setQueues([executionQueue, monitorQueue]);
+let repeatedThreadQueue = new Queue(REPEATED_THREAD_QUEUE, REDIS_URL);
+setQueues([executionQueue, monitorQueue, repeatedThreadQueue]);
 app.use('/admin/queues', UI)
 
 // Express start
