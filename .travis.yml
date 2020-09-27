@@ -12,3 +12,10 @@ cache: yarn
 script: yarn test
 after_script:
 - bash scripts/docker-push
+deploy:
+- provider: script
+  skip_cleanup: true
+  script: bash ./scripts/ci-deploy.sh
+  on:
+    all_branches: true
+    condition: "$TRAVIS_BRANCH =~ ^(master|dev|k8s)$"
