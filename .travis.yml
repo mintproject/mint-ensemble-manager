@@ -1,10 +1,14 @@
 language: node_js
+services:
+  - docker
 node_js:
-- stable
-install: yarn
+  - stable
+install:
+ - sudo apt-get update && sudo apt-get -y install gettext-base
+ - curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl
+ - chmod u+x ./kubectl
+ - yarn
 cache: yarn
 script: yarn test
-env:
-  global:
-  - secure: RgtpWgcpLOdjRdJb2xeuKGSTh38sujC0jdvDSgM4958742Nu9Qp5+IMM9rRD3n9r9lHH05rd8EDES9W1/KSUt0wrn0IDZqcft0SZcLwEnmIt6cDD0YAQRXL/0FZxSR2kED8+e/KwQqDkb2fKFiIO4qyD1AMyvKFSIWPTqoSd6j4l1OEKwpJSE00UKtfoDuxcC8RLIJMncX9cHv98jp58ptfNHe2MTbpbIpfJLCcI0ZDNDLR/AQM+2YIb1n92g9sSdGFbJ/48ujzcOyH228UA9BqbHc90KWagqkVWYWScFyWMk1RGSmAkTLufTl1jPxdF6VIbRcWFMNKEX3AawnTA1I5kpaefM8Wn8uJeXxvtJUULuYpmhMdzuBcjRAzzKSsNXEsXK7F3pj95CfFl9jLeOLW1U+u0VHpNOtyuJZ7/fJuErx/D21WIHoG1gK1x5HMNxYSbGBbXeNy9KnwwqW23/SzvcdSj7E/nNopXr7aHGuT5t+FNGol7QJDJHJjLfylXRYYsYms7s0fA27byYKkWOmEQmr5PwsIzTgjOxjBKDBr5r2D/yDECP2StIYV3t31+ckKd34kRckFuLtUxwucHnSW4SrDozeeAVK4lHIZS/m3TmaBqnjytHy26Ew+Lo9WRzU2qYl2k+z07JA3CrMUUzJ4UL22W3SR+rRSZKxTIPKI=
-  - secure: ZZ+EqVqLfowic+pYsDGlrnJZX9rBdjG1UTMWyM2ypcmBECBXsqklZ13ZFif3H8nXDJx92ArN3ZBqG1xpoKt81WyyUM+xaJ+Z2BBZ5E4p5VombIyF7IuS7XT77IXTBlEFrUYPR5YPWOZ6u5U2oMjKRfjE1PDZCY5y7I2DPlz6n9YeMOWikDYQTdC+D3LbgICgB25Ph5AkF7f/Fw2m161w6fOkIRdrwOjAM4T7kGjHVc1813tmyKWFTk8sdNKBKhq80eaCCLHcGo4bXTUVg67ia7t490GVe4EdI+OMoYvEnCDpw4mszG5nLGfm7q/WEnbJiG8+mvCUaYlQjo02IXVbEhIzMpm8a7xZshN++rSMYeRp5suEO7nQm1jpE4QkF7fR9YQ9fICSlfElHqo/V85ugfXOzvV/4P8sjyy8RcRWhHLfQibRUJDdfUrZJIXfeMdudGJOT4jXbnfh1eLd22cdlIo18YIL8fJ/AQYY4IeS1NUugRsiFXVjIpN4VCmXQyG/BqS2DJh70to3G76OZm2+AqTW1wrvSv93Gz1xpOMO85+6XRFeH5yfYDe60K7rf5gcoiX/fb50k9EDv30v0fxubqdHd4a2vtGOaDfqVA4efJJIkXLL+c/eznr8g+2D8FXL9ifLqsPmHIE4aYDgi2kYLp1YEN08BwU8yLqYDtsgMJ0=
+before_deploy:
+- bash scripts/docker-push
