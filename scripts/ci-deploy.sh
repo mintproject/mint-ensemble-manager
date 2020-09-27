@@ -15,9 +15,8 @@ mv ./.kube/service.yml.out ./.kube/service.yml
 envsubst <./.kube/redis.yml >./.kube/redis.yml.out
 mv ./.kube/redis.yml.out ./.kube/redis.yml
 
-
-envsubst <./.kube/redis-svc.yml >./.kube/service.yml.out
-mv ./.kube/redis-svc.yml.out ./.kube/service.yml
+envsubst <./.kube/redis-svc.yml >./.kube/redis-svc.yml.out
+mv ./.kube/redis-svc.yml.out ./.kube/redis-svc.yml
 
 echo "$KUBERNETES_CLUSTER_CERTIFICATE" | base64 --decode > cert.crt
 
