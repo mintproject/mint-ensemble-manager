@@ -30,7 +30,8 @@ module.exports = {
         RepeatedThread: {
           description: '',
           required:[
-            'thread_id'
+            'thread_id',
+            'every_minutes',
           ],
           type: 'object',
           properties: {
@@ -38,9 +39,14 @@ module.exports = {
               description: 'The Modeling thread id',
               type: 'string'
             },
-            model_id: {
-              description: 'The Model id (optional. Set to null to run all)',
-              type: 'string'
+            every_minutes:{
+              description: 'Repeat every minutes',
+              type: 'number'
+            },
+            end_date: {
+              description: 'End date when the repeat job should stop repeating.',
+              type: 'string',
+              format: "date-time"        
             }
           }
         }

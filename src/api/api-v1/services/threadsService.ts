@@ -8,27 +8,14 @@ import { FetchResult } from "apollo-boost";
 
 let repeatedThreadQueue = new Queue(REPEATED_THREAD_QUEUE, REDIS_URL);
 
-const cleanQueue = (queue: Queue.Queue) => {
-    queue.empty();
-    queue.clean(0, 'delayed');
-    queue.clean(0, 'wait');
-    queue.clean(0, 'active');
-    queue.clean(0, 'completed');
-    queue.clean(0, 'failed');
-
-    let multi = queue.multi();
-    multi.del(queue.toKey('repeat'));
-    multi.exec();
-}
-
-
-//cleanQueue(repeatedThreadQueue)
-
-
+/**
+ * Queue job
+ * 
+ * @param  {} function(job
+ */
 repeatedThreadQueue.process(function (job) {
     return createRepeated(job.data.thread_id)
 });
-
 
 
 const createResponse = (result: string, message: string) => {
@@ -37,13 +24,18 @@ const createResponse = (result: string, message: string) => {
         message: message
     };
 }
-
+/**
+ * Copy some elements of a Thread: model and data 
+ * 
+ * @param  {string} thread_id
+ * @returns Promise
+ */
 const createRepeated =  async(thread_id: string) : Promise<any> => {
     let thread: Thread = await getThread(thread_id);
     if (thread) {
         let now = Date()
         let new_thread_info = {
-            name: now + "_clone",
+            name: now,
             task_id: thread.task_id,
             dates: {
                 start_date: thread.dates.start_date,
@@ -53,7 +45,7 @@ const createRepeated =  async(thread_id: string) : Promise<any> => {
             response_variables: thread.response_variables,
         } as ThreadInfo;
         //Create a new Thread
-        let new_thread_id: string = await addThread(thread.task_id, thread.regionid, new_thread_info);
+        let new_thread_id: string = await addThread(thread.task_id, thread.regionid, new_thread_info);  
         let new_thread: Thread = await getThread(new_thread_id)
         let models = [];
         for (let modelid in thread.models) {
@@ -68,17 +60,16 @@ const createRepeated =  async(thread_id: string) : Promise<any> => {
 }
 
 const threadService = {
+    /** Operation API
+     * @param  {any} threadmodel
+     */
     async createRepeatedThread(threadmodel: any) {
-        let now = new Date()
-        let start_date: Date = now;
-        let end_date: Date = new Date("2020-12-12");
-        let every: number = 60 * 1000;
         repeatedThreadQueue.add({thread_id: threadmodel.thread_id }, {repeat: {
-          every: every,
-          startDate: start_date,
-          endDate: end_date,
+          every: threadmodel.every_minutes * 1000 * 60,
+          startDate: new Date(),
+          endDate: threadmodel.end_date,
         }});
-        return createResponse("ok", every / 1000 + " seconds")
+        return createResponse("ok",  "Repeated thread scheduled " + threadmodel.every_minutes + " minutes")
     }
 };
 
