@@ -8,8 +8,8 @@ install:
  - curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl
  - chmod u+x ./kubectl
  - yarn
-script: yarn test
-after_script:
+script:
+- yarn test
 - bash scripts/docker-push
 deploy:
 - provider: script
