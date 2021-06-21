@@ -3,6 +3,7 @@ import { Execution } from "../../../classes/mint/mint-types";
 import { fetchWingsRunLog } from "../../../classes/wings/wings-functions";
 import { fetchLocalRunLog } from "../../../classes/localex/local-execution-functions";
 import { fetchMintConfig } from "../../../classes/mint/mint-functions";
+import { fetchSlurmRunLog } from "../../../classes/slurm/slurm-execution-functions";
 
 // ./api-v1/services/logsService.js
 
@@ -17,6 +18,10 @@ const logsService = {
         }
         else if(ensemble.execution_engine == "localex") {
             let log = fetchLocalRunLog(execution_id, mint_prefs);
+            return log;
+        }
+        else if(ensemble.execution_engine == "slurm") {
+            let log = fetchSlurmRunLog(execution_id, mint_prefs);
             return log;
         }
     }

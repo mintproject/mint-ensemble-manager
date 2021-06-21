@@ -111,7 +111,7 @@ const _downloadWCM = async (url: string, prefs: MintPreferences) => {
     let zipfile = plainurl.replace(/.+\//, "");
     let compname = zipfile.replace(/\.zip/i, "");
 
-    let codedir = prefs.localex.codedir + "/" + hashdir;
+    let codedir = prefs.slurm.codedir + "/" + hashdir;
     if(!fs.existsSync(codedir))
         fs.mkdirsSync(codedir);
 
@@ -215,7 +215,7 @@ export const getModelCacheDirectory = (url: string, prefs: MintPreferences) => {
     let zipfile = plainurl.replace(/.+\//, "");
     let compname = zipfile.replace(/\.zip/i, "");
 
-    let codedir = prefs.localex.codedir;
+    let codedir = prefs.slurm.codedir;
     let modeldir = codedir + "/" + hashdir + "/" + compname;
     return modeldir;
 }
@@ -314,7 +314,7 @@ export const queueModelExecutionsSlurm =
         // Add Download Job to Queue (if it doesn't already exist)
         for (let resid in registered_resources) {
             let args = registered_resources[resid];
-            let inputpath = prefs.localex.datadir + "/" + args[0];
+            let inputpath = prefs.slurm.datadir + "/" + args[0];
             let inputurl = args[2];
             if (!fs.existsSync(inputpath))
                 downloadInputPromises.push(_downloadFile(inputurl, inputpath));
@@ -332,7 +332,7 @@ export const queueModelExecutionsSlurm =
 
         return Promise.all(seeds.map((seed) => executionQueue.add({ 
                 seed: seed, 
-                prefs: prefs.localex,
+                prefs: prefs.slurm,
                 thread_id: thread.id,
                 thread_model_id: thread_model_id
             }, {
@@ -343,8 +343,8 @@ export const queueModelExecutionsSlurm =
         })));
 }
 
-export const fetchLocalRunLog = (executionid: string, prefs: MintPreferences) => {
-    let logstdout = prefs.localex.logdir + "/" + executionid + ".log";
+export const fetchSlurmRunLog = (executionid: string, prefs: MintPreferences) => {
+    let logstdout = prefs.slurm.logdir + "/" + executionid + ".log";
     if(fs.existsSync(logstdout))
         return fs.readFileSync(logstdout).toString();
     return "Job not yet started running";
