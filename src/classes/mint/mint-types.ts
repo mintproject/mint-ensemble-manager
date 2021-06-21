@@ -146,7 +146,7 @@ export interface Execution {
     runid?: string
     start_time: Date
     end_time?: Date
-    execution_engine?: "wings" | "localex"
+    execution_engine?: "wings" | "localex" | "slurm"
     status: "FAILURE" | "SUCCESS" | "RUNNING" | "WAITING",
     run_progress?: number // 0 to 100 (percentage done)
     results: any[] // Chosen results after completed run
@@ -278,9 +278,10 @@ export interface IdMap<T> {
   }
   
   export interface MintPreferences {
-    wings: WingsPreferences,
+    wings?: WingsPreferences,
     localex?: LocalExecutionPreferences,
-    execution_engine?: "wings" | "localex",
+    slurm?: SlurmExecutionPreferences,
+    execution_engine?: "wings" | "localex" | "slurm",
     wings_api: string,
     ensemble_manager_api: string,
     ingestion_api: string,
@@ -311,6 +312,14 @@ export interface IdMap<T> {
     codedir: string
   }
   
+  export interface SlurmExecutionPreferences {
+    datadir: string,
+    dataurl: string,
+    logdir: string,
+    logurl: string,
+    codedir: string
+  }
+
   type ModelCatalogStatus = 'LOADING' | 'DONE' | 'ERROR';
   export interface ModelCatalogPreferences {
     username: string,

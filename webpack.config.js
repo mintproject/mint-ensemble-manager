@@ -10,7 +10,8 @@ module.exports = {
         extensions: ['.js', '.json', '.ts', '.graphql']
     },
     entry: {
-        execution: './src/classes/localex/seed-execution.ts',        
+        execution: './src/classes/localex/seed-execution.ts',
+        slurm_execution: './src/classes/slurm/seed-execution.ts',
         server: './src/server.ts'
     },
     output: {

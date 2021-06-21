@@ -5,7 +5,7 @@ module.exports = {
       version: '3.0.0'
     },
     servers: [
-      { url: 'http://localhost:3000/v1' },
+      { url: 'http://localhost:23000/v1' },
       { url: 'https://ensemble.mint.isi.edu/v1' }
     ],
     components:{
