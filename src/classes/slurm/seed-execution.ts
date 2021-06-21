@@ -150,7 +150,7 @@ module.exports = async (job: any) => {
             
             // Call slurm batch command
             let jobId = null;
-            let spawnResult = child_process.spawnSync("sbatch", [slurmfile]);
+            let spawnResult = child_process.spawnSync("sbatch", [slurmfile], { cwd: tempdir });
             String(spawnResult.stdout).split("\n").forEach((spawnStr) => {
                 let arr = spawnStr.match(/"Submitted batch job (\d+)"/);
                 if(arr) {
