@@ -145,29 +145,31 @@ module.exports = async (job: any) => {
             slurmfd.write(`\nsingularity exec docker://${softwareImage} ${argstr}\n`);
             slurmfd.close();
             
+            // Wait a second before calling sbatch, otherwise the above file appears empty sometimes
+            await sleep(1000);
+            
             // Call slurm batch command
             let jobId = null;
             let spawnResult = child_process.spawnSync("sbatch", [slurmfile]);
-            for(let spawnStr in spawnResult.stdout.split("\n")) {
+            String(spawnResult.stdout).split("\n").forEach((spawnStr) => {
                 let arr = spawnStr.match(/"Submitted batch job (\d+)"/);
                 if(arr) {
                     jobId = arr[1];
                 }
-            }
+            });
 
             if(jobId) {
                 // Poll and Check for job finishing
                 let jobDone = false;
                 while (!jobDone) {
                     let queueResult = child_process.spawnSync("squeue", ["-j", jobId]);
-                    let lines = queueResult.stdout.split("\n");
+                    let lines = String(queueResult.stdout).split("\n");
                     if (lines.length > 1) {
                         let arr = lines[1].match(/"^\s*(\d+)\s*"/);
                         if(arr) {
                             if(arr[1] == jobId) {
                                 // Still ongoing
                                 jobDone = false;
-                                continue;
                             }
                         }
                     }
@@ -175,9 +177,11 @@ module.exports = async (job: any) => {
                         jobDone = true;
                         break;
                     }
-                    sleep(10000);
+                    await sleep(10000);
                 }
-                
+            }
+            else {
+                statusCode = -1;
             }
         }
 
