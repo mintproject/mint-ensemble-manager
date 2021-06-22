@@ -7,11 +7,11 @@ import yauzl from "yauzl";
 import yaml from "js-yaml";
 
 import Queue from "bull";
-import { CONCURRENCY, EXECUTION_QUEUE_NAME, REDIS_URL } from "../../config/redis";
+import { CONCURRENCY, SLURM_EXECUTION_QUEUE_NAME, REDIS_URL } from "../../config/redis";
 import { Md5 } from "ts-md5";
 
-let executionQueue = new Queue(EXECUTION_QUEUE_NAME, REDIS_URL);
-executionQueue.process(CONCURRENCY, __dirname + '/slurm_execution.js');
+let slurmExecutionQueue = new Queue(SLURM_EXECUTION_QUEUE_NAME, REDIS_URL);
+slurmExecutionQueue.process(CONCURRENCY, __dirname + '/slurm_execution.js');
 
 // You can listen to global events to get notified when jobs are processed
 /*executionQueue.on('global:completed', (jobId, result) => {
@@ -330,9 +330,16 @@ export const queueModelExecutionsSlurm =
             numseeds < 50 ? 2 : numseeds < 200 ? 3 :
             numseeds < 500 ? 4 : 5;
 
-        return Promise.all(seeds.map((seed) => executionQueue.add({ 
-                seed: seed, 
+        let chunked_seeds = [];
+        var i,j,chunk_size = prefs.slurm.numcores; 
+        for (i=0,j=seeds.length; i<j; i+=chunk_size) {
+            let seedchunk = seeds.slice(i,i+chunk_size);
+            chunked_seeds.push(seedchunk);
+        }
+        return Promise.all(chunked_seeds.map((seedchunk) => slurmExecutionQueue.add({ 
+                seeds: seedchunk, 
                 prefs: prefs.slurm,
+                model_id: modelid,
                 thread_id: thread.id,
                 thread_model_id: thread_model_id
             }, {

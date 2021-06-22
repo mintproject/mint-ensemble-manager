@@ -7,11 +7,11 @@ import yauzl from "yauzl";
 import yaml from "js-yaml";
 
 import Queue from "bull";
-import { CONCURRENCY, EXECUTION_QUEUE_NAME, REDIS_URL } from "../../config/redis";
+import { CONCURRENCY, LOCAL_EXECUTION_QUEUE_NAME, REDIS_URL } from "../../config/redis";
 import { pullImage } from "./docker-functions";
 import { Md5 } from "ts-md5";
 
-let executionQueue = new Queue(EXECUTION_QUEUE_NAME, REDIS_URL);
+let executionQueue = new Queue(LOCAL_EXECUTION_QUEUE_NAME, REDIS_URL);
 executionQueue.process(CONCURRENCY, __dirname + '/execution.js');
 
 // You can listen to global events to get notified when jobs are processed

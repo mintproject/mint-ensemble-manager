@@ -1,5 +1,5 @@
 import Queue from "bull";
-import { EXECUTION_QUEUE_NAME, REDIS_URL } from "../../../config/redis";
+import { LOCAL_EXECUTION_QUEUE_NAME, SLURM_EXECUTION_QUEUE_NAME, REDIS_URL } from "../../../config/redis";
 
 // ./api-v1/services/executionsLocalService.js
 
@@ -25,14 +25,18 @@ const cleanQueue = (queue: Queue.Queue) => {
 
 const executionQueueService = {
     async emptyExecutionQueue() {
-        let executionQueue = new Queue(EXECUTION_QUEUE_NAME, REDIS_URL);
-        cleanQueue(executionQueue);
+        let localExecutionQueue = new Queue(LOCAL_EXECUTION_QUEUE_NAME, REDIS_URL);
+        let slurmExecutionQueue = new Queue(SLURM_EXECUTION_QUEUE_NAME, REDIS_URL);
+        cleanQueue(localExecutionQueue);
+        cleanQueue(slurmExecutionQueue);
         return createResponse("success", "Queues emptied");
     },
     async getExecutionQueue(thread: any) {
-        let executionQueue = new Queue(EXECUTION_QUEUE_NAME, REDIS_URL);
-        let count = await executionQueue.getActiveCount();
-        return createResponse("success", "Number of Active Jobs: " + count);
+        let localExecutionQueue = new Queue(LOCAL_EXECUTION_QUEUE_NAME, REDIS_URL);
+        let slurmExecutionQueue = new Queue(SLURM_EXECUTION_QUEUE_NAME, REDIS_URL);        
+        let localCount = await localExecutionQueue.getActiveCount();
+        let slurmCount = await slurmExecutionQueue.getActiveCount();
+        return createResponse("success", `Number of Active Jobs: ${localCount} Local, ${slurmCount} Slurm`);
     }
 };
 

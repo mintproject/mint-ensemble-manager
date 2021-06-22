@@ -6,7 +6,7 @@ import { setExecutions, incrementThreadModelSubmittedRuns, incrementThreadModelS
 import { Component, ComponentSeed, ComponentArgument } from "./slurm-execution-types";
 import { Container } from "dockerode";
 import { DEVMODE } from "../../config/app";
-import { SlurmExecutionPreferences, DataResource, DateRange } from "../mint/mint-types";
+import { SlurmExecutionPreferences, DataResource, DateRange, Execution } from "../mint/mint-types";
 
 let SLURM_QUEUE = "development";
 
@@ -17,33 +17,43 @@ module.exports = async (job: any) => {
         });
     } 
     
-    // Run the model seed (model config + bindings)
-    var seed: ComponentSeed = job.data.seed;
-    var slurm: SlurmExecutionPreferences = job.data.prefs;
-    var thread_model_id: string = job.data.thread_model_id;
-
-    // Only increment submitted runs if this isn't a retry
-    if(seed.execution.status != "FAILURE")
-        incrementThreadModelSubmittedRuns(thread_model_id);
-
-    seed.execution.start_time = new Date();
+    let slurm: SlurmExecutionPreferences = job.data.prefs;
+    let thread_model_id: string = job.data.thread_model_id;
+    let modelid: string = job.data.model_id;
+    let seeds: ComponentSeed[] = job.data.seeds;
+    let modelname = modelid.replace(/.*\//, '');
 
     let error = null;
-    let comp : Component = seed.component;
     let inputdir = slurm.datadir;
     let outputdir = slurm.datadir;
 
+    // Get work directory
+    let workdir = slurm.workdir;
+    if(!workdir) 
+        workdir = process.env.SCRATCH;
+    if(!workdir)
+        slurm.codedir + "/../run";
+
     // Create temporary directory
-    let ostmp = os.tmpdir();
-    let tmpprefix = ostmp + "/" + seed.execution.modelid.replace(/.*\//, '');
+    let tmpprefix = slurm.workdir + "/" + modelname;
     let tempdir = fs.mkdtempSync(tmpprefix);
 
-    try {
-        // Copy component run directory to tempdir
-        fs.copySync(comp.rundir, tempdir);
+    // Create jobs for all the seeds
+    let jobs = [];
+    
+    seeds.forEach((seed) => {
+        // Only increment submitted runs if this isn't a retry
+        if(seed.execution.status != "FAILURE")
+            incrementThreadModelSubmittedRuns(thread_model_id);
 
-        // Set the execution engine used for this execution
+        seed.execution.start_time = new Date();
         seed.execution.execution_engine = "slurm";
+
+        let comp: Component = seed.component;
+
+        // Copy component run directory to tempdir
+        if (!fs.existsSync(tempdir + "/" + comp.rundir.replace(/.*\//, '')))
+            fs.copySync(comp.rundir, tempdir);
 
         // Data/Parameter arguments to the script (will be setup below)        
         let args: string[] = [];
@@ -75,8 +85,10 @@ module.exports = async (job: any) => {
                     // Copy input files to tempdir
                     let ifile = inputdir + "/" + ds.name;
                     let newifile = tempdir + "/" + ds.name;
-                    fs.symlinkSync(ifile, newifile);
-                    //fs.copyFileSync(ifile, newifile);
+                    if(!fs.existsSync(newifile)) {
+                        fs.symlinkSync(ifile, newifile);
+                        //fs.copyFileSync(ifile, newifile);
+                    }
                     args.push(ds.name)
                     plainargs.push(ds.name);
 
@@ -114,10 +126,12 @@ module.exports = async (job: any) => {
 
         let logstdout = slurm.logdir + "/" + seed.execution.id + ".log";
 
+        /*
         let logstream = fs.createWriteStream(logstdout);
         logstream.write("current working directory: " + tempdir + "\n");
         logstream.write(command + " " + args.join(" ") + "\n");
         logstream.close();
+        */
 
         // Check if this component requires a docker image via the model definition
         // - or via the older pegasus job properties file
@@ -126,91 +140,102 @@ module.exports = async (job: any) => {
         let statusCode = 0;
         if (softwareImage != null) {
             let argstr = command + " " + args.join(" ")
+            let fullcmd = `singularity exec docker://${softwareImage} ${argstr}`;
 
-            let slurmfile = tempdir + "/" + seed.execution.id + ".sh";
-            let slurmfd = fs.createWriteStream(slurmfile);
-            slurmfd.write("#!/bin/bash\n\n");
-            slurmfd.write(`#SBATCH -o ${logstdout}\n`);
+            jobs.push({
+                seed: seed,
+                command: fullcmd,
+                log: logstdout
+            })
+        }
+    });
 
-            // Queue Name needs to come from a config file
-            slurmfd.write(`#SBATCH -p ${SLURM_QUEUE}\n`);
-            slurmfd.write(`#SBATCH -J mint-${seed.execution.id}\n`);            
+    let slurmfile = tempdir + "/slurm.sh";
+    let jobsfile = tempdir + "/jobs.sh";
+    
+    let slurmfd = fs.createWriteStream(slurmfile);
+    slurmfd.write("#!/bin/bash\n\n");
+    slurmfd.write(`#SBATCH -o ${modelname}.%j.out\n`);
+    slurmfd.write(`#SBATCH -e ${modelname}.%j.err\n`);
+    // Queue Name needs to come from a config file
+    slurmfd.write(`#SBATCH -p ${SLURM_QUEUE}\n`);
+    slurmfd.write(`#SBATCH -J launcher\n`); 
+    // This information need to come from the model            
+    slurmfd.write("#SBATCH -N 1\n");
+    slurmfd.write("#SBATCH -n 1\n");
+    slurmfd.write("#SBATCH -t 00:10:00\n");
 
-            // This information need to come from the model            
-            slurmfd.write("#SBATCH -N 1\n");
-            slurmfd.write("#SBATCH -n 1\n");
-            slurmfd.write("#SBATCH -t 00:10:00\n");
+    slurmfd.write("\nmodule load tacc-singularity\n");
+    slurmfd.write("module load launcher\n");
+    slurmfd.write(`export LAUNCHER_WORKDIR=${tempdir}\n`);
+    slurmfd.write(`export LAUNCHER_JOB_FILE=${jobsfile}\n`);
 
-            slurmfd.write("\nmodule load tacc-singularity\n");
-            slurmfd.write(`\nsingularity exec docker://${softwareImage} ${argstr}\n`);
-            slurmfd.close();
+    slurmfd.write(`\n$LAUNCHER_DIR/paramrun\n`);
+    slurmfd.close();
+
+    let jobsfd = fs.createWriteStream(jobsfile);
+    jobs.forEach((job) => {
+        jobsfd.write(job.command+"\n");
+    })
+    jobsfd.close();
+    
+    // Wait a second before calling sbatch, otherwise the above file appears empty sometimes
+    await sleep(1000);
             
-            // Wait a second before calling sbatch, otherwise the above file appears empty sometimes
-            await sleep(1000);
-            
-            // Call slurm batch command
-            let jobId = null;
-            let spawnResult = child_process.spawnSync("sbatch", [slurmfile], { cwd: tempdir });
-            String(spawnResult.stdout).split("\n").forEach((spawnStr) => {
-                let arr = spawnStr.match(/"Submitted batch job (\d+)"/);
+    // Call slurm batch command
+    let jobId = null;
+    let spawnResult = child_process.spawnSync("sbatch", [slurmfile], { cwd: tempdir });
+    String(spawnResult.stdout).split("\n").forEach((spawnStr) => {
+        console.log(spawnStr);
+        let arr = spawnStr.match(/"Submitted batch job (\d+)"/);
+        if(arr) {
+            jobId = arr[1];
+        }
+    });
+
+    return;
+    
+    if(jobId) {
+        // Poll and Check for job finishing
+        let jobDone = false;
+        while (!jobDone) {
+            let queueResult = child_process.spawnSync("squeue", ["-j", jobId]);
+            let lines = String(queueResult.stdout).split("\n");
+            if (lines.length > 1) {
+                let arr = lines[1].match(/"^\s*(\d+)\s*"/);
                 if(arr) {
-                    jobId = arr[1];
-                }
-            });
-
-            if(jobId) {
-                // Poll and Check for job finishing
-                let jobDone = false;
-                while (!jobDone) {
-                    let queueResult = child_process.spawnSync("squeue", ["-j", jobId]);
-                    let lines = String(queueResult.stdout).split("\n");
-                    if (lines.length > 1) {
-                        let arr = lines[1].match(/"^\s*(\d+)\s*"/);
-                        if(arr) {
-                            if(arr[1] == jobId) {
-                                // Still ongoing
-                                jobDone = false;
-                            }
-                        }
+                    if(arr[1] == jobId) {
+                        // Still ongoing
+                        jobDone = false;
                     }
-                    else {
-                        jobDone = true;
-                        break;
-                    }
-                    await sleep(10000);
                 }
             }
             else {
-                statusCode = -1;
+                jobDone = true;
+                break;
             }
+            await sleep(10000);
         }
+    }
 
-        // Check for Errors
-        if(statusCode != 0) {
-            error = "Execution returned with non-zero status code";
+    /*
+
+    // Check results (output files)
+    // - Copy output files from tempdir to output dir
+    // - Mark an error if any output file is missing
+    Object.values(results).map((result: DataResource) => {
+        var tmpfile = tempdir + "/" + result.name;
+        if (fs.existsSync(tmpfile)) {
+            let opfilepath = outputdir + "/" + result.name;
+            fs.copyFileSync(tmpfile, opfilepath);
         }
         else {
-            // Check results (output files)
-            // - Copy output files from tempdir to output dir
-            // - Mark an error if any output file is missing
-            Object.values(results).map((result: DataResource) => {
-                var tmpfile = tempdir + "/" + result.name;
-                if (fs.existsSync(tmpfile)) {
-                    let opfilepath = outputdir + "/" + result.name;
-                    fs.copyFileSync(tmpfile, opfilepath);
-                }
-                else {
-                    //console.log(`${tmpfile} not found!`)
-                    error = `${tmpfile} not found!`;
-                }
-            });
-            // Set the results
-            seed.execution.results = results;
+            //console.log(`${tmpfile} not found!`)
+            error = `${tmpfile} not found!`;
         }
-    }
-    catch(e) {
-        error = e + "";
-    }
+    });
+    // Set the results
+    seed.execution.results = results;
 
     // Set the execution status
     seed.execution.status = "SUCCESS";    
@@ -238,6 +263,6 @@ module.exports = async (job: any) => {
         if(!DEVMODE)
             incrementThreadModelFailedRuns(thread_model_id);
         return Promise.reject(new Error(error));
-    }
+    }*/
 
 }

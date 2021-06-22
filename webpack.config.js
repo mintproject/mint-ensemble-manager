@@ -11,7 +11,7 @@ module.exports = {
     },
     entry: {
         execution: './src/classes/localex/seed-execution.ts',
-        slurm_execution: './src/classes/slurm/seed-execution.ts',
+        slurm_execution: './src/classes/slurm/slurm-seed-execution.ts',
         server: './src/server.ts'
     },
     output: {

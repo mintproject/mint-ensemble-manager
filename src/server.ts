@@ -17,7 +17,7 @@ import { getResource } from "./classes/wings/xhr-requests";
 
 import Queue from "bull";
 import { UI, setQueues } from "bull-board";
-import { EXECUTION_QUEUE_NAME, REDIS_URL } from "./config/redis";
+import { LOCAL_EXECUTION_QUEUE_NAME, SLURM_EXECUTION_QUEUE_NAME, REDIS_URL } from "./config/redis";
 import { PORT, VERSION } from "./config/app";
 
 import * as webpack from "webpack";
@@ -58,12 +58,13 @@ app.use(((err, req, res, next) => {
 }) as express.ErrorRequestHandler);
 
 // Setup Bull Queue Dashboard
-let executionQueue = new Queue(EXECUTION_QUEUE_NAME, REDIS_URL);
-setQueues([executionQueue]);
+let localExecutionQueue = new Queue(LOCAL_EXECUTION_QUEUE_NAME, REDIS_URL);
+let slurmExecutionQueue = new Queue(SLURM_EXECUTION_QUEUE_NAME, REDIS_URL);
+setQueues([slurmExecutionQueue, localExecutionQueue]);
 app.use('/admin/queues', UI)
 
 // Express start
-app.listen(port, () => {
+app.listen(port, '127.0.0.1', () => {
     // Serve Swagger UI
     getResource({
         url: 'http://localhost:' + port + '/' + version + '/api-docs',

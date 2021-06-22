@@ -313,11 +313,14 @@ export interface IdMap<T> {
   }
   
   export interface SlurmExecutionPreferences {
+    workdir: string,
     datadir: string,
     dataurl: string,
     logdir: string,
     logurl: string,
-    codedir: string
+    codedir: string,
+    numnodes: number,
+    numcores: number
   }
 
   type ModelCatalogStatus = 'LOADING' | 'DONE' | 'ERROR';
