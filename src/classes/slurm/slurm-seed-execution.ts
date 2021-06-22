@@ -42,6 +42,8 @@ module.exports = async (job: any) => {
     let jobs = [];
     
     seeds.forEach((seed) => {
+        let seedtempdir = fs.mkdtempSync(tempdir + "/temp");
+
         // Only increment submitted runs if this isn't a retry
         if(seed.execution.status != "FAILURE")
             incrementThreadModelSubmittedRuns(thread_model_id);
@@ -52,8 +54,8 @@ module.exports = async (job: any) => {
         let comp: Component = seed.component;
 
         // Copy component run directory to tempdir
-        if (!fs.existsSync(tempdir + "/" + comp.rundir.replace(/.*\//, '')))
-            fs.copySync(comp.rundir, tempdir);
+        if (!fs.existsSync(seedtempdir + "/" + comp.rundir.replace(/.*\//, '')))
+            fs.copySync(comp.rundir, seedtempdir);
 
         // Data/Parameter arguments to the script (will be setup below)        
         let args: string[] = [];
@@ -84,7 +86,7 @@ module.exports = async (job: any) => {
                 datasets.map((ds: DataResource) => {
                     // Copy input files to tempdir
                     let ifile = inputdir + "/" + ds.name;
-                    let newifile = tempdir + "/" + ds.name;
+                    let newifile = seedtempdir + "/" + ds.name;
                     if(!fs.existsSync(newifile)) {
                         fs.symlinkSync(ifile, newifile);
                         //fs.copyFileSync(ifile, newifile);
@@ -140,7 +142,7 @@ module.exports = async (job: any) => {
         let statusCode = 0;
         if (softwareImage != null) {
             let argstr = command + " " + args.join(" ")
-            let fullcmd = `singularity exec docker://${softwareImage} ${argstr}`;
+            let fullcmd = `cd ${seedtempdir} && singularity exec docker://${softwareImage} ${argstr}`;
 
             jobs.push({
                 seed: seed,
@@ -167,6 +169,7 @@ module.exports = async (job: any) => {
 
     slurmfd.write("\nmodule load tacc-singularity\n");
     slurmfd.write("module load launcher\n");
+    slurmfd.write(`export LAUNCHER_PPN=${slurm.numcores}\n`);
     slurmfd.write(`export LAUNCHER_WORKDIR=${tempdir}\n`);
     slurmfd.write(`export LAUNCHER_JOB_FILE=${jobsfile}\n`);
 
