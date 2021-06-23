@@ -320,7 +320,8 @@ export interface IdMap<T> {
     logurl: string,
     codedir: string,
     numnodes: number,
-    numcores: number
+    numcores: number,
+    queue: string
   }
 
   type ModelCatalogStatus = 'LOADING' | 'DONE' | 'ERROR';

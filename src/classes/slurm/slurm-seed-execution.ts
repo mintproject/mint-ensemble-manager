@@ -8,8 +8,6 @@ import { Container } from "dockerode";
 import { DEVMODE } from "../../config/app";
 import { SlurmExecutionPreferences, DataResource, DateRange, Execution } from "../mint/mint-types";
 
-let SLURM_QUEUE = "development";
-
 module.exports = async (job: any) => {
     function sleep(ms) {
         return new Promise((resolve) => {
@@ -164,7 +162,7 @@ module.exports = async (job: any) => {
     slurmfd.write(`#SBATCH -o ${modelname}.%j.out\n`);
     slurmfd.write(`#SBATCH -e ${modelname}.%j.err\n`);
     // Queue Name needs to come from a config file
-    slurmfd.write(`#SBATCH -p ${SLURM_QUEUE}\n`);
+    slurmfd.write(`#SBATCH -p ${slurm.queue}\n`);
     slurmfd.write(`#SBATCH -J launcher\n`); 
     // This information need to come from the model            
     slurmfd.write("#SBATCH -N 1\n");

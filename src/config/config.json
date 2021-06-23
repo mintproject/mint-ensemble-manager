@@ -17,8 +17,9 @@
         "dataurl": "https://data.mint.isi.edu/files/local-execution",
         "logdir": "/tmp/data/storage/mint/data-catalog/production/local-execution/logs",
         "logurl": "https://data.mint.isi.edu/files/local-execution/logs",
+        "queue": "development",
         "numcores": 64,
-        "parallelism": 50
+        "numnodes": 5
     },
     "visualization_url": "https://dev.viz.mint.isi.edu",
     "ingestion_api": "https://node1.ingestion.mint.isi.edu/v1.3.0"    
