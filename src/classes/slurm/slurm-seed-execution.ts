@@ -164,6 +164,7 @@ module.exports = async (job: any) => {
     // Queue Name needs to come from a config file
     slurmfd.write(`#SBATCH -p ${slurm.queue}\n`);
     slurmfd.write(`#SBATCH -J launcher\n`); 
+    
     // This information need to come from the model            
     slurmfd.write("#SBATCH -N 1\n");
     slurmfd.write("#SBATCH -n 1\n");
@@ -191,7 +192,7 @@ module.exports = async (job: any) => {
     let jobId = null;
     let spawnResult = child_process.spawnSync("sbatch", [slurmfile], { cwd: tempdir });
     String(spawnResult.stdout).split("\n").forEach((spawnStr) => {
-        let arr = spawnStr.match(/"Submitted batch job (\d+)"/);
+        let arr = spawnStr.match(/Submitted batch job (\d+)/);
         if(arr) {
             jobId = arr[1];
         }
@@ -201,7 +202,8 @@ module.exports = async (job: any) => {
         return Promise.reject(new Error("Could not submit job: "+ String(spawnResult.stdout)));
     }
 
-    incrementThreadModelSubmittedRuns(thread_model_id, numSubmission);
+    if(!DEVMODE)
+        incrementThreadModelSubmittedRuns(thread_model_id, numSubmission);
     
     // Poll and wait for the job to finish
     let jobDone = false;
@@ -209,7 +211,7 @@ module.exports = async (job: any) => {
         let queueResult = child_process.spawnSync("squeue", ["-j", jobId]);
         let lines = String(queueResult.stdout).split("\n");
         if (lines.length > 1) {
-            let arr = lines[1].match(/"^\s*(\d+)\s*"/);
+            let arr = lines[1].match(/^\s*(\d+)\s*/);
             if(arr) {
                 if(arr[1] == jobId) {
                     // Still ongoing
