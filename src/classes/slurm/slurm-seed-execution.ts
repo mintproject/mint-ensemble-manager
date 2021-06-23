@@ -40,13 +40,15 @@ module.exports = async (job: any) => {
 
     // Create jobs for all the seeds
     let jobs = [];
+
+    let numSubmission = 0;
     
     seeds.forEach((seed) => {
         let seedtempdir = fs.mkdtempSync(tempdir + "/temp");
 
         // Only increment submitted runs if this isn't a retry
         if(seed.execution.status != "FAILURE")
-            incrementThreadModelSubmittedRuns(thread_model_id);
+            numSubmission += 1;
 
         seed.execution.start_time = new Date();
         seed.execution.execution_engine = "slurm";
@@ -147,7 +149,9 @@ module.exports = async (job: any) => {
             jobs.push({
                 seed: seed,
                 command: fullcmd,
-                log: logstdout
+                logfile: logstdout,
+                jobdir: seedtempdir,
+                results: results
             })
         }
     });
@@ -178,7 +182,7 @@ module.exports = async (job: any) => {
 
     let jobsfd = fs.createWriteStream(jobsfile);
     jobs.forEach((job) => {
-        jobsfd.write(job.command+"\n");
+        jobsfd.write(`${job.command} >> ${job.logfile}\n`);
     })
     jobsfd.close();
     
@@ -189,83 +193,93 @@ module.exports = async (job: any) => {
     let jobId = null;
     let spawnResult = child_process.spawnSync("sbatch", [slurmfile], { cwd: tempdir });
     String(spawnResult.stdout).split("\n").forEach((spawnStr) => {
-        console.log(spawnStr);
         let arr = spawnStr.match(/"Submitted batch job (\d+)"/);
         if(arr) {
             jobId = arr[1];
         }
     });
 
-    return;
+    if(!jobId) {
+        return Promise.reject(new Error("Could not submit job: "+ String(spawnResult.stdout)));
+    }
+
+    incrementThreadModelSubmittedRuns(thread_model_id, numSubmission);
     
-    if(jobId) {
-        // Poll and Check for job finishing
-        let jobDone = false;
-        while (!jobDone) {
-            let queueResult = child_process.spawnSync("squeue", ["-j", jobId]);
-            let lines = String(queueResult.stdout).split("\n");
-            if (lines.length > 1) {
-                let arr = lines[1].match(/"^\s*(\d+)\s*"/);
-                if(arr) {
-                    if(arr[1] == jobId) {
-                        // Still ongoing
-                        jobDone = false;
-                    }
+    // Poll and wait for the job to finish
+    let jobDone = false;
+    while (!jobDone) {
+        let queueResult = child_process.spawnSync("squeue", ["-j", jobId]);
+        let lines = String(queueResult.stdout).split("\n");
+        if (lines.length > 1) {
+            let arr = lines[1].match(/"^\s*(\d+)\s*"/);
+            if(arr) {
+                if(arr[1] == jobId) {
+                    // Still ongoing
+                    jobDone = false;
                 }
             }
-            else {
-                jobDone = true;
-                break;
-            }
-            await sleep(10000);
-        }
-    }
-
-    /*
-
-    // Check results (output files)
-    // - Copy output files from tempdir to output dir
-    // - Mark an error if any output file is missing
-    Object.values(results).map((result: DataResource) => {
-        var tmpfile = tempdir + "/" + result.name;
-        if (fs.existsSync(tmpfile)) {
-            let opfilepath = outputdir + "/" + result.name;
-            fs.copyFileSync(tmpfile, opfilepath);
         }
         else {
-            //console.log(`${tmpfile} not found!`)
-            error = `${tmpfile} not found!`;
+            jobDone = true;
+            break;
         }
-    });
-    // Set the results
-    seed.execution.results = results;
-
-    // Set the execution status
-    seed.execution.status = "SUCCESS";    
-    seed.execution.end_time = new Date();
-    seed.execution.run_progress = 1;
-    if(error) {
-        seed.execution.status = "FAILURE";
+        await sleep(30000); // Wait 30 seconds between checks
     }
 
-    // Remove temporary directory
-    fs.remove(tempdir);
+    if(jobDone) {
+        let numSuccessful = 0;
+        let numFailed = 0;
+        let successfulExecutions = [];
 
-    // Update execution status and results in backend
-    if(!DEVMODE) {
-        updateExecutionStatusAndResults(seed.execution);
+        jobs.forEach((job) => {
+            let seed = job.seed;
+            let results = job.results;
+            let jobdir = job.jobdir;
+            Object.values(results).map((result: DataResource) => {
+                var tmpfile = jobdir + "/" + result.name;
+                if (fs.existsSync(tmpfile)) {
+                    let opfilepath = outputdir + "/" + result.name;
+                    fs.copyFileSync(tmpfile, opfilepath);
+                }
+                else {
+                    //console.log(`${tmpfile} not found!`)
+                    error = `${tmpfile} not found!`;
+                }
+            });
+            // Set the results
+            seed.execution.results = results;
+
+            // Set the execution status
+            seed.execution.status = "SUCCESS";    
+            seed.execution.end_time = new Date();
+            seed.execution.run_progress = 1;
+            if(error) {
+                seed.execution.status = "FAILURE";
+                numFailed += 1;
+            }
+            else {
+                numSuccessful += 1;
+                successfulExecutions.push(seed.execution);
+            }
+        
+            // Remove temporary job directory
+            fs.remove(jobdir);
+        
+            // Update execution status and results in backend
+            if(!DEVMODE) {
+                updateExecutionStatusAndResults(seed.execution);
+            }
+        });
+        // Return job execution or error
+        if(numSuccessful > 0) {
+            if(!DEVMODE)
+                incrementThreadModelSuccessfulRuns(thread_model_id, numSuccessful);
+            
+        }
+        if(numFailed > 0) {
+            if(!DEVMODE)
+                incrementThreadModelFailedRuns(thread_model_id, numFailed);
+        }       
+        return Promise.resolve(successfulExecutions);
     }
-
-    // Return job execution or error
-    if(seed.execution.status == "SUCCESS") {
-        if(!DEVMODE)
-            incrementThreadModelSuccessfulRuns(thread_model_id);
-        return Promise.resolve(seed.execution);
-    }
-    else {
-        if(!DEVMODE)
-            incrementThreadModelFailedRuns(thread_model_id);
-        return Promise.reject(new Error(error));
-    }*/
-
 }
