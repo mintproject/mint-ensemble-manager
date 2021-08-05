@@ -221,15 +221,19 @@ module.exports = async (job: any) => {
             Object.values(results).map((result: any) => {
                 result.name = result.role
                 if (result.role in cwl_outputs){
+                    //TODO: this assumes one resource per output FIXIT
                     let outputs = cwl_outputs[result.role].map((file: any) => {
+                        let output_suffix_cwl = Md5.hashAsciiStr(seed.execution.modelid + plainargs.join());
+                        let output_directory = outputdir + '/' + output_suffix_cwl;
+                        fs.mkdirSync(output_directory)
                         let tmpfile = file['path']
                         if (fs.existsSync(tmpfile)) {
-                            fs.copyFileSync(tmpfile, outputdir + '/' + file['basename']);
+                            fs.copyFileSync(tmpfile, output_directory + '/' + file['basename']);
                         }
                         let url =  tmpfile.replace(localex.datadir, localex.dataurl);
                         return url
                     })
-                    result.url = outputs;
+                    result.url =  (outputs.length > 1)? outputs[0] : "n/a";
                 } else {
                     result.url = 'N/A';
                 }
@@ -270,7 +274,6 @@ module.exports = async (job: any) => {
 
     // Remove temporary directory
     fs.remove(tempdir)
-
     // Update execution status and results in backend
     if(!DEVMODE) {
         updateExecutionStatusAndResults(seed.execution);
