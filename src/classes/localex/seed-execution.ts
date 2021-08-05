@@ -126,7 +126,6 @@ module.exports = async (job: any) => {
         let cwl_file = comp.rundir + "/run.cwl";
         console.log(cwl_file)
         let cwl_outputs: any = {}
-        let cwl_output_json_file = tempdir + "/.cwl_output.json"
 
         if (fs.existsSync(cwl_file)) {
             console.log("Running cwl:" )
@@ -227,7 +226,6 @@ module.exports = async (job: any) => {
                         if (fs.existsSync(tmpfile)) {
                             fs.copyFileSync(tmpfile, outputdir + '/' + file['basename']);
                         }
-                        
                         let url =  tmpfile.replace(localex.datadir, localex.dataurl);
                         return url
                     })
@@ -271,7 +269,7 @@ module.exports = async (job: any) => {
     }
 
     // Remove temporary directory
-    fs.remove(tempdir);
+    fs.remove(tempdir)
 
     // Update execution status and results in backend
     if(!DEVMODE) {
@@ -301,9 +299,7 @@ const write_cwl_values = (comp: Component, seed: any, inputdir: string,
     }
     let data : Record<string, string | CwlValueFile> = {}
     comp.inputs.map((input: any) => {
-        console.log("Mapping")
         if (input.isParam) {
-            
             //let paramtype = seed.paramtypes[input.role];
             let paramvalue = seed.parameters[input.id];
             if (!paramvalue)
@@ -321,6 +317,7 @@ const write_cwl_values = (comp: Component, seed: any, inputdir: string,
                 fs.copyFileSync(ifile, newifile);
                 data[input.role] = {"class": "File", "location": newifile}
             });
+            console.log(datasets)
         }
     })
 
