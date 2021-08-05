@@ -225,11 +225,12 @@ module.exports = async (job: any) => {
                     let outputs = cwl_outputs[result.role].map((file: any) => {
                         let output_suffix_cwl = Md5.hashAsciiStr(seed.execution.modelid + plainargs.join());
                         let output_directory = outputdir + '/' + output_suffix_cwl;
+                        let output_file = output_directory + '/' + file['basename'];
                         let tmpfile = file['path']
                         if (fs.existsSync(tmpfile)) {
-                            fs.copyFileSync(tmpfile, output_directory + '/' + file['basename']);
+                            fs.copyFileSync(tmpfile, output_file);
                         }
-                        let url =  tmpfile.replace(localex.datadir, localex.dataurl);
+                        let url =  output_file.replace(localex.datadir, localex.dataurl);
                         return url
                     })
                     result.url =  (outputs.length > 1)? outputs[0] : "n/a";
