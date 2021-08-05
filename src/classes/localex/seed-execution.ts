@@ -310,12 +310,7 @@ const write_cwl_values = (comp: Component, seed: any, inputdir: string,
             let datasets = seed.datasets[input.id];
             datasets.map((ds: string) => {
                 // Copy input files to tempdir
-                let ifile = inputdir + "/" + ds['name'];
-                let newifile = tempdir + "/" + ds['name'];
-                console.log(newifile)
-                //fs.symlinkSync(ifile, newifile);
-                fs.copyFileSync(ifile, newifile);
-                data[input.role] = {"class": "File", "location": newifile}
+                data[input.role] = {"class": "File", "location": ds["url"]}
             });
             console.log(datasets)
         }
