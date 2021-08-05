@@ -225,6 +225,9 @@ module.exports = async (job: any) => {
                     let outputs = cwl_outputs[result.role].map((file: any) => {
                         let output_suffix_cwl = Md5.hashAsciiStr(seed.execution.modelid + plainargs.join());
                         let output_directory = outputdir + '/' + output_suffix_cwl;
+                        if (!fs.existsSync(output_directory)){
+                            fs.mkdirSync(output_directory)
+                        }
                         let output_file = output_directory + '/' + file['basename'];
                         let tmpfile = file['path']
                         if (fs.existsSync(tmpfile)) {
