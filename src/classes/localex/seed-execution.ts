@@ -236,10 +236,7 @@ module.exports = async (job: any) => {
                         let url =  output_file.replace(localex.datadir, localex.dataurl);
                         return url
                     })
-                    result.url =  (outputs.length > 1)? outputs[0] : "n/a";
-                } else {
-                    result.url = 'N/A';
-                }
+                } 
             });
             // Set the results
             seed.execution.results = results;
