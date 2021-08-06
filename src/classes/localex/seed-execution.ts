@@ -237,6 +237,8 @@ module.exports = async (job: any) => {
                             console.log("copy the outputs " + output_file )
                         }
                         let url =  output_file.replace(localex.datadir, localex.dataurl);
+                        console.log("the url is going to be" + url)
+                        result.url = url;
                         return url
                     })
                 } 
