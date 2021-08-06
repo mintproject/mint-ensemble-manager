@@ -230,8 +230,11 @@ module.exports = async (job: any) => {
                         }
                         let output_file = output_directory + '/' + file['basename'];
                         let tmpfile = file['path']
+
+                        console.log("the temporal file " + tmpfile )
                         if (fs.existsSync(tmpfile)) {
                             fs.copyFileSync(tmpfile, output_file);
+                            console.log("copy the outputs " + output_file )
                         }
                         let url =  output_file.replace(localex.datadir, localex.dataurl);
                         return url
