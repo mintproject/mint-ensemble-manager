@@ -129,16 +129,19 @@ const _downloadWCM = async (url: string, prefs: MintPreferences) => {
     let extension = path.extname(component_file)
     let compname = path.basename(component_file, extension)
 
-    let codedir = prefs.localex.codedir + "/" + hashdir;
+    let codedir = path.join(prefs.localex.codedir, hashdir);
     if(!fs.existsSync(codedir))
         fs.mkdirsSync(codedir);
 
-    let modeldir = codedir + "/" + compname;
-    let src_dir = modeldir + "/" + "src"
+    let modeldir = path.join(codedir, compname);
+    let src_dir = path.join(modeldir, "src")
     if (!fs.existsSync(src_dir)) {
-        if (extension == ".zip")
+        if (extension == ".zip"){
+            console.log("Downloading %s into %s",url, modeldir)
             await _downloadAndUnzipToDirectory(url, modeldir, compname);
+        }
         else if (extension == ".cwl"){
+		    console.log("Downloading %s into %s",url, modeldir)
             if(!fs.existsSync(modeldir))
                 fs.mkdirSync(modeldir)
             fs.mkdirSync(src_dir)
