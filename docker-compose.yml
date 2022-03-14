@@ -3,7 +3,7 @@ services:
   redis:
     image: redis
     ports:
-      - "26379:6379"
+      - "6379:6379"
   ensemble-manager:
     build: .
     image: mintproject/ensemble-manager
