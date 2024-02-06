@@ -1,5 +1,9 @@
-# Prettier configuration
-printWidth: 160
+printWidth: 100
 tabWidth: 4
-singleQuote: false
-trailingComma: "all"
+singleQuote: true
+semi: true
+jsxSingleQuote: true
+quoteProps: as-needed
+trailingComma: none
+bracketSpacing: true
+bracketSameLine: false
