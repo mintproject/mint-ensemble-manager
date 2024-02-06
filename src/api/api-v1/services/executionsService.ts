@@ -7,13 +7,14 @@ import { createResponse } from "./util";
 const executionsService = {
     async submitExecution(threadmodel: any) {
         let thread: Thread = await getThread(threadmodel.thread_id); //.then((thread: Thread) => {
-        if(thread) {
+        if (thread) {
             let mint_prefs = await fetchMintConfig();
             saveAndRunExecutions(thread, threadmodel.model_id, mint_prefs);
-            return createResponse("success",
-                "Thread " + threadmodel.thread_id + " submitted for execution !");
-        }
-        else {
+            return createResponse(
+                "success",
+                "Thread " + threadmodel.thread_id + " submitted for execution !"
+            );
+        } else {
             return createResponse("failure", "Thread " + threadmodel.thread_id + " not found !");
         }
     }

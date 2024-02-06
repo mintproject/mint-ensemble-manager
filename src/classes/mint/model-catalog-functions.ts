@@ -1,16 +1,18 @@
 import { Model, MintPreferences, ModelIO, Dataset, ModelParameter, Dataslice } from "./mint-types";
 import * as rp from "request-promise-native";
-import { ModelConfigurationSetup } from '@mintproject/modelcatalog_client';
+import { ModelConfigurationSetup } from "@mintproject/modelcatalog_client";
 import { GraphQL } from "../../config/graphql";
-import { KeycloakAdapter } from '../../config/keycloak-adapter';
+import { KeycloakAdapter } from "../../config/keycloak-adapter";
 
-// Query Model Catalog By Variables, 
+// Query Model Catalog By Variables,
 // - Filter by driving variables and model id/name (match with calibration)
 // - Return only 1 model
-export const fetchModelFromCatalog = (response_variables: string[], 
-        driving_variables: string[], modelid: string,
-        prefs: MintPreferences) : Promise<ModelConfigurationSetup> => {
-
+export const fetchModelFromCatalog = (
+    response_variables: string[],
+    driving_variables: string[],
+    modelid: string,
+    prefs: MintPreferences
+): Promise<ModelConfigurationSetup> => {
     let username = KeycloakAdapter.getUser().email;
     return new Promise<any>((resolve, reject) => {
         rp.get({
@@ -19,27 +21,30 @@ export const fetchModelFromCatalog = (response_variables: string[],
             json: true
         }).then((setups) => {
             let found = false;
-            for(var i=0; i<setups.length; i++) {
+            for (var i = 0; i < setups.length; i++) {
                 let calib = setups[i] as ModelConfigurationSetup;
-                let calibid : string = calib.id;
-                let calibname = calibid.replace(/.*\//, '');
+                let calibid: string = calib.id;
+                let calibname = calibid.replace(/.*\//, "");
                 if (calibname == modelid) {
                     // Match !
                     found = true;
                     console.log("We found a matching model: " + calibid + ". Get details");
                     rp.get({
-                        url: prefs.model_catalog_api + "custom/modelconfigurationsetups/"+calibname,
+                        url:
+                            prefs.model_catalog_api +
+                            "custom/modelconfigurationsetups/" +
+                            calibname,
                         qs: { username: username },
                         json: true
                     }).then((setup) => {
                         resolve(setup);
-                    })                    
+                    });
                     break; // Return only 1 match
                 }
             }
-            if(!found) {
+            if (!found) {
                 reject();
             }
-        })
+        });
     });
 };

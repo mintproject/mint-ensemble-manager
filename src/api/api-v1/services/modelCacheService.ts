@@ -10,20 +10,17 @@ const modelCacheService = {
     async deleteModel(model_id: string) {
         try {
             let prefs = await fetchMintConfig();
-            KeycloakAdapter.signIn(prefs.graphql.username, prefs.graphql.password)
+            KeycloakAdapter.signIn(prefs.graphql.username, prefs.graphql.password);
 
             let model = await getModel(model_id);
             if (model) {
                 deleteModelCache(model, prefs);
 
-                return createResponse("success",
-                        "Model " + model_id + " model cache deleted !");
-            }
-            else {
+                return createResponse("success", "Model " + model_id + " model cache deleted !");
+            } else {
                 return createResponse("failure", "Model " + model_id + " not found !");
             }
-        }
-        catch (error) {
+        } catch (error) {
             console.log(error);
             return createResponse("failure", error);
         }

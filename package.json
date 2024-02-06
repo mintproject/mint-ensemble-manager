@@ -10,7 +10,7 @@
         "lint-staged": "lint-staged",
         "eslint:fix": "eslint --quiet --fix",
         "prettier:fix": "prettier --write --ignore-unknown",
-        "prepare": "husky"
+        "prepare": "husky && husky install"
     },
     "nodemonConfig": {
         "ignore": [
@@ -26,12 +26,8 @@
         "ext": "ts"
     },
     "lint-staged": {
-        "*.{js,jsx,ts,tsx}": [
-            "eslint --quiet --fix",
-            "prettier --write --ignore-unknown"
-        ],
-        "*.{json,html}": [
-            "prettier --write --ignore-unknown"
+        "src/*.ts": [
+            "prettier --write"
         ]
     },
     "keywords": [],
@@ -95,7 +91,7 @@
         "eslint": "^8.0.0",
         "eslint-config-prettier": "^9.1.0",
         "eslint-plugin-import": "^2.18.2",
-        "husky": "^9.0.10",
+        "husky": "^8.0.0",
         "lint-staged": "^15.2.2",
         "nodemon": "^2.0.20",
         "prettier": "^3.2.5",
