@@ -18,14 +18,14 @@ import {
 } from "./wings-types";
 
 export const loginToWings = async (config: MintPreferences): Promise<void> => {
-    let config_wings = config.wings;
+    const config_wings = config.wings;
     return new Promise<void>((resolve, reject) => {
         getResource({
             url: config_wings.server + "/login",
             onLoad: function (e: any) {
-                var txt = e.target.responseText;
+                const txt = e.target.responseText;
                 if (txt.match(/j_security_check/)) {
-                    var data = {
+                    const data = {
                         j_username: config_wings.username,
                         j_password: config_wings.password
                     };
@@ -37,7 +37,7 @@ export const loginToWings = async (config: MintPreferences): Promise<void> => {
                                     // Try to access the login page again
                                     url: config_wings.server + "/login",
                                     onLoad: function (e3: any) {
-                                        var txt2 = e2.target.responseText;
+                                        const txt2 = e2.target.responseText;
                                         if (txt2.match(/j_security_check/)) {
                                             reject();
                                         } else {
@@ -57,11 +57,11 @@ export const loginToWings = async (config: MintPreferences): Promise<void> => {
                                 getResource({
                                     url: config_wings.server + "/login",
                                     onLoad: function (e2: any) {
-                                        var match = /USER_ID\s*=\s*"(.+)"\s*;/.exec(
+                                        const match = /USER_ID\s*=\s*"(.+)"\s*;/.exec(
                                             e2.target.responseText
                                         );
                                         if (match) {
-                                            let userid = match[1];
+                                            const userid = match[1];
                                             resolve();
                                             //console.log("Logged in as " + userid + " !");
                                         }
@@ -76,9 +76,9 @@ export const loginToWings = async (config: MintPreferences): Promise<void> => {
                         true
                     );
                 } else {
-                    var match = /USER_ID\s*=\s*"(.+)"\s*;/.exec(txt);
+                    const match = /USER_ID\s*=\s*"(.+)"\s*;/.exec(txt);
                     if (match) {
-                        let userid = match[1];
+                        const userid = match[1];
                         resolve();
                         //console.log("Already Logged in as " + userid + " !");
                     }
@@ -96,22 +96,22 @@ export const fetchWingsComponent = async (
     cname: string,
     config: MintPreferences
 ): Promise<WingsComponent> => {
-    let config_wings = config.wings;
+    const config_wings = config.wings;
     return new Promise<WingsComponent>((resolve, reject) => {
-        var purl =
+        const purl =
             config_wings.server + "/users/" + config_wings.username + "/" + config_wings.domain;
-        var exurl =
+        const exurl =
             config_wings.export_url +
             "/export/users/" +
             config_wings.username +
             "/" +
             config_wings.domain;
-        var cid = exurl + "/components/library.owl#" + cname;
+        const cid = exurl + "/components/library.owl#" + cname;
 
         getResource({
             url: purl + "/components/getComponentJSON?cid=" + escape(cid),
             onLoad: function (e: any) {
-                let comp = JSON.parse(e.target.responseText) as WingsComponent;
+                const comp = JSON.parse(e.target.responseText) as WingsComponent;
                 resolve(comp);
             },
             onError: function (e: any) {
@@ -122,7 +122,7 @@ export const fetchWingsComponent = async (
 };
 
 export const logoutFromWings = async (config: MintPreferences): Promise<void> => {
-    let config_wings = config.wings;
+    const config_wings = config.wings;
     return new Promise<void>((resolve, reject) => {
         getResource({
             url: config_wings.server + "/jsp/login/logout.jsp",
@@ -139,14 +139,14 @@ export const logoutFromWings = async (config: MintPreferences): Promise<void> =>
 };
 
 export const fetchWingsTemplatesList = async (config: MintPreferences): Promise<string[]> => {
-    let config_wings = config.wings;
+    const config_wings = config.wings;
     return new Promise<string[]>((resolve, reject) => {
-        var purl =
+        const purl =
             config_wings.server + "/users/" + config_wings.username + "/" + config_wings.domain;
         getResource({
             url: purl + "/workflows/getTemplatesListJSON",
             onLoad: function (e: any) {
-                let list = JSON.parse(e.target.responseText);
+                const list = JSON.parse(e.target.responseText);
                 resolve(list);
             },
             onError: function (e: any) {
@@ -160,9 +160,9 @@ export const fetchWingsTemplate = async (
     tid: string,
     config: MintPreferences
 ): Promise<WingsTemplatePackage> => {
-    let config_wings = config.wings;
+    const config_wings = config.wings;
     return new Promise<WingsTemplatePackage>((resolve, reject) => {
-        var purl =
+        const purl =
             config_wings.server + "/users/" + config_wings.username + "/" + config_wings.domain;
         //var exurl = config_wings.export_url + "/export/users/" + config_wings.username + "/" + config_wings.domain;
         //var tid = exurl + "/workflows/" + tname + ".owl#" + tname;
@@ -170,7 +170,7 @@ export const fetchWingsTemplate = async (
         getResource({
             url: purl + "/workflows/getEditorJSON?template_id=" + escape(tid),
             onLoad: function (e: any) {
-                let tpl = JSON.parse(e.target.responseText) as WingsTemplatePackage;
+                const tpl = JSON.parse(e.target.responseText) as WingsTemplatePackage;
                 resolve(tpl);
             },
             onError: function (e: any) {
@@ -187,12 +187,12 @@ export const saveWingsTemplate = async (
     //TODO: Get a MD5 Hash for template to check if it is already saved.
     // - To avoid cluttering up template library
 
-    let config_wings = config.wings;
+    const config_wings = config.wings;
     // Get url prefix for operations
     return new Promise<void>((resolve, reject) => {
-        var purl =
+        const purl =
             config_wings.server + "/users/" + config_wings.username + "/" + config_wings.domain;
-        var data = {
+        const data = {
             template_id: tpl.template.id,
             constraints_json: JSON.stringify(tpl.constraints),
             json: JSON.stringify(tpl.template)
@@ -217,16 +217,16 @@ export const layoutWingsTemplate = async (
     tpl: WingsTemplate,
     config: MintPreferences
 ): Promise<WingsTemplatePackage> => {
-    let config_wings = config.wings;
+    const config_wings = config.wings;
     return new Promise<WingsTemplatePackage>((resolve, reject) => {
         // Get url prefix for operations
-        var purl =
+        const purl =
             config_wings.server + "/users/" + config_wings.username + "/" + config_wings.domain;
         postJSONResource(
             {
                 url: purl + "/workflows/layoutTemplate",
                 onLoad: function (e: any) {
-                    var ntpl = JSON.parse(e.target.responseText) as WingsTemplatePackage;
+                    const ntpl = JSON.parse(e.target.responseText) as WingsTemplatePackage;
                     resolve(ntpl);
                 },
                 onError: function () {
@@ -242,12 +242,12 @@ export const elaborateWingsTemplate = async (
     tpl: WingsTemplatePackage,
     config: MintPreferences
 ): Promise<WingsTemplate> => {
-    let config_wings = config.wings;
+    const config_wings = config.wings;
     return new Promise<WingsTemplate>((resolve, reject) => {
         // Get url prefix for operations
-        var purl =
+        const purl =
             config_wings.server + "/users/" + config_wings.username + "/" + config_wings.domain;
-        var data = {
+        const data = {
             template_id: tpl.template.id,
             constraints_json: JSON.stringify(tpl.constraints),
             json: JSON.stringify(tpl.template)
@@ -256,7 +256,7 @@ export const elaborateWingsTemplate = async (
             {
                 url: purl + "/plan/elaborateTemplateJSON",
                 onLoad: function (e: any) {
-                    var ntpl = JSON.parse(e.target.responseText) as WingsTemplate;
+                    const ntpl = JSON.parse(e.target.responseText) as WingsTemplate;
                     resolve(ntpl);
                 },
                 onError: function () {
@@ -270,9 +270,9 @@ export const elaborateWingsTemplate = async (
 };
 
 const _getComponentBindings = (tpl: WingsTemplatePackage) => {
-    var cbindings = {} as any;
-    for (var nid in tpl.template.Nodes) {
-        var c = tpl.template.Nodes[nid].componentVariable;
+    const cbindings = {} as any;
+    for (const nid in tpl.template.Nodes) {
+        const c = tpl.template.Nodes[nid].componentVariable;
         cbindings[c.id] = c.binding.id;
     }
     return cbindings;
@@ -285,12 +285,12 @@ export const expandAndRunWingsWorkflow = async (
     parameterTypes: WingsParameterBindings,
     config: MintPreferences
 ): Promise<string> => {
-    let config_wings = config.wings;
+    const config_wings = config.wings;
     return new Promise<string>((resolve, reject) => {
         // Get url prefix for operations
-        var purl =
+        const purl =
             config_wings.server + "/users/" + config_wings.username + "/" + config_wings.domain;
-        var data = {
+        const data = {
             templateId: tpl.template.id,
             parameterBindings: parameterBindings,
             parameterTypes: parameterTypes,
@@ -301,7 +301,7 @@ export const expandAndRunWingsWorkflow = async (
             {
                 url: purl + "/executions/expandAndRunWorkflow",
                 onLoad: function (e: any) {
-                    var runid = e.target.responseText;
+                    const runid = e.target.responseText;
                     if (runid) {
                         resolve(runid);
                     } else {
@@ -325,7 +325,7 @@ export const fetchWingsRunsStatuses = (
 ): Promise<Map<string, any>> => {
     return new Promise<Map<string, any>>((resolve, reject) => {
         let statuses = {} as Map<string, any>;
-        let promises = [];
+        const promises = [];
         for (let i = 0; i < total_runs; i += 500) {
             promises.push(_fetchWingsRunsStatuses(template_name, start_time, i, 500, config));
         }
@@ -345,9 +345,9 @@ const _fetchWingsRunsStatuses = (
     limit: number,
     config: MintPreferences
 ): Promise<Map<string, any>> => {
-    let config_wings = config.wings;
+    const config_wings = config.wings;
     return new Promise<Map<string, any>>((resolve, reject) => {
-        var purl =
+        const purl =
             config_wings.server + "/users/" + config_wings.username + "/" + config_wings.domain;
         getResource({
             url:
@@ -361,12 +361,12 @@ const _fetchWingsRunsStatuses = (
                 "&sort=startTime&dir=ASC&started_after=" +
                 start_time,
             onLoad: function (e: any) {
-                let runsjson = JSON.parse(e.target.responseText);
+                const runsjson = JSON.parse(e.target.responseText);
                 if (runsjson.success) {
-                    let statuses: any = {};
-                    let runslist: any[] = runsjson.rows;
+                    const statuses: any = {};
+                    const runslist: any[] = runsjson.rows;
                     runslist.map((runjson) => {
-                        let runid = runjson.id;
+                        const runid = runjson.id;
                         statuses[runid] = runjson.runtimeInfo;
                     });
                     resolve(statuses);
@@ -383,26 +383,26 @@ export const fetchWingsRunResults = (
     execution: Execution,
     config: MintPreferences
 ): Promise<any> => {
-    let config_wings = config.wings;
+    const config_wings = config.wings;
     return new Promise<any>((resolve, reject) => {
-        var purl =
+        const purl =
             config_wings.server + "/users/" + config_wings.username + "/" + config_wings.domain;
         if (!execution.runid) {
             reject();
             return;
         }
 
-        let data = {
+        const data = {
             run_id: execution.runid
         };
         postFormResource(
             {
                 url: purl + "/executions/getRunPlan",
                 onLoad: function (e: any) {
-                    let ex = JSON.parse(e.target.responseText);
+                    const ex = JSON.parse(e.target.responseText);
                     if (execution.status == "SUCCESS") {
                         // Look for outputs that aren't inputs to any other steps
-                        let outputfiles: any = {};
+                        const outputfiles: any = {};
                         ex.plan.steps.map((step: any) => {
                             step.outputFiles.map((file: any) => {
                                 outputfiles[file.id] = file;
@@ -427,11 +427,11 @@ export const fetchWingsRunResults = (
 };
 
 export const fetchWingsRunLog = (runid: string, config: MintPreferences): Promise<any> => {
-    let config_wings = config.wings;
+    const config_wings = config.wings;
     return new Promise<any>((resolve, reject) => {
-        var purl =
+        const purl =
             config_wings.server + "/users/" + config_wings.username + "/" + config_wings.domain;
-        let data = {
+        const data = {
             run_id: runid
         };
         postFormResource(
@@ -439,8 +439,8 @@ export const fetchWingsRunLog = (runid: string, config: MintPreferences): Promis
                 url: purl + "/executions/getRunDetails",
                 onLoad: function (e: any) {
                     try {
-                        let response = JSON.parse(e.target.responseText);
-                        let ex = response.execution;
+                        const response = JSON.parse(e.target.responseText);
+                        const ex = response.execution;
                         let log = ex.runtimeInfo.log;
                         log += "\n----------------------------------------------\n";
                         ex.queue.steps.map((step: any) => {
@@ -467,28 +467,28 @@ export const createSingleComponentTemplate = (
     comp: WingsComponent,
     config: MintPreferences
 ): WingsTemplate => {
-    let config_wings = config.wings;
-    var cname = comp.id.replace(/^.+#/, "");
-    var exurl =
+    const config_wings = config.wings;
+    const cname = comp.id.replace(/^.+#/, "");
+    const exurl =
         config_wings.export_url +
         "/export/users/" +
         config_wings.username +
         "/" +
         config_wings.domain;
-    var tname = "workflow_" + cname;
-    var tns = exurl + "/workflows/" + tname + ".owl#";
-    var tid = tns + tname;
+    const tname = "workflow_" + cname;
+    const tns = exurl + "/workflows/" + tname + ".owl#";
+    const tid = tns + tname;
 
-    var storage = config_wings.storage;
-    var dotpath = config_wings.dotpath;
-    var ontpfx = config_wings.onturl;
+    const storage = config_wings.storage;
+    const dotpath = config_wings.dotpath;
+    const ontpfx = config_wings.onturl;
 
-    var clibns = exurl + "/components/library.owl#";
-    var usfx = "/users/" + config_wings.username + "/" + config_wings.domain;
-    var purl = config_wings.server + usfx;
-    var pdir = storage + usfx;
+    const clibns = exurl + "/components/library.owl#";
+    const usfx = "/users/" + config_wings.username + "/" + config_wings.domain;
+    const purl = config_wings.server + usfx;
+    const pdir = storage + usfx;
 
-    let tpl: WingsTemplate = {
+    const tpl: WingsTemplate = {
         id: tid,
         Nodes: {},
         Links: {},
@@ -531,12 +531,12 @@ export const createSingleComponentTemplate = (
         }
     };
 
-    let nodeid = tns + cname + "_node";
-    let inputPorts: IdMap<WingsPort> = {};
-    let outputPorts: IdMap<WingsPort> = {};
+    const nodeid = tns + cname + "_node";
+    const inputPorts: IdMap<WingsPort> = {};
+    const outputPorts: IdMap<WingsPort> = {};
 
     comp.inputs.map((arg) => {
-        let portid = nodeid + "_" + arg.role;
+        const portid = nodeid + "_" + arg.role;
         inputPorts[portid] = {
             id: portid,
             role: {
@@ -546,7 +546,7 @@ export const createSingleComponentTemplate = (
                 id: portid + "_role"
             } as WingsPortRole
         };
-        let varid = tns + arg.role;
+        const varid = tns + arg.role;
         tpl.Variables[varid] = {
             id: varid,
             type: arg.isParam ? 2 : 1
@@ -559,7 +559,7 @@ export const createSingleComponentTemplate = (
             id: varid + "_trole"
         };
 
-        let linkid = portid + "_input";
+        const linkid = portid + "_input";
         tpl.Links[linkid] = {
             id: linkid,
             toNode: { id: nodeid },
@@ -568,7 +568,7 @@ export const createSingleComponentTemplate = (
         };
     });
     comp.outputs.map((arg) => {
-        let portid = nodeid + "_" + arg.role;
+        const portid = nodeid + "_" + arg.role;
         outputPorts[portid] = {
             id: portid,
             role: {
@@ -578,7 +578,7 @@ export const createSingleComponentTemplate = (
                 id: portid + "_role"
             } as WingsPortRole
         };
-        let varid = tns + arg.role;
+        const varid = tns + arg.role;
         tpl.Variables[varid] = {
             id: varid,
             type: arg.isParam ? 2 : 1
@@ -591,7 +591,7 @@ export const createSingleComponentTemplate = (
             id: varid + "_trole"
         };
 
-        let linkid = portid + "_output";
+        const linkid = portid + "_output";
         tpl.Links[linkid] = {
             id: linkid,
             fromNode: { id: nodeid },
@@ -600,7 +600,7 @@ export const createSingleComponentTemplate = (
         };
     });
 
-    let node: WingsNode = {
+    const node: WingsNode = {
         id: nodeid,
         componentVariable: {
             id: nodeid + "_comp",
@@ -631,8 +631,8 @@ export const registerWingsComponent = async (
     uri: string,
     config: MintPreferences
 ): Promise<string> => {
-    let config_wings = config.wings;
-    let data = {
+    const config_wings = config.wings;
+    const data = {
         id: name,
         model_catalog_uri: uri,
         wings_instance: {
@@ -648,7 +648,7 @@ export const registerWingsComponent = async (
             {
                 url: config.wings_api + "/components",
                 onLoad: function (e: any) {
-                    let compjson = JSON.parse(e.target.responseText);
+                    const compjson = JSON.parse(e.target.responseText);
                     resolve(compjson.id);
                 },
                 onError: function () {
@@ -667,8 +667,8 @@ export const registerWingsDataset = async (
     uri: string,
     config: MintPreferences
 ): Promise<void> => {
-    let config_wings = config.wings;
-    let data = {
+    const config_wings = config.wings;
+    const data = {
         data_catalog_id: dcid,
         id: name,
         type: type,
@@ -699,12 +699,12 @@ export const registerWingsDataset = async (
 
 const _createModelTemplate = (cname: string, prefs: MintPreferences): Promise<string> => {
     return new Promise((resolve, reject) => {
-        let config = prefs.wings;
-        let expfx = config.export_url + "/export/users/" + config.username + "/" + config.domain;
+        const config = prefs.wings;
+        const expfx = config.export_url + "/export/users/" + config.username + "/" + config.domain;
 
-        let tname = "workflow_" + cname;
-        let tns = expfx + "/workflows/" + tname + ".owl#";
-        let tid = tns + tname;
+        const tname = "workflow_" + cname;
+        const tns = expfx + "/workflows/" + tname + ".owl#";
+        const tid = tns + tname;
 
         fetchWingsTemplatesList(prefs).then((list) => {
             if (list.indexOf(tid) >= 0) {
@@ -713,7 +713,7 @@ const _createModelTemplate = (cname: string, prefs: MintPreferences): Promise<st
             } else {
                 // Create template
                 fetchWingsComponent(cname, prefs).then((comp) => {
-                    let tpl = createSingleComponentTemplate(comp, prefs);
+                    const tpl = createSingleComponentTemplate(comp, prefs);
                     layoutWingsTemplate(tpl, prefs).then((tpl_package) => {
                         saveWingsTemplate(tpl_package, prefs).then(() => {
                             console.log("Template saved as " + tpl.id);
@@ -731,23 +731,23 @@ const _runModelTemplates = (
     tpl_package: WingsTemplatePackage,
     prefs: MintPreferences
 ): Promise<string[]> => {
-    let config = prefs.wings;
-    let expfx = config.export_url + "/export/users/" + config.username + "/" + config.domain;
+    const config = prefs.wings;
+    const expfx = config.export_url + "/export/users/" + config.username + "/" + config.domain;
     return Promise.all(
         seeds.map((seed) => {
-            let tns = seed.tid.replace(/#.*$/, "#");
+            const tns = seed.tid.replace(/#.*$/, "#");
 
-            let dataBindings = {} as WingsDataBindings;
-            let parameterBindings = {} as WingsParameterBindings;
-            let parameterTypes = {} as WingsParameterTypes;
-            for (let varname in seed.datasets) {
-                let varid = tns + varname;
+            const dataBindings = {} as WingsDataBindings;
+            const parameterBindings = {} as WingsParameterBindings;
+            const parameterTypes = {} as WingsParameterTypes;
+            for (const varname in seed.datasets) {
+                const varid = tns + varname;
                 dataBindings[varid] = seed.datasets[varname].map(
                     (ds: string) => expfx + "/data/library.owl#" + ds
                 );
             }
-            for (let varname in seed.parameters) {
-                let varid = tns + varname;
+            for (const varname in seed.parameters) {
+                const varid = tns + varname;
                 parameterBindings[varid] = seed.parameters[varname];
                 parameterTypes[varid] =
                     "http://www.w3.org/2001/XMLSchema#" + seed.paramtypes[varname];
@@ -765,10 +765,10 @@ const _runModelTemplates = (
 };
 
 export const setupModelWorkflow = async (model: Model, thread: Thread, prefs: MintPreferences) => {
-    let cname = model.model_configuration;
-    let compid = await registerWingsComponent(cname, model.code_url, prefs);
-    let compname = compid.replace(/^.*#/, "");
-    let templateid = await _createModelTemplate(compname, prefs);
+    const cname = model.model_configuration;
+    const compid = await registerWingsComponent(cname, model.code_url, prefs);
+    const compname = compid.replace(/^.*#/, "");
+    const templateid = await _createModelTemplate(compname, prefs);
     return templateid;
 };
 
@@ -779,17 +779,17 @@ export const runModelExecutions = async (
     tpl_package: WingsTemplatePackage,
     prefs: MintPreferences
 ) => {
-    let registerDatasetPromises = [];
-    let seeds: WingsTemplateSeed[] = [];
-    let registered_resources: any = {};
+    const registerDatasetPromises = [];
+    const seeds: WingsTemplateSeed[] = [];
+    const registered_resources: any = {};
 
     // Get all input dataset bindings and parameter bindings
     executions.map((execution) => {
-        let model = thread.models[execution.modelid];
-        let bindings = execution.bindings;
-        let datasets: any = {};
-        let parameters: any = {};
-        let paramtypes: any = {};
+        const model = thread.models[execution.modelid];
+        const bindings = execution.bindings;
+        const datasets: any = {};
+        const parameters: any = {};
+        const paramtypes: any = {};
 
         // Get input datasets
         model.input_files.map((io) => {
@@ -804,7 +804,7 @@ export const runModelExecutions = async (
                 resources = io.value.resources;
             }
             if (resources.length > 0) {
-                let type = io.type.replace(/^.*#/, "");
+                const type = io.type.replace(/^.*#/, "");
                 resources.map((res) => {
                     if (res.url) {
                         res.name = res.url.replace(/^.*(#|\/)/, "");
@@ -824,7 +824,7 @@ export const runModelExecutions = async (
             if (ip.value) {
                 parameters[ip.name] = ip.value;
             } else if (bindings[ip.id]) {
-                let value = bindings[ip.id];
+                const value = bindings[ip.id];
                 parameters[ip.name] = value;
             }
             paramtypes[ip.name] = ip.type;
@@ -839,8 +839,8 @@ export const runModelExecutions = async (
     });
 
     // Register any datasets that need to be registered
-    for (let resid in registered_resources) {
-        let args = registered_resources[resid];
+    for (const resid in registered_resources) {
+        const args = registered_resources[resid];
         existing_registered_resources[resid] = args;
         registerDatasetPromises.push(registerWingsDataset(resid, args[0], args[1], args[2], prefs));
     }
@@ -848,7 +848,7 @@ export const runModelExecutions = async (
     // Register all datasets
     if (registerDatasetPromises.length > 0) await Promise.all(registerDatasetPromises);
 
-    let runids = await _runModelTemplates(seeds, tpl_package, prefs);
+    const runids = await _runModelTemplates(seeds, tpl_package, prefs);
     return runids;
 };
 

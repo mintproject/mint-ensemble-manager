@@ -25,11 +25,11 @@ module.exports = async (job: any) => {
     // Clone the job data object
     job.data = JSON.parse(JSON.stringify(job.data));
 
-    var seed: ComponentSeed = job.data.seed;
-    var localex: LocalExecutionPreferences = job.data.prefs;
-    var thread_model_id: string = job.data.thread_model_id;
+    const seed: ComponentSeed = job.data.seed;
+    const localex: LocalExecutionPreferences = job.data.prefs;
+    const thread_model_id: string = job.data.thread_model_id;
 
-    let prefs = await fetchMintConfig();
+    const prefs = await fetchMintConfig();
     await KeycloakAdapter.signIn(prefs.graphql.username, prefs.graphql.password);
 
     // Only increment submitted runs if this isn't a retry
@@ -40,20 +40,20 @@ module.exports = async (job: any) => {
 
     // Initialize log file
     if (!fs.existsSync(localex.logdir)) fs.mkdirsSync(localex.logdir);
-    let logstdout = localex.logdir + "/" + seed.execution.id + ".log";
+    const logstdout = localex.logdir + "/" + seed.execution.id + ".log";
     fs.removeSync(logstdout);
 
     // Setup execution
     let error = null;
-    let comp: Component = seed.component;
-    let inputdir = localex.datadir;
+    const comp: Component = seed.component;
+    const inputdir = localex.datadir;
     let outputdir = localex.datadir;
 
     // Create temporary directory
-    let ostmp = localex.tempdir;
+    const ostmp = localex.tempdir;
     if (!fs.existsSync(ostmp)) fs.mkdirsSync(ostmp);
-    let tmpprefix = ostmp + "/" + seed.execution.modelid.replace(/.*\//, "");
-    let tempdir = fs.mkdtempSync(tmpprefix);
+    const tmpprefix = ostmp + "/" + seed.execution.modelid.replace(/.*\//, "");
+    const tempdir = fs.mkdtempSync(tmpprefix);
     console.log(tempdir);
 
     try {
@@ -64,8 +64,8 @@ module.exports = async (job: any) => {
         seed.execution.execution_engine = "localex";
 
         // Data/Parameter arguments to the script (will be setup below)
-        let args: string[] = [];
-        let plainargs: string[] = [];
+        const args: string[] = [];
+        const plainargs: string[] = [];
 
         // Default invocation is via Bash
         let command = "bash";
@@ -86,11 +86,11 @@ module.exports = async (job: any) => {
                 args.push(paramvalue);
                 plainargs.push(paramvalue);
             } else {
-                let datasets = seed.datasets[input.id] || [];
+                const datasets = seed.datasets[input.id] || [];
                 datasets.map((ds: DataResource) => {
                     // Copy input files to tempdir
-                    let ifile = inputdir + "/" + ds.name;
-                    let newifile = tempdir + "/" + ds.name;
+                    const ifile = inputdir + "/" + ds.name;
+                    const newifile = tempdir + "/" + ds.name;
                     fs.symlinkSync(ifile, newifile);
                     //fs.copyFileSync(ifile, newifile);
                     args.push(ds.name);
@@ -105,18 +105,18 @@ module.exports = async (job: any) => {
 
         // Set the output file arguments for the command
         // Create the output file suffix based on a hash of inputs
-        let opsuffix = "-" + Md5.hashAsciiStr(seed.execution.modelid + plainargs.join());
-        let results: any = {};
+        const opsuffix = "-" + Md5.hashAsciiStr(seed.execution.modelid + plainargs.join());
+        const results: any = {};
         comp.outputs.map((output: ComponentArgument) => {
             args.push(output.prefix);
-            let opid = output.id + opsuffix;
+            const opid = output.id + opsuffix;
             let opfilename = output.role + opsuffix;
             if (output.format) {
                 opfilename += "." + output.format;
             }
-            let opfilepath = outputdir + "/" + opfilename;
+            const opfilepath = outputdir + "/" + opfilename;
             args.push(opfilename);
-            let opfileurl = opfilepath.replace(localex.datadir, localex.dataurl);
+            const opfileurl = opfilepath.replace(localex.datadir, localex.dataurl);
             results[output.id] = {
                 id: opid,
                 name: opfilename,
@@ -135,10 +135,10 @@ module.exports = async (job: any) => {
         // Check if this component requires a docker image via the model definition
         // - or via the older pegasus job properties file
 
-        let softwareImage = comp.softwareImage;
+        const softwareImage = comp.softwareImage;
         let statusCode = 0;
 
-        let cwl_file = comp.rundir + "/run.cwl";
+        const cwl_file = comp.rundir + "/run.cwl";
         let cwl_outputs: any = {};
         let is_cwl = false;
 
@@ -149,13 +149,13 @@ module.exports = async (job: any) => {
             is_cwl = true;
 
             // Create cwl output directory
-            let output_suffix_cwl = Md5.hashAsciiStr(seed.execution.modelid + plainargs.join());
+            const output_suffix_cwl = Md5.hashAsciiStr(seed.execution.modelid + plainargs.join());
             outputdir = outputdir + "/" + output_suffix_cwl;
             if (!fs.existsSync(outputdir)) {
                 fs.mkdirsSync(outputdir);
             }
 
-            let cwl_values_file = write_cwl_values(
+            const cwl_values_file = write_cwl_values(
                 comp,
                 seed,
                 results,
@@ -164,8 +164,8 @@ module.exports = async (job: any) => {
                 outputdir,
                 plainargs
             );
-            let cwl_args: string[] = [];
-            let cwl_command = "cwltool";
+            const cwl_args: string[] = [];
+            const cwl_command = "cwltool";
             cwl_args.push("--no-read-only");
             cwl_args.push("--copy-outputs");
             cwl_args.push("--no-match-user");
@@ -177,7 +177,7 @@ module.exports = async (job: any) => {
             console.log("temporary directory " + tempdir);
 
             console.log(cwl_command + " " + cwl_args.join(" ") + "\n");
-            let spawnResult = child_process.spawnSync(cwl_command, cwl_args, {
+            const spawnResult = child_process.spawnSync(cwl_command, cwl_args, {
                 cwd: tempdir,
                 shell: true,
                 maxBuffer: 1024 * 1024 * 50 // 50 MB of log cutoff
@@ -203,10 +203,10 @@ module.exports = async (job: any) => {
             logstream = fs.createWriteStream(logstdout, { flags: "a" });
 
             // Run command in docker image
-            let folderBindings = [`${tempdir}:${tempdir}`, `${localex.datadir}:${localex.datadir}`];
-            let data = await runImage(args, softwareImage, logstream, tempdir, folderBindings);
-            var output = data[0];
-            var container: Container = data[1];
+            const folderBindings = [`${tempdir}:${tempdir}`, `${localex.datadir}:${localex.datadir}`];
+            const data = await runImage(args, softwareImage, logstream, tempdir, folderBindings);
+            const output = data[0];
+            const container: Container = data[1];
             statusCode = output.StatusCode;
 
             // Clean up
@@ -214,10 +214,10 @@ module.exports = async (job: any) => {
             await container.remove({ force: true });
         } else {
             console.log("Running as a Singularity Information");
-            let pegasus_jobprops_file = comp.rundir + "/__pegasus-job.properties";
+            const pegasus_jobprops_file = comp.rundir + "/__pegasus-job.properties";
             if (fs.existsSync(pegasus_jobprops_file)) {
-                let jobprops = fs.readFileSync(pegasus_jobprops_file);
-                let matches: RegExpMatchArray = jobprops
+                const jobprops = fs.readFileSync(pegasus_jobprops_file);
+                const matches: RegExpMatchArray = jobprops
                     .toString()
                     .match(/SingularityImage = "(.+)"/);
                 if (matches.length > 1) {
@@ -228,7 +228,7 @@ module.exports = async (job: any) => {
             }
 
             // Spawn the process & pipe stdout and stderr
-            let spawnResult = child_process.spawnSync(command, args, {
+            const spawnResult = child_process.spawnSync(command, args, {
                 cwd: tempdir,
                 shell: true,
                 maxBuffer: 1024 * 1024 * 50 // 50 MB of log cutoff
@@ -260,7 +260,7 @@ module.exports = async (job: any) => {
                 if (is_cwl) {
                     result.name = result.role;
                     if (result.role !== undefined && result.role in cwl_outputs) {
-                        let cwl_output = cwl_outputs[result.role];
+                        const cwl_output = cwl_outputs[result.role];
                         desired_output_file = outputdir + "/" + cwl_output["basename"];
                         tmp_output_file = cwl_output["path"];
                     }
@@ -273,7 +273,7 @@ module.exports = async (job: any) => {
                     if (fs.existsSync(tmp_output_file)) {
                         fs.copyFileSync(tmp_output_file, desired_output_file);
                     }
-                    let url = desired_output_file.replace(localex.datadir, localex.dataurl);
+                    const url = desired_output_file.replace(localex.datadir, localex.dataurl);
                     result.url = url;
                 }
             });
@@ -284,7 +284,7 @@ module.exports = async (job: any) => {
         fs.removeSync(tempdir);
     } catch (e) {
         error = "ERROR: " + e;
-        let logstream = fs.createWriteStream(logstdout);
+        const logstream = fs.createWriteStream(logstdout);
         logstream.write("ERROR in Execution: \n");
         logstream.write(error + "\n");
         logstream.close();
@@ -320,15 +320,15 @@ const write_cwl_values = (
     outputdir: string,
     plainargs: string[]
 ) => {
-    let execution_dir = comp.rundir;
+    const execution_dir = comp.rundir;
     interface CwlValueFile {
         class: string;
         location: string;
     }
-    let data: Record<string, string | CwlValueFile> = {};
+    const data: Record<string, string | CwlValueFile> = {};
     comp.inputs.map((input: any) => {
         if (input.isParam) {
-            let paramtype = seed.paramtypes[input.id];
+            const paramtype = seed.paramtypes[input.id];
             let paramvalue = seed.parameters[input.id];
             if (!paramvalue) paramvalue = input.paramDefaultValue;
             if (paramtype == "int") paramvalue = parseInt(paramvalue);
@@ -338,7 +338,7 @@ const write_cwl_values = (
             else paramvalue = paramvalue.toString();
             data[input.role] = paramvalue;
         } else {
-            let datasets = seed.datasets[input.id] || [];
+            const datasets = seed.datasets[input.id] || [];
             datasets.map((ds: string) => {
                 // Copy input files to tempdir
                 data[input.role] = { class: "File", location: ds["url"] };
@@ -352,8 +352,8 @@ const write_cwl_values = (
         data[result.role] = { class: "File", location: result.name };
     });
 
-    let valuesFile = tempdir + "/values.yml";
-    let ymlStr = yaml.safeDump(data);
+    const valuesFile = tempdir + "/values.yml";
+    const ymlStr = yaml.safeDump(data);
     fs.writeFileSync(valuesFile, ymlStr, "utf8");
     console.log("writing the values file " + valuesFile);
     return valuesFile;

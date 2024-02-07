@@ -27,7 +27,7 @@ import { KeycloakAdapter } from "../../config/keycloak-adapter";
 
 export const uuidv4 = () => {
     return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
-        var r = (Math.random() * 16) | 0,
+        const r = (Math.random() * 16) | 0,
             v = c == "x" ? r : (r & 0x3) | 0x8;
         return v.toString(16);
     });
@@ -59,7 +59,7 @@ export const toDateTimeString = (date: Date): string => {
 };
 
 export const regionToGQL = (region: Region) => {
-    let regionobj = {
+    const regionobj = {
         name: region.name,
         category_id: region.category_id,
         geometries: {
@@ -75,7 +75,7 @@ export const regionToGQL = (region: Region) => {
 };
 
 export const regionFromGQL = (regionobj: any): Region => {
-    let region = {
+    const region = {
         id: regionobj.id,
         name: regionobj.name,
         category_id: regionobj.category_id,
@@ -86,7 +86,7 @@ export const regionFromGQL = (regionobj: any): Region => {
 };
 
 export const variableFromGQL = (varobj: any) => {
-    let variable = {
+    const variable = {
         id: varobj.id,
         name: varobj.name,
         categories: (varobj.categories ?? []).map((catobj) => catobj["category"]),
@@ -99,7 +99,7 @@ export const variableFromGQL = (varobj: any) => {
 };
 
 export const eventToGQL = (event: MintEvent) => {
-    let eventobj = {
+    const eventobj = {
         event: event.event,
         userid: event.userid,
         timestamp: event.timestamp.toISOString(),
@@ -109,7 +109,7 @@ export const eventToGQL = (event: MintEvent) => {
 };
 
 export const eventFromGQL = (eventobj: any): MintEvent => {
-    let event = {
+    const event = {
         event: eventobj.event,
         userid: eventobj.userid,
         timestamp: new Date(eventobj.timestamp),
@@ -119,7 +119,7 @@ export const eventFromGQL = (eventobj: any): MintEvent => {
 };
 
 export const permissionFromGQL = (permobj: any): MintPermission => {
-    let permission = {
+    const permission = {
         userid: permobj.user_id,
         read: permobj.read ?? false,
         write: permobj.write ?? false,
@@ -129,7 +129,7 @@ export const permissionFromGQL = (permobj: any): MintPermission => {
 };
 
 export const permissionToGQL = (permission: MintPermission) => {
-    let permissionobj = {
+    const permissionobj = {
         user_id: permission.userid,
         read: permission.read ?? false,
         write: permission.write ?? false
@@ -138,7 +138,7 @@ export const permissionToGQL = (permission: MintPermission) => {
 };
 
 export const problemStatementToGQL = (problem_statement: ProblemStatementInfo) => {
-    let problemobj = {
+    const problemobj = {
         id: getAutoID(),
         name: problem_statement.name,
         start_date: toDateString(problem_statement.dates.start_date),
@@ -159,7 +159,7 @@ export const problemStatementToGQL = (problem_statement: ProblemStatementInfo) =
 };
 
 export const problemStatementUpdateToGQL = (problem_statement: ProblemStatementInfo) => {
-    let problemobj = {
+    const problemobj = {
         id: problem_statement.id,
         name: problem_statement.name,
         start_date: toDateString(problem_statement.dates.start_date),
@@ -180,7 +180,7 @@ export const problemStatementUpdateToGQL = (problem_statement: ProblemStatementI
 };
 
 export const problemStatementFromGQL = (problem: any): ProblemStatement => {
-    let details = {
+    const details = {
         id: problem["id"],
         regionid: problem["region_id"],
         name: problem["name"],
@@ -195,7 +195,7 @@ export const problemStatementFromGQL = (problem: any): ProblemStatement => {
     } as ProblemStatement;
     if (problem["tasks"]) {
         problem["tasks"].forEach((task: any) => {
-            let fbtask = taskFromGQL(task);
+            const fbtask = taskFromGQL(task);
             fbtask.problem_statement_id = problem["id"];
             details.tasks[fbtask.id] = fbtask;
         });
@@ -204,7 +204,7 @@ export const problemStatementFromGQL = (problem: any): ProblemStatement => {
 };
 
 export const taskToGQL = (task: Task, problem_statement: ProblemStatementInfo) => {
-    let taskGQL = {
+    const taskGQL = {
         id: getAutoID(),
         name: task.name,
         problem_statement_id: problem_statement.id,
@@ -228,7 +228,7 @@ export const taskToGQL = (task: Task, problem_statement: ProblemStatementInfo) =
 };
 
 export const taskUpdateToGQL = (task: Task) => {
-    let taskGQL = {
+    const taskGQL = {
         id: task.id,
         name: task.name,
         problem_statement_id: task.problem_statement_id,
@@ -253,7 +253,7 @@ export const taskUpdateToGQL = (task: Task) => {
 };
 
 export const taskFromGQL = (task: any): Task => {
-    let taskobj = {
+    const taskobj = {
         id: task["id"],
         problem_statement_id: task["problem_statement_id"],
         regionid: task["region_id"],
@@ -270,7 +270,7 @@ export const taskFromGQL = (task: any): Task => {
     } as Task;
     if (task["threads"]) {
         task["threads"].forEach((thread: any) => {
-            let fbthread = threadInfoFromGQL(thread);
+            const fbthread = threadInfoFromGQL(thread);
             fbthread.task_id = task["id"];
             taskobj.threads[fbthread.id] = fbthread;
         });
@@ -279,7 +279,7 @@ export const taskFromGQL = (task: any): Task => {
 };
 
 export const threadInfoToGQL = (thread: ThreadInfo, taskid: string, regionid: string) => {
-    let threadobj = {
+    const threadobj = {
         id: getAutoID(),
         name: thread.name,
         task_id: taskid,
@@ -304,7 +304,7 @@ export const threadInfoToGQL = (thread: ThreadInfo, taskid: string, regionid: st
 };
 
 export const threadInfoUpdateToGQL = (thread: ThreadInfo) => {
-    let threadobj = {
+    const threadobj = {
         id: thread.id,
         task_id: thread.task_id,
         name: thread.name,
@@ -345,7 +345,7 @@ export const threadInfoFromGQL = (thread: any) => {
 };
 
 export const threadFromGQL = (thread: any) => {
-    let fbthread = {
+    const fbthread = {
         id: thread["id"],
         task_id: thread["task_id"],
         regionid: thread["region_id"],
@@ -365,17 +365,17 @@ export const threadFromGQL = (thread: any) => {
     } as Thread;
 
     thread["thread_data"].forEach((tm: any) => {
-        let m = tm["dataslice"];
-        let dataslice: Dataslice = datasliceFromGQL(m);
+        const m = tm["dataslice"];
+        const dataslice: Dataslice = datasliceFromGQL(m);
         fbthread.data[dataslice.id] = dataslice;
     });
 
     thread["thread_models"].forEach((tm: any) => {
-        let m = tm["model"];
-        let model: Model = modelFromGQL(m);
+        const m = tm["model"];
+        const model: Model = modelFromGQL(m);
 
         fbthread.models[model.id] = model;
-        let model_ensemble = modelEnsembleFromGQL(tm["data_bindings"], tm["parameter_bindings"]);
+        const model_ensemble = modelEnsembleFromGQL(tm["data_bindings"], tm["parameter_bindings"]);
         fbthread.model_ensembles[model.id] = {
             id: tm["id"],
             bindings: model_ensemble
@@ -432,7 +432,7 @@ export const getTotalConfigs = (model: Model, bindings: ModelIOBindings, thread:
             if (bindings[io.id]) {
                 let numresources = 0;
                 bindings[io.id].map((dsid) => {
-                    let ds = thread.data[dsid];
+                    const ds = thread.data[dsid];
                     numresources += ds.selected_resources;
                 });
                 totalconfigs *= numresources;
@@ -451,14 +451,14 @@ export const getTotalConfigs = (model: Model, bindings: ModelIOBindings, thread:
 };
 
 export const datasliceFromGQL = (d: any) => {
-    let ds = d["dataset"];
+    const ds = d["dataset"];
     return {
         id: d["id"],
         name: ds["name"],
         total_resources: d["total_resources"]?.aggregate?.count ?? 0,
         selected_resources: d["selected_resources"]?.aggregate?.count ?? 0,
         resources: (d["resources"] ?? []).map((resobj: any) => {
-            let res = resourceFromGQL(resobj["resource"]);
+            const res = resourceFromGQL(resobj["resource"]);
             res.selected = resobj["selected"];
             return res;
         }),
@@ -493,8 +493,8 @@ export const modelFromGQL = (m: any) => {
 };
 
 export const modelIOFromGQL = (model_io: any) => {
-    let io = model_io["model_io"];
-    let fixed_ds =
+    const io = model_io["model_io"];
+    const fixed_ds =
         io["fixed_bindings"] && io["fixed_bindings"].length > 0
             ? ({
                   id: io.id + "_fixed_dataset",
@@ -511,7 +511,7 @@ export const modelIOFromGQL = (model_io: any) => {
         value: fixed_ds,
         position: model_io["position"],
         variables: io["variables"].map((varobj: any) => {
-            let v = varobj["variable"];
+            const v = varobj["variable"];
             return v["id"];
         })
     } as ModelIO;
@@ -535,7 +535,7 @@ export const modelParameterFromGQL = (p: any) => {
 };
 
 export const modelEnsembleFromGQL = (dbs: any[], pbs: any[]): ModelIOBindings => {
-    let bindings = {} as ModelIOBindings;
+    const bindings = {} as ModelIOBindings;
     dbs.forEach((db) => {
         let binding = bindings[db["model_io"]["id"]];
         if (!binding) binding = [];
@@ -552,7 +552,7 @@ export const modelEnsembleFromGQL = (dbs: any[], pbs: any[]): ModelIOBindings =>
 };
 
 export const executionToGQL = (ex: Execution): any => {
-    let exobj = {
+    const exobj = {
         id: ex.id,
         model_id: ex.modelid,
         status: ex.status,
@@ -571,7 +571,7 @@ export const executionToGQL = (ex: Execution): any => {
         }
     };
     Object.keys(ex.bindings).forEach((ioid) => {
-        let binding = ex.bindings[ioid];
+        const binding = ex.bindings[ioid];
         if (typeof binding == "string") {
             exobj.parameter_bindings.data.push({
                 model_parameter_id: ioid,
@@ -589,7 +589,7 @@ export const executionToGQL = (ex: Execution): any => {
 };
 
 export const executionFromGQL = (ex: any, emulator = false): Execution => {
-    let exobj = {
+    const exobj = {
         id: ex.id.replace(/\-/g, ""),
         modelid: ex.model_id,
         status: ex.status,
@@ -617,7 +617,7 @@ export const executionFromGQL = (ex: any, emulator = false): Execution => {
 };
 
 export const resourceToGQL = (resource: DataResource) => {
-    let resourceobj = {
+    const resourceobj = {
         id: resource.id,
         name: resource.name,
         url: resource.url,
@@ -628,7 +628,7 @@ export const resourceToGQL = (resource: DataResource) => {
 };
 
 export const resourceFromGQL = (resourceobj: any): DataResource => {
-    let resource = {
+    const resource = {
         id: resourceobj.id,
         name: resourceobj.name,
         url: resourceobj.url,
@@ -674,7 +674,7 @@ const getNamespacedId = (namespace, id) => {
 };
 
 export const modelToGQL = (m: Model) => {
-    let namespace = m.id.replace(/(^.*\/).*$/, "$1");
+    const namespace = m.id.replace(/(^.*\/).*$/, "$1");
     return {
         id: m.id,
         name: m.name,
@@ -733,7 +733,7 @@ const getMd5Hash = (str2hash) => {
 };
 
 const getModelIOFixedBindings = (io) => {
-    let fixed_bindings_data = [];
+    const fixed_bindings_data = [];
     if ("value" in io && "resources" in io["value"]) {
         io["value"]["resources"].forEach((res: any) => {
             if (!("name" in res)) res["name"] = res["url"].replace(/^.*\/(.*?)$/, "$1");
@@ -774,7 +774,7 @@ const getVariableData = (variableid) => {
 };
 
 const modelIOToGQL = (io: any) => {
-    let fixed_bindings = getModelIOFixedBindings(io);
+    const fixed_bindings = getModelIOFixedBindings(io);
     return {
         id: io["id"],
         name: io["name"],
@@ -816,9 +816,9 @@ const modelParameterToGQL = (input: ModelParameter) => {
 };
 
 const getModelDataBindings = (model, model_ensemble: ThreadModelMap) => {
-    let dataBindings = [];
+    const dataBindings = [];
     model["input_files"].forEach((ifile) => {
-        let inputid = ifile["id"];
+        const inputid = ifile["id"];
         if (inputid in model_ensemble.bindings) {
             model_ensemble.bindings[inputid].forEach((sliceid) => {
                 dataBindings.push({
@@ -833,9 +833,9 @@ const getModelDataBindings = (model, model_ensemble: ThreadModelMap) => {
 };
 
 const getModelParameterBindings = (model, model_ensemble: ThreadModelMap) => {
-    let parameterBindings = [];
+    const parameterBindings = [];
     model["input_parameters"].forEach((iparam) => {
-        let inputid = iparam["id"];
+        const inputid = iparam["id"];
         if (inputid in model_ensemble.bindings) {
             model_ensemble.bindings[inputid].forEach((paramvalue) => {
                 parameterBindings.push({
@@ -851,7 +851,7 @@ const getModelParameterBindings = (model, model_ensemble: ThreadModelMap) => {
 
 const getSpatialCoverageGeometry = (coverage) => {
     if (!coverage) return null;
-    let value = coverage["value"];
+    const value = coverage["value"];
     if (coverage["type"] == "Point") {
         return {
             type: "Point",
@@ -875,8 +875,8 @@ const getSpatialCoverageGeometry = (coverage) => {
 };
 
 const getDates = (dates) => {
-    let start = dates["start_date"];
-    let end = dates["end_date"];
+    const start = dates["start_date"];
+    const end = dates["end_date"];
     return {
         start_date: toDateString(start),
         end_date: toDateString(end)
@@ -884,7 +884,7 @@ const getDates = (dates) => {
 };
 
 const getResourceData = (data) => {
-    let dates = getDates(data["time_period"]);
+    const dates = getDates(data["time_period"]);
     return {
         data: {
             id: getMd5Hash(data["url"]),
@@ -910,11 +910,11 @@ const getDatasliceResourceData = (data) => {
 };
 
 const getDatasliceData = (data: Dataslice, thread: Thread) => {
-    let dsname = data.name;
-    let threadname = thread.name;
+    const dsname = data.name;
+    const threadname = thread.name;
 
-    let slicename = dsname + " for thread: " + threadname;
-    let sliceid = data["id"] ?? uuidv4(); // Change to using md5 hash of sorted resource ids
+    const slicename = dsname + " for thread: " + threadname;
+    const sliceid = data["id"] ?? uuidv4(); // Change to using md5 hash of sorted resource ids
     return {
         id: sliceid,
         name: slicename,
@@ -960,16 +960,16 @@ export const threadDataBindingsToGQL = (
     model_ensemble: ModelEnsembleMap,
     thread: Thread
 ) => {
-    let dataslices = [];
+    const dataslices = [];
     Object.keys(data).map((sliceid) => {
-        let dataslice = getThreadDataslice(data[sliceid], thread);
+        const dataslice = getThreadDataslice(data[sliceid], thread);
         dataslices.push(dataslice);
     });
 
     let thread_model_io = [];
     Object.keys(model_ensemble).forEach((modelid) => {
-        let model = thread.models[modelid];
-        let tmio = getModelDataBindings(model, model_ensemble[modelid]);
+        const model = thread.models[modelid];
+        const tmio = getModelDataBindings(model, model_ensemble[modelid]);
         thread_model_io = thread_model_io.concat(tmio);
     });
 
@@ -982,17 +982,17 @@ export const threadDataBindingsToGQL = (
 export const threadParameterBindingsToGQL = (model_ensemble: ModelEnsembleMap, thread: Thread) => {
     let thread_model_params = [];
     Object.keys(model_ensemble).forEach((modelid) => {
-        let model = thread.models[modelid];
-        let tmparams = getModelParameterBindings(model, model_ensemble[modelid]);
+        const model = thread.models[modelid];
+        const tmparams = getModelParameterBindings(model, model_ensemble[modelid]);
         thread_model_params = thread_model_params.concat(tmparams);
     });
     return thread_model_params;
 };
 
 export const executionResultsToGQL = (results: any) => {
-    let data: any = [];
+    const data: any = [];
     Object.keys(results).forEach((outid) => {
-        let result = results[outid];
+        const result = results[outid];
         data.push({
             model_io_id: outid,
             resource: getResourceData(result)

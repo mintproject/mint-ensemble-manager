@@ -1,7 +1,7 @@
 import { getConfiguration } from "../classes/mint/mint-functions";
 import { User } from "../classes/mint/mint-types";
 
-let prefs = getConfiguration();
+const prefs = getConfiguration();
 
 interface tokenResponse {
     access_token: string;
@@ -53,7 +53,7 @@ export class KeycloakAdapter {
     }
 
     private static nodejs_atob(base64): string {
-        let buff = Buffer.from(base64, "base64");
+        const buff = Buffer.from(base64, "base64");
         return buff.toString("utf-8");
     }
 
@@ -66,7 +66,7 @@ export class KeycloakAdapter {
         KeycloakAdapter.setLocalStorage();
 
         //Decode token
-        let decoded: decodedToken = JSON.parse(
+        const decoded: decodedToken = JSON.parse(
             KeycloakAdapter.nodejs_atob(KeycloakAdapter.accessToken.split(".")[1])
         );
         KeycloakAdapter.username = decoded.preferred_username;
@@ -81,8 +81,8 @@ export class KeycloakAdapter {
         if (!username || !password) {
             return;
         }
-        let uri: string = KeycloakAdapter.getTokenUri();
-        let data = {
+        const uri: string = KeycloakAdapter.getTokenUri();
+        const data = {
             client_id: KeycloakAdapter.clientId,
             grant_type: "password",
             username: username,
@@ -90,7 +90,7 @@ export class KeycloakAdapter {
         };
 
         return new Promise<void>((resolve, reject) => {
-            let req: Promise<Response> = fetch(uri, {
+            const req: Promise<Response> = fetch(uri, {
                 method: "POST",
                 headers: { "Content-Type": "application/x-www-form-urlencoded" },
                 body: new URLSearchParams(data)
@@ -98,7 +98,7 @@ export class KeycloakAdapter {
             req.catch(reject);
             req.then((response: Response) => {
                 if (response.status === 200) {
-                    let jsn = response.json();
+                    const jsn = response.json();
                     jsn.catch(reject);
                     jsn.then((tkn: tokenResponse) => {
                         KeycloakAdapter.saveTokenResponse(tkn);
@@ -116,15 +116,15 @@ export class KeycloakAdapter {
     }
 
     public static refresh(token?: string): Promise<boolean> {
-        let uri: string = KeycloakAdapter.getTokenUri();
-        let data = {
+        const uri: string = KeycloakAdapter.getTokenUri();
+        const data = {
             client_id: KeycloakAdapter.clientId,
             grant_type: "refresh_token",
             refresh_token: token ? token : KeycloakAdapter.refreshToken
         };
 
         return new Promise<boolean>((resolve, reject) => {
-            let req: Promise<Response> = fetch(uri, {
+            const req: Promise<Response> = fetch(uri, {
                 method: "POST",
                 headers: { "Content-Type": "application/x-www-form-urlencoded" },
                 body: new URLSearchParams(data)
@@ -174,14 +174,14 @@ export class KeycloakAdapter {
 
     public static loadFromLocalStorage(): Promise<boolean> {
         return new Promise<boolean>((resolve, reject) => {
-            let accessToken: string = localStorage.getItem("access-token");
-            let refreshToken: string = localStorage.getItem("refresh-token");
+            const accessToken: string = localStorage.getItem("access-token");
+            const refreshToken: string = localStorage.getItem("refresh-token");
             if (accessToken && refreshToken) {
                 //Check if access token is still valid, if not, try to refresh.
                 if (false) {
                     //KeycloakAdapter.checkToken()) {
                 } else {
-                    let ref: Promise<boolean> = KeycloakAdapter.refresh(refreshToken);
+                    const ref: Promise<boolean> = KeycloakAdapter.refresh(refreshToken);
                     ref.catch(() => resolve(false));
                     ref.then((b: boolean) => resolve(b));
                 }
@@ -220,13 +220,13 @@ export class KeycloakAdapter {
     }
 
     public static updateProfile(u: User): void {
-        let uri: string =
+        const uri: string =
             KeycloakAdapter.server +
             "admin/realms/" +
             KeycloakAdapter.realm +
             "/users/" +
             KeycloakAdapter.userid;
-        let data = {
+        const data = {
             attributes: {
                 region: u.region,
                 graph: u.graph
@@ -236,13 +236,13 @@ export class KeycloakAdapter {
     }
 
     public static checkToken() {
-        let uri: string =
+        const uri: string =
             KeycloakAdapter.server +
             "realms/" +
             KeycloakAdapter.realm +
             "/protocol/openid-connect/userinfo";
 
-        let req = fetch(uri, {
+        const req = fetch(uri, {
             method: "GET",
             credentials: "include",
             headers: KeycloakAdapter.getAccessTokenHeader()

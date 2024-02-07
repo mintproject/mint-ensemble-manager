@@ -1,7 +1,7 @@
 // ./api/api-v1/paths/modelCache.ts
 
 export default function (modelCacheService: any) {
-    let operations = {
+    const operations = {
         DELETE
     };
 

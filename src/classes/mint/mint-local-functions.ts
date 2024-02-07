@@ -44,7 +44,7 @@ export const saveAndRunExecutionsLocally = async (
     prefs: MintPreferences
 ) => {
     let ok = false;
-    for (let pmodelid in thread.model_ensembles) {
+    for (const pmodelid in thread.model_ensembles) {
         if (!modelid || modelid == pmodelid) {
             ok = await saveAndRunExecutionsForModelLocally(pmodelid, thread, prefs);
             if (!ok) {
@@ -75,28 +75,28 @@ export const saveAndRunExecutionsForModelLocally = async (
     try {
         if (!thread.execution_summary) thread.execution_summary = {};
 
-        let model = thread.models[modelid];
-        let thread_model_id = thread.model_ensembles[modelid].id;
+        const model = thread.models[modelid];
+        const thread_model_id = thread.model_ensembles[modelid].id;
 
-        let thread_region = await getRegionDetails(thread.regionid);
-        let execution_details = getModelInputBindings(model, thread, thread_region);
+        const thread_region = await getRegionDetails(thread.regionid);
+        const execution_details = getModelInputBindings(model, thread, thread_region);
 
-        let threadModel = execution_details[0] as ThreadModelMap;
-        let inputIds = execution_details[1] as string[];
+        const threadModel = execution_details[0] as ThreadModelMap;
+        const inputIds = execution_details[1] as string[];
 
         // This is the part that creates all different run configurations
         // - Cross product of all input collections
         // - TODO: Change to allow flexibility
-        let configs = getModelInputConfigurations(threadModel, inputIds);
+        const configs = getModelInputConfigurations(threadModel, inputIds);
 
-        let datadir = prefs.localex.datadir;
+        const datadir = prefs.localex.datadir;
 
         if (!fs.existsSync(datadir)) fs.mkdirsSync(datadir);
 
         if (configs != null) {
             // Pre-Run Setup
             // Reset execution summary
-            let summary = {
+            const summary = {
                 total_runs: configs.length,
                 submitted_runs: 0,
                 failed_runs: 0,
@@ -109,29 +109,29 @@ export const saveAndRunExecutionsForModelLocally = async (
             if (!DEVMODE) await setThreadModelExecutionSummary(thread_model_id, summary);
 
             // Load the component model
-            let component = await loadModelWCM(model.code_url, model, prefs);
+            const component = await loadModelWCM(model.code_url, model, prefs);
 
             // Delete existing thread execution ids
             if (!DEVMODE) await deleteThreadModelExecutionIds(thread_model_id);
 
             // Work in batches
-            let batchSize = 500; // Store executions in the database in batches
+            const batchSize = 500; // Store executions in the database in batches
 
             // Create executions in batches
             for (let i = 0; i < configs.length; i += batchSize) {
-                let bindings = configs.slice(i, i + batchSize);
+                const bindings = configs.slice(i, i + batchSize);
 
-                let executions: Execution[] = [];
-                let executionids: string[] = [];
+                const executions: Execution[] = [];
+                const executionids: string[] = [];
 
                 // Create executions for this batch
                 bindings.map((binding) => {
-                    let inputBindings: any = {};
+                    const inputBindings: any = {};
                     for (let j = 0; j < inputIds.length; j++) {
                         inputBindings[inputIds[j]] = binding[j];
                     }
                     //console.log(inputBindings);
-                    let execution = {
+                    const execution = {
                         modelid: modelid,
                         bindings: inputBindings,
                         execution_engine: "localex",
@@ -148,10 +148,10 @@ export const saveAndRunExecutionsForModelLocally = async (
                 });
 
                 // Fetch only successful executions
-                let successful_execution_ids: string[] = DEVMODE
+                const successful_execution_ids: string[] = DEVMODE
                     ? []
                     : await listSuccessfulExecutionIds(executionids);
-                let executions_to_be_run = executions.filter(
+                const executions_to_be_run = executions.filter(
                     (e) => successful_execution_ids.indexOf(e.id) < 0
                 );
 
@@ -160,7 +160,7 @@ export const saveAndRunExecutionsForModelLocally = async (
                     await setExecutions(executions_to_be_run, thread_model_id);
                     await setThreadModelExecutionIds(thread_model_id, executionids);
 
-                    let num_already_run = successful_execution_ids.length;
+                    const num_already_run = successful_execution_ids.length;
                     if (num_already_run > 0) {
                         await incrementThreadModelSubmittedRuns(thread_model_id, num_already_run);
                         await incrementThreadModelSuccessfulRuns(thread_model_id, num_already_run);
@@ -191,7 +191,7 @@ export const deleteExecutableCacheLocally = async (
     modelid: string,
     prefs: MintPreferences
 ) => {
-    for (let pmodelid in thread.model_ensembles) {
+    for (const pmodelid in thread.model_ensembles) {
         if (!modelid || modelid == pmodelid)
             await deleteExecutableCacheForModelLocally(pmodelid, thread, prefs);
     }
@@ -206,10 +206,10 @@ export const deleteModelInputCacheLocally = (
     prefs: MintPreferences
 ) => {
     // Delete the selected datasets
-    for (let dsid in thread.data) {
-        let ds = thread.data[dsid];
+    for (const dsid in thread.data) {
+        const ds = thread.data[dsid];
         ds.resources.map((res) => {
-            let file = prefs.localex.datadir + "/" + res.name;
+            const file = prefs.localex.datadir + "/" + res.name;
             if (fs.existsSync(file)) {
                 fs.remove(file);
             }
@@ -217,18 +217,18 @@ export const deleteModelInputCacheLocally = (
     }
 
     // Also delete any model setup hardcoded input datasets
-    let model = thread.models[modelid];
+    const model = thread.models[modelid];
     model.input_files.map((io) => {
         if (io.value) {
             // There is a hardcoded value in the model itself
-            let resources = io.value.resources;
+            const resources = io.value.resources;
             if (resources.length > 0) {
-                let type = io.type.replace(/^.*#/, "");
+                const type = io.type.replace(/^.*#/, "");
                 resources.map((res) => {
                     if (res.url) {
                         let filename = res.url.replace(/^.*(#|\/)/, "");
                         filename = filename.replace(/^([0-9])/, "_$1");
-                        let file = prefs.localex.datadir + "/" + filename;
+                        const file = prefs.localex.datadir + "/" + filename;
                         if (fs.existsSync(file)) {
                             fs.remove(file);
                         }
@@ -241,7 +241,7 @@ export const deleteModelInputCacheLocally = (
 
 export const deleteModelCache = (model: Model, prefs: MintPreferences) => {
     // Delete cached model directory and zip file
-    let modeldir = getModelCacheDirectory(model.code_url, prefs);
+    const modeldir = getModelCacheDirectory(model.code_url, prefs);
     if (modeldir != null) {
         console.log("Deleting model directory: " + modeldir);
         fs.remove(modeldir);
@@ -256,20 +256,20 @@ export const deleteExecutableCacheForModelLocally = async (
     thread: Thread,
     prefs: MintPreferences
 ) => {
-    let model = thread.models[modelid];
-    let thread_model_id = thread.model_ensembles[modelid].id;
+    const model = thread.models[modelid];
+    const thread_model_id = thread.model_ensembles[modelid].id;
 
-    let all_execution_ids = await getThreadModelExecutionIds(thread_model_id);
+    const all_execution_ids = await getThreadModelExecutionIds(thread_model_id);
 
     // Delete existing thread execution ids (*NOT* deleting global execution records  .. Only clearing list of the thread's execution id mappings)
     deleteThreadModelExecutionIds(thread_model_id);
 
     // Work in batches
-    let batchSize = 500;
+    const batchSize = 500;
 
     // Process executions in batches
     for (let i = 0; i < all_execution_ids.length; i += batchSize) {
-        let executionids = all_execution_ids.slice(i, i + batchSize);
+        const executionids = all_execution_ids.slice(i, i + batchSize);
         console.log("Deleting executions: " + executionids.length);
 
         // Delete the actual execution documents
@@ -277,7 +277,7 @@ export const deleteExecutableCacheForModelLocally = async (
     }
 
     // Delete cached model directory and zip file
-    let modeldir = getModelCacheDirectory(model.code_url, prefs);
+    const modeldir = getModelCacheDirectory(model.code_url, prefs);
     if (modeldir != null) {
         console.log("Deleting model directory: " + modeldir);
         fs.remove(modeldir);
@@ -287,7 +287,7 @@ export const deleteExecutableCacheForModelLocally = async (
     deleteModelInputCacheLocally(thread, modelid, prefs);
 
     // Remove all executable information and update the thread
-    let summary = thread.execution_summary[modelid];
+    const summary = thread.execution_summary[modelid];
     summary.successful_runs = 0;
     summary.failed_runs = 0;
     summary.submitted_runs = 0;
@@ -303,7 +303,7 @@ export const registerExecutionResults = async (
     prefs: MintPreferences
 ) => {
     let ok = false;
-    for (let pmodelid in thread.model_ensembles) {
+    for (const pmodelid in thread.model_ensembles) {
         if (!modelid || modelid == pmodelid) {
             ok = await registerModelExecutionResults(pmodelid, thread, prefs);
             if (!ok) {
@@ -327,8 +327,8 @@ export const registerModelExecutionResults = async (
     try {
         if (!thread.execution_summary) thread.execution_summary = {};
 
-        let model = thread.models[modelid];
-        let thread_model_id = thread.model_ensembles[modelid].id;
+        const model = thread.models[modelid];
+        const thread_model_id = thread.model_ensembles[modelid].id;
 
         await setThreadModelExecutionSummary(thread_model_id, {
             submitted_for_ingestion: true,
@@ -336,14 +336,14 @@ export const registerModelExecutionResults = async (
             submitted_for_registration: true
         } as ExecutionSummary);
 
-        let all_execution_ids = await getThreadModelExecutionIds(thread_model_id);
+        const all_execution_ids = await getThreadModelExecutionIds(thread_model_id);
 
         // Work in batches
-        let batchSize = 500;
+        const batchSize = 500;
 
         // Process executions in batches
         for (let i = 0; i < all_execution_ids.length; i += batchSize) {
-            let executionids = all_execution_ids.slice(i, i + batchSize);
+            const executionids = all_execution_ids.slice(i, i + batchSize);
             console.log("Registering outputs for executions: " + executionids.length);
             //console.log(executionids);
 
@@ -362,7 +362,7 @@ export const registerExecutionOutputsInCatalog = async (
     model: Model,
     prefs: MintPreferences
 ) => {
-    let executions = await getExecutions(executionids);
+    const executions = await getExecutions(executionids);
 
     executions.map(async (execution) => {
         // Only register outputs of successful executions
@@ -370,8 +370,8 @@ export const registerExecutionOutputsInCatalog = async (
             // Copy any input's spatial/temporal input (if any)
             let spatial = null;
             let temporal = null;
-            for (let inputid in execution.bindings) {
-                let input = execution.bindings[inputid];
+            for (const inputid in execution.bindings) {
+                const input = execution.bindings[inputid];
                 if (input["spatial_coverage"]) {
                     spatial = JSON.stringify(input["spatial_coverage"]);
                 }
@@ -380,14 +380,14 @@ export const registerExecutionOutputsInCatalog = async (
                 }
             }
 
-            let promises = [];
+            const promises = [];
 
             // Register outputs in the data catalog
             model.output_files.map((outf) => {
                 if (execution.results[outf.id]) {
                     // Register output with the appropriate variable and spatio-temporal information from input (if transferred)
-                    let output = execution.results[outf.id];
-                    let ds = {
+                    const output = execution.results[outf.id];
+                    const ds = {
                         name: `${outf.name}-${execution.id}`,
                         variables: outf.variables,
                         datatype: output.type,
@@ -409,7 +409,7 @@ export const registerExecutionOutputsInCatalog = async (
                 }
             });
 
-            let values = await Promise.all(promises);
+            const values = await Promise.all(promises);
             if (values.length == model.output_files.length) {
                 console.log("Finished registering outputs for execution: " + execution.id);
             }

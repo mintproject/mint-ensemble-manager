@@ -10,12 +10,12 @@ import { createResponse } from "./util";
 
 const executionsLocalService = {
     async submitExecution(threadmodel: any) {
-        let prefs = await fetchMintConfig();
+        const prefs = await fetchMintConfig();
         KeycloakAdapter.signIn(prefs.graphql.username, prefs.graphql.password);
 
-        let thread: Thread = await getThread(threadmodel.thread_id); //.then((thread: Thread) => {
+        const thread: Thread = await getThread(threadmodel.thread_id); //.then((thread: Thread) => {
         if (thread) {
-            let ok = await saveAndRunExecutionsLocally(thread, threadmodel.model_id, prefs);
+            const ok = await saveAndRunExecutionsLocally(thread, threadmodel.model_id, prefs);
             if (ok) {
                 return createResponse(
                     "success",
@@ -32,8 +32,8 @@ const executionsLocalService = {
         }
     },
     async deleteExecutionCache(threadmodel: any) {
-        let mint_prefs = await fetchMintConfig();
-        let thread: Thread = await getThread(threadmodel.thread_id); //.then((thread: Thread) => {
+        const mint_prefs = await fetchMintConfig();
+        const thread: Thread = await getThread(threadmodel.thread_id); //.then((thread: Thread) => {
         if (thread) {
             deleteExecutableCacheLocally(thread, threadmodel.model_id, mint_prefs);
             return createResponse(

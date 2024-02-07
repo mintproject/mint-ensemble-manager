@@ -1,7 +1,7 @@
 // ./api/api-v1/paths/logs.ts
 
 export default function (logsService: any) {
-    let operations = {
+    const operations = {
         GET
     };
 

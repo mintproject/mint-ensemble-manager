@@ -1,10 +1,10 @@
 import Dockerode = require("dockerode");
 import { imageExists, containerExec, pullImageAsync, waitForOutput } from "dockerode-utils";
 
-let dockerode = new Dockerode();
+const dockerode = new Dockerode();
 
 export const pullImage = async (image: string, version: string = "latest") => {
-    let exists = await imageExists(dockerode, image);
+    const exists = await imageExists(dockerode, image);
     if (!exists) {
         console.log("Pulling docker image: " + image);
         await pullImageAsync(dockerode, image);

@@ -7,9 +7,9 @@ import { createResponse } from "./util";
 
 const monitorsService = {
     async submitMonitor(threadmodel: any) {
-        let thread: Thread = await getThread(threadmodel.thread_id); //.then((thread: Thread) => {
+        const thread: Thread = await getThread(threadmodel.thread_id); //.then((thread: Thread) => {
         if (thread) {
-            let mint_prefs = await fetchMintConfig();
+            const mint_prefs = await fetchMintConfig();
             monitorAllExecutions(thread, threadmodel.model_id, mint_prefs);
             return createResponse(
                 "success",
@@ -20,7 +20,7 @@ const monitorsService = {
         }
     },
     async fetchRunStatus(threadid: string) {
-        let thread = await getThread(threadid);
+        const thread = await getThread(threadid);
         if (thread) return thread.execution_summary;
         else return createResponse("failure", "Thread not found");
     }

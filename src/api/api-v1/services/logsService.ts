@@ -11,15 +11,15 @@ import { createResponse } from "./util";
 const logsService = {
     async fetchLog(execution_id: string) {
         try {
-            let prefs = await fetchMintConfig();
+            const prefs = await fetchMintConfig();
             KeycloakAdapter.signIn(prefs.graphql.username, prefs.graphql.password);
 
-            let ensemble: Execution = await getExecution(execution_id);
+            const ensemble: Execution = await getExecution(execution_id);
             if (!ensemble.execution_engine || ensemble.execution_engine == "wings") {
-                let log = await fetchWingsRunLog(ensemble.runid, prefs);
+                const log = await fetchWingsRunLog(ensemble.runid, prefs);
                 return log;
             } else if (ensemble.execution_engine == "localex") {
-                let log = fetchLocalRunLog(execution_id, prefs);
+                const log = fetchLocalRunLog(execution_id, prefs);
                 return log;
             }
         } catch (error) {

@@ -1,7 +1,7 @@
 // ./api/api-v1/paths/registration.ts
 
 export default function (registrationService: any) {
-    let operations = {
+    const operations = {
         POST
     };
 

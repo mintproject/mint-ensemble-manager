@@ -11,20 +11,20 @@ const cleanQueue = (queue: Queue.Queue) => {
     queue.clean(0, "completed");
     queue.clean(0, "failed");
 
-    let multi = queue.multi();
+    const multi = queue.multi();
     multi.del(queue.toKey("repeat"));
     multi.exec();
 };
 
 const executionQueueService = {
     async emptyExecutionQueue() {
-        let executionQueue = new Queue(EXECUTION_QUEUE_NAME, REDIS_URL);
+        const executionQueue = new Queue(EXECUTION_QUEUE_NAME, REDIS_URL);
         cleanQueue(executionQueue);
         return createResponse("success", "Queues emptied");
     },
     async getExecutionQueue(thread: any) {
-        let executionQueue = new Queue(EXECUTION_QUEUE_NAME, REDIS_URL);
-        let count = await executionQueue.getActiveCount();
+        const executionQueue = new Queue(EXECUTION_QUEUE_NAME, REDIS_URL);
+        const count = await executionQueue.getActiveCount();
         return createResponse("success", "Number of Active Jobs: " + count);
     }
 };

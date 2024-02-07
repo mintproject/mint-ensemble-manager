@@ -8,9 +8,9 @@ import { KeycloakAdapter } from "../../../config/keycloak-adapter";
 const registrationService = {
     async registerExecutionOutputs(threadmodel: any) {
         try {
-            let prefs = await fetchMintConfig();
-            let thread: Thread = await getThread(threadmodel.thread_id); //.then((thread: Thread) => {
-            let ok = await registerExecutionResults(thread, threadmodel.model_id, prefs);
+            const prefs = await fetchMintConfig();
+            const thread: Thread = await getThread(threadmodel.thread_id); //.then((thread: Thread) => {
+            const ok = await registerExecutionResults(thread, threadmodel.model_id, prefs);
             if (ok) {
                 return createResponse(
                     "success",

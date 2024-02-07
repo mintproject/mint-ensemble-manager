@@ -3,7 +3,7 @@
 import executionQueueService from "../services/executionQueueService";
 
 export default function (executionsLocalService: any) {
-    let operations = {
+    const operations = {
         GET,
         DELETE
     };

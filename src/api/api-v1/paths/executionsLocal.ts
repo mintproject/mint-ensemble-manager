@@ -1,7 +1,7 @@
 // ./api/api-v1/paths/executionsLocal.ts
 
 export default function (executionsLocalService: any) {
-    let operations = {
+    const operations = {
         POST,
         DELETE,
         EMPTY

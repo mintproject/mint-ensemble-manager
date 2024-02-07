@@ -23,11 +23,11 @@ export class GraphQL {
     };
 
     static getHTTPSLink() {
-        let prefs = getConfiguration();
+        const prefs = getConfiguration();
 
         // Normal HTTP Link
-        let protocol = prefs.graphql.enable_ssl ? "https://" : "http://";
-        let uri = protocol + prefs.graphql.endpoint;
+        const protocol = prefs.graphql.enable_ssl ? "https://" : "http://";
+        const uri = protocol + prefs.graphql.endpoint;
 
         return createHttpLink({
             uri: uri,

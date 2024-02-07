@@ -9,10 +9,10 @@ import { createResponse } from "./util";
 const modelCacheService = {
     async deleteModel(model_id: string) {
         try {
-            let prefs = await fetchMintConfig();
+            const prefs = await fetchMintConfig();
             KeycloakAdapter.signIn(prefs.graphql.username, prefs.graphql.password);
 
-            let model = await getModel(model_id);
+            const model = await getModel(model_id);
             if (model) {
                 deleteModelCache(model, prefs);
 

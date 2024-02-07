@@ -1,7 +1,7 @@
 // ./api/api-v1/paths/threads.ts
 
 export default function (threadsService: any) {
-    let operations = {
+    const operations = {
         POST
     };
 

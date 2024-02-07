@@ -29,9 +29,9 @@ import { Md5 } from "ts-md5";
 import { getConfiguration } from "../mint/mint-functions";
 import { Region } from "../mint/mint-types";
 
-let prefs = getConfiguration();
+const prefs = getConfiguration();
 
-let executionQueue = new Queue(EXECUTION_QUEUE_NAME, REDIS_URL);
+const executionQueue = new Queue(EXECUTION_QUEUE_NAME, REDIS_URL);
 executionQueue.process(prefs.localex.parallelism, __dirname + "/execution.js");
 
 // You can listen to global events to get notified when jobs are processed
@@ -72,7 +72,7 @@ const _unzipFile = (zipfilename: string, dirname: string): Promise<string> => {
                 }
                 // If this is a directory, then copy its contents to dirname
                 if (entry.fileName.indexOf("/") >= 0) {
-                    let filename = entry.fileName.substr(entry.fileName.indexOf("/") + 1);
+                    const filename = entry.fileName.substr(entry.fileName.indexOf("/") + 1);
                     if (!filename) {
                         zipfile.readEntry();
                         return;
@@ -89,8 +89,8 @@ const _unzipFile = (zipfilename: string, dirname: string): Promise<string> => {
                             readStream.on("end", function () {
                                 zipfile.readEntry();
                             });
-                            let filepath = dirname + "/" + filename;
-                            let outstream = fs.createWriteStream(filepath);
+                            const filepath = dirname + "/" + filename;
+                            const outstream = fs.createWriteStream(filepath);
                             readStream.pipe(outstream);
                             readStream.on("end", () => {
                                 // Make it executable
@@ -110,7 +110,7 @@ const _unzipFile = (zipfilename: string, dirname: string): Promise<string> => {
 };
 
 const _downloadAndUnzipToDirectory = (url: string, modeldir: string, compname: string) => {
-    let zipfile = modeldir + ".zip";
+    const zipfile = modeldir + ".zip";
     return new Promise<void>((resolve, reject) => {
         _downloadFile(url, zipfile).then(() => {
             // Unzip file
@@ -131,7 +131,7 @@ const _downloadAndUnzipToDirectory = (url: string, modeldir: string, compname: s
 };
 
 const _downloadCwlToDirectory = (url: string, modeldir: string) => {
-    let cwlfile = modeldir + "/run.cwl";
+    const cwlfile = modeldir + "/run.cwl";
     return new Promise<void>((resolve, reject) => {
         _downloadFile(url, cwlfile).then(() => {
             // Unzip file
@@ -145,19 +145,19 @@ const _downloadCwlToDirectory = (url: string, modeldir: string) => {
 };
 
 const _downloadWCM = async (url: string, prefs: MintPreferences) => {
-    let hashdir = Md5.hashStr(url).toString();
+    const hashdir = Md5.hashStr(url).toString();
 
     // Get zip file name from url
-    let plainurl = url.replace(/\?.*$/, "");
-    let component_file = plainurl.replace(/.+\//, "");
-    let extension = path.extname(component_file);
-    let compname = path.basename(component_file, extension);
+    const plainurl = url.replace(/\?.*$/, "");
+    const component_file = plainurl.replace(/.+\//, "");
+    const extension = path.extname(component_file);
+    const compname = path.basename(component_file, extension);
 
-    let codedir = prefs.localex.codedir + "/" + hashdir;
+    const codedir = prefs.localex.codedir + "/" + hashdir;
     if (!fs.existsSync(codedir)) fs.mkdirsSync(codedir);
 
-    let modeldir = codedir + "/" + compname;
-    let src_dir = modeldir + "/" + "src";
+    const modeldir = codedir + "/" + compname;
+    const src_dir = modeldir + "/" + "src";
     if (!fs.existsSync(src_dir)) {
         if (extension == ".zip") await _downloadAndUnzipToDirectory(url, modeldir, compname);
         else if (extension == ".cwl") {
@@ -181,13 +181,13 @@ const _getModelDetailsFromYAML = (modeldir: string) => {
         throw new Error("The component is not a valid WINGS component.");
     }
 
-    let comp: Component = {
+    const comp: Component = {
         rundir: modeldir + "/src",
         inputs: [],
         outputs: []
     };
-    let yml = yaml.safeLoad(fs.readFileSync(wcmYamlFileName, "utf8")) as Wcm;
-    let wings = yml["wings"];
+    const yml = yaml.safeLoad(fs.readFileSync(wcmYamlFileName, "utf8")) as Wcm;
+    const wings = yml["wings"];
     wings.inputs.map((input: any) => {
         comp.inputs.push(input);
     });
@@ -201,7 +201,7 @@ const _getModelIODetails = (io: ModelIO, iotype: string) => {
     if (!io.position) {
         return null;
     }
-    let pfx = iotype == "input" ? "-i" : "-o";
+    const pfx = iotype == "input" ? "-i" : "-o";
     return {
         id: io.id,
         role: io.name,
@@ -226,7 +226,7 @@ const _getModelParamDetails = (param: ModelParameter) => {
 };
 
 const _getModelDetails = (model: Model, modeldir: string) => {
-    let comp: Component = {
+    const comp: Component = {
         rundir: modeldir + "/src",
         softwareImage: model.software_image,
         inputs: [],
@@ -236,21 +236,21 @@ const _getModelDetails = (model: Model, modeldir: string) => {
     let okparam = true;
     let okoutput = true;
     model.input_files.map((input) => {
-        let details = _getModelIODetails(input, "input");
+        const details = _getModelIODetails(input, "input");
         if (!details) {
             okinput = false;
             console.error("Input file missing position: " + input.id);
         } else comp.inputs.push(details);
     });
     model.input_parameters.map((param) => {
-        let details = _getModelParamDetails(param);
+        const details = _getModelParamDetails(param);
         if (!details) {
             okparam = false;
             console.error("Input parameter missing position: " + param.id);
         } else comp.inputs.push(details);
     });
     model.output_files.map((output) => {
-        let details = _getModelIODetails(output, "output");
+        const details = _getModelIODetails(output, "output");
         if (!details) {
             okoutput = false;
             console.error("Output file missing position: " + output.id);
@@ -261,20 +261,20 @@ const _getModelDetails = (model: Model, modeldir: string) => {
 };
 
 export const getModelCacheDirectory = (url: string, prefs: MintPreferences) => {
-    let hashdir = Md5.hashStr(url).toString();
+    const hashdir = Md5.hashStr(url).toString();
 
     // Get zip file name from url
-    let plainurl = url.replace(/\?.*$/, "");
-    let zipfile = plainurl.replace(/.+\//, "");
-    let compname = zipfile.replace(/\.zip/i, "");
+    const plainurl = url.replace(/\?.*$/, "");
+    const zipfile = plainurl.replace(/.+\//, "");
+    const compname = zipfile.replace(/\.zip/i, "");
 
-    let codedir = prefs.localex.codedir;
-    let modeldir = codedir + "/" + hashdir + "/" + compname;
+    const codedir = prefs.localex.codedir;
+    const modeldir = codedir + "/" + hashdir + "/" + compname;
     return modeldir;
 };
 
 export const loadModelWCM = async (url: string, model: Model, prefs: MintPreferences) => {
-    let modeldir = await _downloadWCM(url, prefs);
+    const modeldir = await _downloadWCM(url, prefs);
     if (model.software_image != null) {
         // Pull docker image if needed
         await pullImage(model.software_image);
@@ -288,9 +288,9 @@ export const loadModelWCM = async (url: string, model: Model, prefs: MintPrefere
 };
 
 const _getRegionGeoJson = (region: Region) => {
-    let geojson = { type: "FeatureCollection", features: [] };
+    const geojson = { type: "FeatureCollection", features: [] };
     region.geometries.map((geom) => {
-        let feature = { type: "Feature", geometry: geom };
+        const feature = { type: "Feature", geometry: geom };
         geojson["features"].push(feature);
     });
     return JSON.stringify(geojson);
@@ -305,19 +305,19 @@ export const queueModelExecutionsLocally = async (
     executions: Execution[],
     prefs: MintPreferences
 ): Promise<Queue.Job<any>[]> => {
-    let seeds: ComponentSeed[] = [];
-    let registered_resources: any = {};
-    let downloadInputPromises = [];
+    const seeds: ComponentSeed[] = [];
+    const registered_resources: any = {};
+    const downloadInputPromises = [];
 
-    let model = thread.models[modelid];
-    let thread_model_id = thread.model_ensembles[modelid].id;
+    const model = thread.models[modelid];
+    const thread_model_id = thread.model_ensembles[modelid].id;
 
     // Get all input dataset bindings and parameter bindings
     executions.map((execution) => {
-        let bindings = execution.bindings;
-        let datasets: ComponentDataBindings = {};
-        let parameters: ComponentParameterBindings = {};
-        let paramtypes: ComponentParameterTypes = {};
+        const bindings = execution.bindings;
+        const datasets: ComponentDataBindings = {};
+        const parameters: ComponentParameterBindings = {};
+        const paramtypes: ComponentParameterTypes = {};
 
         // Get input datasets
         model.input_files.map((io: ModelIO) => {
@@ -332,8 +332,8 @@ export const queueModelExecutionsLocally = async (
                 resources = io.value.resources;
             }
             if (resources.length > 0) {
-                let type = io.type.replace(/^.*#/, "");
-                let newresources: any = {};
+                const type = io.type.replace(/^.*#/, "");
+                const newresources: any = {};
                 resources.map((res) => {
                     let resid = res.id;
                     let resname = res.name;
@@ -360,12 +360,12 @@ export const queueModelExecutionsLocally = async (
             if (ip.value) {
                 parameters[ip.id] = ip.value.toString();
             } else if (bindings[ip.id]) {
-                let value = bindings[ip.id];
+                const value = bindings[ip.id];
                 parameters[ip.id] = value.toString();
             }
             // HACK: Replace region geojson
             if (parameters[ip.id].match(/__region_geojson:(.+)/)) {
-                let region_geojson = _getRegionGeoJson(region);
+                const region_geojson = _getRegionGeoJson(region);
                 parameters[ip.id] = region_geojson;
             }
 
@@ -382,10 +382,10 @@ export const queueModelExecutionsLocally = async (
     });
 
     // Add Download Job to Queue (if it doesn't already exist)
-    for (let resid in registered_resources) {
-        let args = registered_resources[resid];
-        let inputpath = prefs.localex.datadir + "/" + args[0];
-        let inputurl = args[2];
+    for (const resid in registered_resources) {
+        const args = registered_resources[resid];
+        const inputpath = prefs.localex.datadir + "/" + args[0];
+        const inputurl = args[2];
         if (!fs.existsSync(inputpath))
             downloadInputPromises.push(_downloadFile(inputurl, inputpath));
     }
@@ -394,8 +394,8 @@ export const queueModelExecutionsLocally = async (
     if (downloadInputPromises.length > 0) await Promise.all(downloadInputPromises);
 
     // Once all Downloads are finished, Add all execution jobs (seeds) to queue
-    let numseeds = seeds.length;
-    let priority =
+    const numseeds = seeds.length;
+    const priority =
         numseeds < 10 ? 1 : numseeds < 50 ? 2 : numseeds < 200 ? 3 : numseeds < 500 ? 4 : 5;
 
     return Promise.all(
@@ -419,7 +419,7 @@ export const queueModelExecutionsLocally = async (
 };
 
 export const fetchLocalRunLog = (executionid: string, prefs: MintPreferences) => {
-    let logstdout = prefs.localex.logdir + "/" + executionid + ".log";
+    const logstdout = prefs.localex.logdir + "/" + executionid + ".log";
     if (fs.existsSync(logstdout)) return fs.readFileSync(logstdout).toString();
     return "Job not yet started running";
 };

@@ -13,7 +13,7 @@ export const fetchModelFromCatalog = (
     modelid: string,
     prefs: MintPreferences
 ): Promise<ModelConfigurationSetup> => {
-    let username = KeycloakAdapter.getUser().email;
+    const username = KeycloakAdapter.getUser().email;
     return new Promise<any>((resolve, reject) => {
         rp.get({
             url: prefs.model_catalog_api + "custom/modelconfigurationsetups/variable",
@@ -21,10 +21,10 @@ export const fetchModelFromCatalog = (
             json: true
         }).then((setups) => {
             let found = false;
-            for (var i = 0; i < setups.length; i++) {
-                let calib = setups[i] as ModelConfigurationSetup;
-                let calibid: string = calib.id;
-                let calibname = calibid.replace(/.*\//, "");
+            for (let i = 0; i < setups.length; i++) {
+                const calib = setups[i] as ModelConfigurationSetup;
+                const calibid: string = calib.id;
+                const calibname = calibid.replace(/.*\//, "");
                 if (calibname == modelid) {
                     // Match !
                     found = true;

@@ -1,7 +1,7 @@
 // ./api/api-v1/paths/executions.ts
 
 export default function (executionsService: any) {
-    let operations = {
+    const operations = {
         POST
     };
 

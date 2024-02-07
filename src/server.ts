@@ -31,7 +31,7 @@ const version = VERSION;
 const dashboard_url = "/admin/queues";
 
 // Setup API
-var v1ApiDoc = require("./api/api-doc");
+const v1ApiDoc = require("./api/api-doc");
 app.use(bodyParser.json());
 app.use(cors());
 
@@ -61,7 +61,7 @@ app.use(((err, req, res, next) => {
 }) as express.ErrorRequestHandler);
 
 // Setup Queue
-let executionQueue = new Queue(EXECUTION_QUEUE_NAME, REDIS_URL);
+const executionQueue = new Queue(EXECUTION_QUEUE_NAME, REDIS_URL);
 
 // Setup Bull Dashboard
 const serverAdapter = new ExpressAdapter();
@@ -81,7 +81,7 @@ app.listen(port, () => {
         url: "http://localhost:" + port + "/" + version + "/api-docs",
         onError: () => {},
         onLoad: (resp: any) => {
-            var apidoc = JSON.parse(resp.target.responseText);
+            const apidoc = JSON.parse(resp.target.responseText);
             app.use("/" + version + "/ui", swaggerUi.serve, swaggerUi.setup(apidoc));
         }
     });

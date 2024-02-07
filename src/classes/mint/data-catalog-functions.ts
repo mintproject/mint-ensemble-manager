@@ -2,8 +2,8 @@ import { DateRange, Region, MintPreferences, DatasetQueryParameters, Dataset } f
 import * as rp from "request-promise-native";
 
 const getDatasetsFromDCResponse = (obj: any, queryParameters: DatasetQueryParameters) => {
-    let datasets = obj.datasets.map((ds: any) => {
-        let dmeta = ds["dataset_metadata"];
+    const datasets = obj.datasets.map((ds: any) => {
+        const dmeta = ds["dataset_metadata"];
         return {
             id: ds["dataset_id"],
             name: ds["dataset_name"] || "",
@@ -38,13 +38,13 @@ const getDatasetsFromDCResponse = (obj: any, queryParameters: DatasetQueryParame
 };
 
 const getDatasetResourceListFromDCResponse = (obj: any) => {
-    let resources: any[] = [];
+    const resources: any[] = [];
     obj.resources.map((row: any) => {
-        let rmeta = row["resource_metadata"];
-        let tcover = rmeta["temporal_coverage"];
-        let scover = rmeta["spatial_coverage"];
-        let tcoverstart = tcover ? new Date(tcover["start_time"]) : null;
-        let tcoverend = tcover ? new Date(tcover["end_time"]) : null;
+        const rmeta = row["resource_metadata"];
+        const tcover = rmeta["temporal_coverage"];
+        const scover = rmeta["spatial_coverage"];
+        const tcoverstart = tcover ? new Date(tcover["start_time"]) : null;
+        const tcoverend = tcover ? new Date(tcover["end_time"]) : null;
 
         resources.push({
             id: row["resource_id"],
@@ -72,7 +72,7 @@ export const queryDatasetDetails = async (
     prefs: MintPreferences
 ): Promise<Dataset> => {
     return new Promise<any>((resolve, reject) => {
-        let dsQueryData = {
+        const dsQueryData = {
             standard_variable_names__in: driving_variables,
             spatial_coverage__intersects: region.geometries[0],
             end_time__gte: dates.start_date.toISOString().replace(/\.\d{3}Z$/, ""),
@@ -81,7 +81,7 @@ export const queryDatasetDetails = async (
             limit: 100
         };
 
-        let resQueryData: any = {
+        const resQueryData: any = {
             dataset_id: dsid,
             filter: {
                 spatial_coverage__intersects: region.geometries[0],
@@ -97,12 +97,12 @@ export const queryDatasetDetails = async (
             body: dsQueryData,
             json: true
         }).then((obj) => {
-            let datasets: Dataset[] = getDatasetsFromDCResponse(obj, {
+            const datasets: Dataset[] = getDatasetsFromDCResponse(obj, {
                 variables: driving_variables
             } as DatasetQueryParameters);
 
             if (datasets.length > 0) {
-                let ds = datasets[0];
+                const ds = datasets[0];
                 rp.post({
                     url: prefs.data_catalog_api + "/datasets/dataset_resources",
                     headers: { "Content-Type": "application/json" },
@@ -135,7 +135,7 @@ export const registerCKANDataset = async (
     dataset: Dataset,
     prefs: MintPreferences
 ): Promise<boolean> => {
-    let ckan_dataset = {
+    const ckan_dataset = {
         name: dataset.name,
         title: dataset.name,
         notes: dataset.description,

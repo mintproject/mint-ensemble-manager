@@ -228,20 +228,20 @@ export interface Model extends IdNameObject {
 }
 
 const getLastPart = (s: string) => {
-    let sp = s.split("/");
+    const sp = s.split("/");
     if (sp && sp.length > 0) return sp.pop();
     return "";
 };
 
 export const getPathFromModel = (m: Model) => {
     let path = "";
-    let model = getLastPart(m.model_name);
+    const model = getLastPart(m.model_name);
     if (model) {
         path += "/" + model;
-        let version = getLastPart(m.model_version);
+        const version = getLastPart(m.model_version);
         if (version) {
             path += "/" + version;
-            let cfg = getLastPart(m.model_configuration);
+            const cfg = getLastPart(m.model_configuration);
             if (cfg) {
                 path += "/" + cfg;
                 path += "/" + getLastPart(m.id);

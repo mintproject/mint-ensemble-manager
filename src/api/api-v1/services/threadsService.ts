@@ -49,11 +49,11 @@ function flatten(array) {
 
 const threadsService = {
     async createThread(desc: any) {
-        let mint_prefs = await fetchMintConfig();
+        const mint_prefs = await fetchMintConfig();
         KeycloakAdapter.signIn(mint_prefs.graphql.username, mint_prefs.graphql.password);
 
         // Create Problem Statement if needed
-        let prob_desc = desc.problem_statement;
+        const prob_desc = desc.problem_statement;
         let prob: ProblemStatement = null;
         if (prob_desc.id) {
             prob = await getProblemStatement(prob_desc.id);
@@ -73,9 +73,9 @@ const threadsService = {
         }
 
         // Create Task if needed
-        let task_desc = desc.task;
+        const task_desc = desc.task;
         let task: Task = null;
-        let time_period = task_desc.time_period ? task_desc.time_period : prob_desc.time_period;
+        const time_period = task_desc.time_period ? task_desc.time_period : prob_desc.time_period;
         if (task_desc.id) {
             task = await getTask(task_desc.id);
         } else {
@@ -96,9 +96,9 @@ const threadsService = {
         }
 
         // Create Thread
-        let thread_desc = desc.thread;
-        let thread_name = thread_desc.name ? thread_desc.name : null;
-        let thread_notes = "Added thread from API";
+        const thread_desc = desc.thread;
+        const thread_name = thread_desc.name ? thread_desc.name : null;
+        const thread_notes = "Added thread from API";
 
         let thread = {
             name: thread_name,
@@ -117,12 +117,12 @@ const threadsService = {
         thread.id = await addThread(task, thread);
 
         // Fetch region details
-        let region: Region = await getRegionDetails(task.regionid);
+        const region: Region = await getRegionDetails(task.regionid);
 
         /*
         Set Thread Model
         */
-        let model: ModelConfigurationSetup = await fetchModelFromCatalog(
+        const model: ModelConfigurationSetup = await fetchModelFromCatalog(
             task.response_variables,
             [],
             desc.thread.modelid,
@@ -135,12 +135,12 @@ const threadsService = {
         /*
          Set Thread Data
         */
-        let data: DataMap = {};
-        let model_ensembles = thread.model_ensembles;
+        const data: DataMap = {};
+        const model_ensembles = thread.model_ensembles;
 
         // Fetch dataset details from the Data Catalog
         for (var i = 0; i < model.hasInput.length; i++) {
-            let input_file = model.hasInput[i];
+            const input_file = model.hasInput[i];
             if (!input_file.hasFixedResource || input_file.hasFixedResource.length == 0) {
                 // Only bind model inputs that don't have a fixed value defined
                 let datasetids = thread_desc.datasets[input_file.label[0]];
@@ -148,15 +148,15 @@ const threadsService = {
                     model_ensembles[model.id].bindings[input_file.id] = [];
 
                     if (!(datasetids instanceof Array)) datasetids = [datasetids];
-                    for (var j = 0; j < datasetids.length; j++) {
-                        let dsid = datasetids[j];
-                        let variables_arr = input_file.hasPresentation.map((pres) => {
+                    for (let j = 0; j < datasetids.length; j++) {
+                        const dsid = datasetids[j];
+                        const variables_arr = input_file.hasPresentation.map((pres) => {
                             if (pres.hasStandardVariable)
                                 return pres.hasStandardVariable.map((sv) => sv.label);
                         });
                         let variables = flatten(variables_arr);
                         variables = variables.filter((v) => v);
-                        let dataset: Dataset = await queryDatasetDetails(
+                        const dataset: Dataset = await queryDatasetDetails(
                             model.id,
                             input_file.id,
                             variables,
@@ -165,8 +165,8 @@ const threadsService = {
                             region,
                             mint_prefs
                         );
-                        let sliceid = uuidv4();
-                        let dataslice = {
+                        const sliceid = uuidv4();
+                        const dataslice = {
                             id: sliceid,
                             total_resources: dataset.resources.length,
                             selected_resources: dataset.resources.filter((res) => res.selected)
@@ -187,9 +187,9 @@ const threadsService = {
         await setThreadData(data, model_ensembles, "Setting thread data via API", thread);
 
         // Set Thread Parameters
-        let execution_summary: IdMap<ExecutionSummary> = {};
+        const execution_summary: IdMap<ExecutionSummary> = {};
         for (var i = 0; i < model.hasParameter.length; i++) {
-            let input_parameter = model.hasParameter[i];
+            const input_parameter = model.hasParameter[i];
             if (!input_parameter.hasFixedValue || input_parameter.hasFixedValue.length == 0) {
                 let value = thread_desc.parameters[input_parameter.label[0]];
                 if (!value) value = input_parameter.hasDefaultValue[0];
@@ -198,7 +198,7 @@ const threadsService = {
             }
         }
         // Get total number of configs to run
-        let totalconfigs = getTotalConfigurations(model, model_ensembles[model.id].bindings, data);
+        const totalconfigs = getTotalConfigurations(model, model_ensembles[model.id].bindings, data);
         execution_summary[model.id] = {
             total_runs: totalconfigs,
             submitted_runs: 0,
@@ -214,7 +214,7 @@ const threadsService = {
         );
 
         // Return details of newly created thread
-        let modelthread = {
+        const modelthread = {
             problem_statement_id: prob.id,
             task_id: task.id,
             thread_id: thread.id

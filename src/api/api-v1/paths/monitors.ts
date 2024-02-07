@@ -1,7 +1,7 @@
 // ./api/api-v1/paths/monitors.ts
 
 export default function (monitorsService: any) {
-    let operations = {
+    const operations = {
         POST,
         GET
     };
