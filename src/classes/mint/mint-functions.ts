@@ -1,10 +1,8 @@
 import {
     Thread,
-    ProblemStatement,
     MintPreferences,
     ExecutionSummary,
     Execution,
-    ModelIOBindings,
     ThreadModelMap
 } from "./mint-types";
 import {
