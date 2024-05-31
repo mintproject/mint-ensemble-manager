@@ -22,7 +22,7 @@ const executionQueueService = {
         cleanQueue(executionQueue);
         return createResponse("success", "Queues emptied");
     },
-    async getExecutionQueue(thread: any) {
+    async getExecutionQueue() {
         const executionQueue = new Queue(EXECUTION_QUEUE_NAME, REDIS_URL);
         const count = await executionQueue.getActiveCount();
         return createResponse("success", "Number of Active Jobs: " + count);
