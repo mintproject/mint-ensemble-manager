@@ -2,10 +2,11 @@ import { getThread } from "../../../classes/graphql/graphql_functions";
 import { Thread } from "../../../classes/mint/mint-types";
 import { fetchMintConfig, saveAndRunExecutions } from "../../../classes/mint/mint-functions";
 import { createResponse } from "./util";
+import { ModelThread } from "../../../schema/openapi";
 
 // ./api-v1/services/executionsService.js
 const executionsService = {
-    async submitExecution(threadmodel: any) {
+    async submitExecution(threadmodel: ModelThread) {
         const thread: Thread = await getThread(threadmodel.thread_id); //.then((thread: Thread) => {
         if (thread) {
             const mint_prefs = await fetchMintConfig();
