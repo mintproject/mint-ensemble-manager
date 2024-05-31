@@ -1,5 +1,5 @@
 import { getThread } from "../../../classes/graphql/graphql_functions";
-import { Thread } from "../../../classes/mint/mint-types";
+import { Thread} from "../../../classes/mint/mint-types";
 import {
     saveAndRunExecutionsLocally,
     deleteExecutableCacheLocally
@@ -7,9 +7,10 @@ import {
 import { fetchMintConfig } from "../../../classes/mint/mint-functions";
 import { KeycloakAdapter } from "../../../config/keycloak-adapter";
 import { createResponse } from "./util";
+import { ModelThread } from "../../../schema/openapi";
 
 const executionsLocalService = {
-    async submitExecution(threadmodel: any) {
+    async submitExecution(threadmodel: ModelThread) {
         const prefs = await fetchMintConfig();
         KeycloakAdapter.signIn(prefs.graphql.username, prefs.graphql.password);
 
@@ -31,7 +32,7 @@ const executionsLocalService = {
             return createResponse("failure", "Thread " + threadmodel.thread_id + " not found !");
         }
     },
-    async deleteExecutionCache(threadmodel: any) {
+    async deleteExecutionCache(threadmodel: ModelThread) {
         const mint_prefs = await fetchMintConfig();
         const thread: Thread = await getThread(threadmodel.thread_id); //.then((thread: Thread) => {
         if (thread) {
