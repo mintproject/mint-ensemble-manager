@@ -1,4 +1,3 @@
-import { env } from "process";
 
 export interface IdMap<T> {
     [id: string]: T;
@@ -520,3 +519,4 @@ export interface WingsWcm {
     inputs: ModelIO[];
     outputs: ModelIO[];
 }
+
