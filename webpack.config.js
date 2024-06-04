@@ -45,13 +45,17 @@ module.exports = {
                     to: 'api'
                 },
                 {
+                    from: './src/classes',
+                    to: 'classes'
+                },
+                {
                     from: './src/config',
                     to: 'config'
                 },
                 {
                     from: './src/schema',
                     to: 'schema'
-                }
+                },
             ]
         })
     ],
