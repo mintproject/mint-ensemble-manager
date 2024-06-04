@@ -10,12 +10,12 @@ module.exports = {
         extensions: ['.js', '.json', '.ts', '.graphql']
     },
     entry: {
-        execution: './src/classes/localex/seed-execution.ts',        
+        execution: './src/classes/localex/seed-execution.ts',
         server: './src/server.ts'
     },
     output: {
-        library: 'ensemble-manager', 
-        libraryTarget: 'umd',        
+        library: 'ensemble-manager',
+        libraryTarget: 'umd',
         filename: '[name].js',
         path: path.resolve(__dirname, 'dist')
     },
@@ -27,10 +27,10 @@ module.exports = {
                 exclude: /node_modules/,
                 loader: 'graphql-tag/loader'
             },
-            { 
-                test: /\.ts$/, 
+            {
+                test: /\.ts$/,
                 exclude: /node_modules/,
-                loader: 'ts-loader' 
+                loader: 'ts-loader'
             }
         ]
     },
@@ -40,13 +40,17 @@ module.exports = {
         }),
         new CopyWebpackPlugin({
             patterns: [
-                { 
+                {
                     from: './src/api',
-                    to: 'api' 
+                    to: 'api'
                 },
-                { 
+                {
                     from: './src/config',
-                    to: 'config' 
+                    to: 'config'
+                },
+                {
+                    from: './src/schema',
+                    to: 'schema'
                 }
             ]
         })
