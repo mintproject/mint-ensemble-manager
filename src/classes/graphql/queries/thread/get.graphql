@@ -1,6 +1,8 @@
 #import "../fragments/thread-info.graphql"
 #import "../fragments/model-info.graphql"
 #import "../fragments/execution-summary-info.graphql"
+#import "../fragments/thread-events.graphql"
+
 
 query query_thread($id: String!) {
     thread_by_pk(id:$id) {
