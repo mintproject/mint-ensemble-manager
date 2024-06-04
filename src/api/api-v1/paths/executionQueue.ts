@@ -9,7 +9,7 @@ export default function (executionsLocalService: any) {
     };
 
     function GET(req: any, res: any, next: any) {
-        executionQueueService.getExecutionQueue(req.body).then((result: any) => {
+        executionQueueService.getExecutionQueue().then((result: any) => {
             if (result.result == "error") {
                 res.status(406).json(result);
             } else {

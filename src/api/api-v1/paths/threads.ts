@@ -1,12 +1,15 @@
 // ./api/api-v1/paths/threads.ts
 
+import { NewModelThread } from "../../../schema/openapi";
+
 export default function (threadsService: any) {
     const operations = {
         POST
     };
 
     function POST(req: any, res: any, next: any) {
-        threadsService.createThread(req.body).then((result: any) => {
+        const newModelThread = req.body as NewModelThread;
+        threadsService.createThread(newModelThread).then((result: any) => {
             if (result.result == "error") {
                 res.status(406).json(result);
             } else {
