@@ -5,6 +5,7 @@
     "graphql": {
        "endpoint": "graphql.mint.local/v1/graphql",
        "enable_ssl": false,
+       "secret": "CHANGEME",
        "use_secret": true
     },
     "execution_engine": "localex",
