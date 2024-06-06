@@ -1,3 +1,5 @@
+import { InputBindings } from "../../../../classes/mint/mint-types";
+
 export default {
     "https://w3id.org/okn/i/mint/modflow_2005_BartonSprings_avg_Bas": {
         id: "6a40bdbdbb72888c539fdd4b39d50bba",
@@ -53,4 +55,4 @@ export default {
         url: "https://data.mint.isi.edu/files/sample-inputs-outputs/modflowInputs/BARTON_SPRINGS_2001_2010AVERAGE.sip",
         __typename: "resource"
     }
-};
+} as InputBindings;

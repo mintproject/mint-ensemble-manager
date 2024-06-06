@@ -148,12 +148,12 @@ export interface Dataset extends IdNameObject {
 }
 
 export interface Dataslice extends IdNameObject {
-    dataset: Dataset;
+    dataset?: Dataset;
     total_resources?: number;
     selected_resources?: number;
     resources: DataResource[];
     resources_loaded?: boolean;
-    time_period: DateRange;
+    time_period?: DateRange;
     spatial_coverage?: any;
 }
 

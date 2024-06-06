@@ -1,3 +1,5 @@
+import { Model } from "../../../../classes/mint/mint-types";
+
 export default {
     id: "https://w3id.org/okn/i/mint/modflow_2005_BartonSprings_avg",
     name: "MODFLOW 2005 model setup calibrated for the Barton Springs region. Files for average conditions have been pre-selected",
@@ -31,8 +33,7 @@ export default {
                     {
                         id: "6a40bdbdbb72888c539fdd4b39d50bba",
                         name: "BARTON_SPRINGS_2001_2010AVERAGE.ba6",
-                        url: "https://data.mint.isi.edu/files/sample-inputs-outputs/modflowInputs/BARTON_SPRINGS_2001_2010AVERAGE.ba6",
-                        __typename: "resource"
+                        url: "https://data.mint.isi.edu/files/sample-inputs-outputs/modflowInputs/BARTON_SPRINGS_2001_2010AVERAGE.ba6"
                     }
                 ]
             },
@@ -254,4 +255,4 @@ export default {
         }
     ],
     input_parameters: []
-};
+} as Model;
