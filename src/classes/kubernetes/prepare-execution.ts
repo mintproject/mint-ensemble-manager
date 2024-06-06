@@ -21,6 +21,7 @@ import {
     Thread,
     ThreadModelMap
 } from "../mint/mint-types";
+import { queueModelExecutionsKubernetes } from "./submit-execution";
 
 export const saveAndRunExecutionsKubernetes = async (
     thread: Thread,
@@ -116,14 +117,14 @@ async function createExecutions(
         await updateSuccessfulExecutionOnThread(successful_execution_ids, thread_model_id);
 
         // // Queue the model executions
-        // queueModelExecutionsLocally(
-        //     thread,
-        //     modelid,
-        //     component,
-        //     thread_region,
-        //     executions_to_be_run,
-        //     prefs
-        // );
+        queueModelExecutionsKubernetes(
+            thread,
+            modelid,
+            component,
+            thread_region,
+            executions_to_be_run,
+            prefs
+        );
     }
     console.log("Finished submitting all executions for model: " + modelid);
 }
