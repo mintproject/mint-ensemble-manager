@@ -29,10 +29,10 @@ export const queueModelExecutions = async (
     const seeds = createSeedsExecution(executions, model, region, component);
     const resources = getResourcesFromSeeds(seeds);
     await downloadInputsFile(resources, prefs);
-    return submitSeedToExecution(seeds, prefs, thread, thread_model_id);
+    return submitSeedToExecutionEngine(seeds, prefs, thread, thread_model_id);
 };
 
-function submitSeedToExecution(
+function submitSeedToExecutionEngine(
     seeds: ComponentSeed[],
     prefs: MintPreferences,
     thread: Thread,
