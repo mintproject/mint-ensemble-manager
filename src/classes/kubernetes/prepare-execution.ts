@@ -107,8 +107,19 @@ async function createExecutions(
         // Fetch only successful executions
         const successful_execution_ids: string[] =
             await listSuccessfulExecutionIds(executionIdsBatch);
+        // Filter out successful executions
         const executions_to_be_run = executionsBatch.filter(
             (e) => successful_execution_ids.indexOf(e.id) < 0
+        );
+
+        console.log(
+            "Total " +
+                executionsBatch.length +
+                " executions, " +
+                successful_execution_ids.length +
+                " already run, " +
+                executions_to_be_run.length +
+                " to be run"
         );
 
         // Create Executions and Thread Model Mappings to those executions
@@ -125,8 +136,9 @@ async function createExecutions(
             executions_to_be_run,
             prefs
         );
+        if (executions_to_be_run.length > 0)
+            console.log("Finished submitting all executions for model: " + modelid);
     }
-    console.log("Finished submitting all executions for model: " + modelid);
 }
 
 async function updateSuccessfulExecutionOnThread(

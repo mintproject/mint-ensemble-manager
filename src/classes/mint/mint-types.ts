@@ -162,6 +162,7 @@ export interface DataResource extends IdNameObject {
     time_period?: DateRange;
     spatial_coverage?: any;
     selected?: boolean;
+    type?: string;
 }
 
 export interface DatasetDetail extends Dataset {

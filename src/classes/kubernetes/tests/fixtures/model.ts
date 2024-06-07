@@ -255,4 +255,4 @@ export default {
         }
     ],
     input_parameters: []
-} as Model;
+};
