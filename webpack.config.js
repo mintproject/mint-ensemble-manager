@@ -11,7 +11,7 @@ module.exports = {
     },
     entry: {
         execution: "./src/classes/localex/seed-execution.ts",
-        executionKubernetes: "./src/classes/kubernetes/seed-execution.ts",
+        executionKubernetes: "./src/classes/tapis/seed-execution.ts",
         server: "./src/server.ts"
     },
     output: {

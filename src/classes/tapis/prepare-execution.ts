@@ -21,7 +21,7 @@ import {
     Thread,
     ThreadModelMap
 } from "../mint/mint-types";
-import { queueModelExecutionsKubernetes } from "./submit-execution";
+import { queueModelExecutions } from "./submit-execution";
 
 export const saveAndRunExecutionsKubernetes = async (
     thread: Thread,
@@ -58,9 +58,6 @@ export const saveAndRunExecutionsModel = async (
         // - TODO: Change to allow flexibility
         const configs = getModelInputConfigurations(threadModel, inputIds);
 
-        // const datadir = prefs.localex.datadir;
-
-        // if (!fs.existsSync(datadir)) fs.mkdirsSync(datadir);
         if (configs !== null)
             await createExecutions(
                 configs,
@@ -128,7 +125,7 @@ async function createExecutions(
         await updateSuccessfulExecutionOnThread(successful_execution_ids, thread_model_id);
 
         // // Queue the model executions
-        queueModelExecutionsKubernetes(
+        queueModelExecutions(
             thread,
             modelid,
             component,

@@ -13,10 +13,10 @@ import {
 
 const prefs = getConfiguration();
 const executionQueueBull = new Queue(EXECUTION_QUEUE_NAME, REDIS_URL);
-executionQueueBull.process(prefs.localex.parallelism, __dirname + "/executionKubernetes.js");
+executionQueueBull.process(prefs.localex.parallelism, __dirname + "/executionTapis.js");
 
 // Create Jobs (Seeds) and Queue them
-export const queueModelExecutionsKubernetes = async (
+export const queueModelExecutions = async (
     thread: Thread,
     modelid: string,
     component: Component,
