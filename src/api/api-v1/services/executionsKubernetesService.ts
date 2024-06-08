@@ -2,7 +2,7 @@ import { getThread } from "../../../classes/graphql/graphql_functions";
 import { Thread } from "../../../classes/mint/mint-types";
 import { createResponse } from "./util";
 import { ModelThread } from "../../../classes/api";
-import { saveAndRunExecutionsKubernetes } from "../../../classes/kubernetes/prepare-execution";
+import { saveAndRunExecutionsKubernetes } from "../../../classes/tapis/prepare-execution";
 import { fetchMintConfig } from "../../../classes/mint/mint-functions";
 
 const executionsKubernetesService = {

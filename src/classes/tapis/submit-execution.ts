@@ -1,7 +1,7 @@
 import { Component, ComponentSeed } from "../localex/local-execution-types";
 import { Thread, Execution, MintPreferences, Model } from "../mint/mint-types";
 import Queue from "bull";
-import { EXECUTION_QUEUE_NAME, REDIS_URL } from "../../config/redis";
+import { EXECUTION_QUEUE_NAME, EXECUTION_QUEUE_NAME_TAPIS, REDIS_URL } from "../../config/redis";
 import { Region } from "../mint/mint-types";
 import { getConfiguration } from "../mint/mint-functions";
 import {
@@ -12,8 +12,8 @@ import {
 } from "./helpers";
 
 const prefs = getConfiguration();
-const executionQueueBull = new Queue(EXECUTION_QUEUE_NAME, REDIS_URL);
-executionQueueBull.process(prefs.localex.parallelism, __dirname + "/executionTapis.js");
+const executionQueueTapis = new Queue(EXECUTION_QUEUE_NAME_TAPIS, REDIS_URL);
+executionQueueTapis.process(prefs.localex.parallelism, __dirname + "/executionTapis.js");
 
 // Create Jobs (Seeds) and Queue them
 export const queueModelExecutions = async (
@@ -42,14 +42,25 @@ function submitSeedToExecutionEngine(
     const priority =
         numseeds < 10 ? 1 : numseeds < 50 ? 2 : numseeds < 200 ? 3 : numseeds < 500 ? 4 : 5;
 
+    const tapisAppId = "modflow-2005";
+    const tapisAppVersion = "0.0.4";
+    console.log("Seeds");
+    console.log(JSON.stringify(seeds));
+    console.log("Thread id");
+    console.log(thread.id);
+    console.log("Thread model id");
+    console.log(thread_model_id);
+
     return Promise.all(
         seeds.map((seed) =>
-            executionQueueBull.add(
+            executionQueueTapis.add(
                 {
                     seed: seed,
                     prefs: prefs.localex,
                     thread_id: thread.id,
-                    thread_model_id: thread_model_id
+                    thread_model_id: thread_model_id,
+                    tapisAppId: tapisAppId,
+                    tapisAppVersion: tapisAppVersion
                 },
                 {
                     priority: priority
