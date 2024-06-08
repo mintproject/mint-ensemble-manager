@@ -25,7 +25,7 @@ export const queueModelExecutions = async (
     const model = thread.models[modelid];
     const seeds = createSeedsExecution(executions, model, region, component);
     const tapisAppId = "modflow-2005";
-    const tapisAppVersion = "0.0.5";
+    const tapisAppVersion = "0.0.6";
     const token = await getTapisToken();
     const { result: app } = await getTapisApp(tapisAppId, tapisAppVersion, token);
     const jobs = seeds.map((seed) => createJobRequest(app, seed, model));
