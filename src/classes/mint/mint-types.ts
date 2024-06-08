@@ -27,12 +27,17 @@ export interface UserPreferences {
     mint: MintPreferences;
 }
 
+interface TapisAuth {
+    username: string;
+    basePath: string;
+}
+
 export interface MintPreferences {
     data_catalog_api: string;
     data_catalog_type: string;
     data_catalog_key: string;
     data_catalog_extra: any;
-
+    tapis: TapisAuth;
     model_catalog_api?: string;
     ensemble_manager_api: string;
     ingestion_api: string;

@@ -1,39 +1,64 @@
 import { Apps, Jobs } from "@tapis/tapis-typescript";
 import { ComponentArgument, ComponentSeed } from "../../../classes/localex/local-execution-types";
-import { DataResource } from "../../../classes/mint/mint-types";
+import { DataResource, Model, ModelIO } from "../../../classes/mint/mint-types";
 
-const createRequestJob = (
+const ALLOCATION = "PT2050-DataX";
+const SYSTEM_LOGICAL_QUEUE = "development";
+const SYSTEM_ID = "ls6";
+
+const createJobRequest = (
     app: Apps.TapisApp,
     seed: ComponentSeed,
-    executionId: string
+    model: Model
 ): Jobs.ReqSubmitJob => {
-    const jobFileInputs = createJobFileInputsFromSeed(seed, app);
+    const jobFileInputs = createJobFileInputsFromSeed(seed, app, model);
     const request: Jobs.ReqSubmitJob = {
-        name: executionId,
+        name: seed.execution.id,
         appId: app.id,
         appVersion: app.version,
-        fileInputs: jobFileInputs
+        fileInputs: jobFileInputs,
+        nodeCount: 1,
+        coresPerNode: 1,
+        maxMinutes: 10,
+        archiveSystemId: "cloud.data",
+        archiveSystemDir:
+            "HOST_EVAL($HOME)/tapis-jobs-archive/${JobCreateDate}/${JobName}-${JobUUID}",
+        archiveOnAppError: true,
+        execSystemId: SYSTEM_ID,
+        execSystemLogicalQueue: SYSTEM_LOGICAL_QUEUE,
+        parameterSet: {
+            appArgs: [],
+            containerArgs: [],
+            schedulerOptions: [
+                {
+                    name: "TACC Allocation",
+                    description: "The TACC allocation associated with this job execution",
+                    include: true,
+                    arg: `-A ${ALLOCATION}`
+                }
+            ],
+            envVariables: []
+        }
     };
     return request;
 };
 
 const createJobFileInputsFromSeed = (
     seed: ComponentSeed,
-    app: Apps.TapisApp
+    app: Apps.TapisApp,
+    model: Model
 ): Array<Jobs.JobFileInput> => {
     const jobInputs = app.jobAttributes.fileInputs.flatMap((fileInput: Apps.AppFileInput) => {
-        const componentInput = seed.component.inputs.find(
-            (componentFileInput: ComponentArgument) => {
-                return componentFileInput.role === fileInput.name;
-            }
-        );
-        if (!componentInput) {
+        const modelInput = model.input_files.find((modelInputFile: ModelIO) => {
+            return modelInputFile.name === fileInput.name;
+        });
+        if (!modelInput) {
             throw new Error(`Component input not found for ${fileInput.name}`);
         }
-        const datasets = seed.datasets[componentInput.id] || [];
+        const datasets = seed.datasets[modelInput.id] || [];
         return datasets.map((dataset: DataResource) => {
             return {
-                name: componentInput.role,
+                name: modelInput.name,
                 sourceUrl: dataset.url
             } as Jobs.JobFileInput;
         });
@@ -41,4 +66,4 @@ const createJobFileInputsFromSeed = (
     return jobInputs;
 };
 
-export { createRequestJob, createJobFileInputsFromSeed };
+export { createJobRequest, createJobFileInputsFromSeed };

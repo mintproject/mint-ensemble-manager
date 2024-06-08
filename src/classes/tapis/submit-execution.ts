@@ -1,19 +1,18 @@
 import { Component, ComponentSeed } from "../localex/local-execution-types";
-import { Thread, Execution, MintPreferences, Model } from "../mint/mint-types";
-import Queue from "bull";
-import { EXECUTION_QUEUE_NAME, EXECUTION_QUEUE_NAME_TAPIS, REDIS_URL } from "../../config/redis";
+import { Thread, Execution, Model } from "../mint/mint-types";
 import { Region } from "../mint/mint-types";
 import { getConfiguration } from "../mint/mint-functions";
-import {
-    getInputsParameters,
-    getInputDatasets,
-    getResourcesFromSeeds,
-    downloadInputsFile
-} from "./helpers";
+import { getInputsParameters, getInputDatasets } from "./helpers";
+import login from "./api/authenticator/login";
+import { createJobRequest } from "./adapters/jobs";
+import detail from "./api/apps/detail";
+import submit from "./api/jobs/submit";
+import { Jobs } from "@tapis/tapis-typescript";
 
 const prefs = getConfiguration();
-const executionQueueTapis = new Queue(EXECUTION_QUEUE_NAME_TAPIS, REDIS_URL);
-executionQueueTapis.process(prefs.localex.parallelism, __dirname + "/executionTapis.js");
+const username = prefs.tapis.username;
+const password = process.env.TAPIS_PASSWORD;
+const basePath = prefs.tapis.basePath;
 
 // Create Jobs (Seeds) and Queue them
 export const queueModelExecutions = async (
@@ -21,53 +20,36 @@ export const queueModelExecutions = async (
     modelid: string,
     component: Component,
     region: Region,
-    executions: Execution[],
-    prefs: MintPreferences
-): Promise<Queue.Job<any>[]> => {
+    executions: Execution[]
+): Promise<Jobs.RespSubmitJob[]> => {
     const model = thread.models[modelid];
-    const thread_model_id = thread.model_ensembles[modelid].id;
     const seeds = createSeedsExecution(executions, model, region, component);
-    const resources = getResourcesFromSeeds(seeds);
-    await downloadInputsFile(resources, prefs);
-    return submitSeedToExecutionEngine(seeds, prefs, thread, thread_model_id);
+    const tapisAppId = "modflow-2005";
+    const tapisAppVersion = "0.0.5";
+    const token = await getTapisToken();
+    const { result: app } = await getTapisApp(tapisAppId, tapisAppVersion, token);
+    const jobs = seeds.map((seed) => createJobRequest(app, seed, model));
+    return await Promise.all(jobs.map(async (job) => await submitTapisJob(job, token)));
 };
 
-function submitSeedToExecutionEngine(
-    seeds: ComponentSeed[],
-    prefs: MintPreferences,
-    thread: Thread,
-    thread_model_id: string
-) {
-    const numseeds = seeds.length;
-    const priority =
-        numseeds < 10 ? 1 : numseeds < 50 ? 2 : numseeds < 200 ? 3 : numseeds < 500 ? 4 : 5;
+async function submitTapisJob(request: Jobs.ReqSubmitJob, token) {
+    console.log("Submitting job: ", request);
+    const response = await submit(request, basePath, token.access_token);
+    return response;
+}
 
-    const tapisAppId = "modflow-2005";
-    const tapisAppVersion = "0.0.4";
-    console.log("Seeds");
-    console.log(JSON.stringify(seeds));
-    console.log("Thread id");
-    console.log(thread.id);
-    console.log("Thread model id");
-    console.log(thread_model_id);
-
-    return Promise.all(
-        seeds.map((seed) =>
-            executionQueueTapis.add(
-                {
-                    seed: seed,
-                    prefs: prefs.localex,
-                    thread_id: thread.id,
-                    thread_model_id: thread_model_id,
-                    tapisAppId: tapisAppId,
-                    tapisAppVersion: tapisAppVersion
-                },
-                {
-                    priority: priority
-                }
-            )
-        )
+async function getTapisApp(tapisAppId: string, tapisAppVersion: string, token) {
+    return await detail(
+        { appId: tapisAppId, appVersion: tapisAppVersion },
+        basePath,
+        token.access_token
     );
+}
+
+async function getTapisToken() {
+    const { result } = await login(username, password, basePath);
+    const token = result.access_token;
+    return token;
 }
 
 function createSeedsExecution(

@@ -86,11 +86,8 @@ async function createExecutions(
     thread: Thread,
     thread_region: Region
 ) {
-    // Create the thread model execution summary
     await createThreadModelExecutionSummary(configs, thread_model_id);
-    // Delete existing thread execution ids
     await deleteThreadModelExecutionIds(thread_model_id);
-    // Load the component model
     const component = await loadModelWCM(model.code_url, model, prefs);
 
     // Create executions in batches
@@ -125,14 +122,7 @@ async function createExecutions(
         await updateSuccessfulExecutionOnThread(successful_execution_ids, thread_model_id);
 
         // // Queue the model executions
-        queueModelExecutions(
-            thread,
-            modelid,
-            component,
-            thread_region,
-            executions_to_be_run,
-            prefs
-        );
+        await queueModelExecutions(thread, modelid, component, thread_region, executions_to_be_run);
         if (executions_to_be_run.length > 0)
             console.log("Finished submitting all executions for model: " + modelid);
     }
