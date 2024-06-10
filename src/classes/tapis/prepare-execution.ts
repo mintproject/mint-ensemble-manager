@@ -23,7 +23,7 @@ import {
 } from "../mint/mint-types";
 import { queueModelExecutions } from "./submit-execution";
 
-export const saveAndRunExecutionsKubernetes = async (
+export const saveAndRunExecutionsTapis = async (
     thread: Thread,
     modelid: string,
     prefs: MintPreferences
