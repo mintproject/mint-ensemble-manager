@@ -14,6 +14,8 @@ const username = prefs.tapis.username;
 const password = process.env.TAPIS_PASSWORD;
 const basePath = prefs.tapis.basePath;
 
+const tapisAppId = "modflow-2005";
+const tapisAppVersion = "0.0.6";
 // Create Jobs (Seeds) and Queue them
 export const queueModelExecutions = async (
     thread: Thread,
@@ -24,8 +26,6 @@ export const queueModelExecutions = async (
 ): Promise<Jobs.RespSubmitJob[]> => {
     const model = thread.models[modelid];
     const seeds = createSeedsExecution(executions, model, region, component);
-    const tapisAppId = "modflow-2005";
-    const tapisAppVersion = "0.0.6";
     const token = await getTapisToken();
     const { result: app } = await getTapisApp(tapisAppId, tapisAppVersion, token);
     const jobs = seeds.map((seed) => createJobRequest(app, seed, model));

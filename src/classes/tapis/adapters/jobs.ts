@@ -1,5 +1,5 @@
 import { Apps, Jobs } from "@tapis/tapis-typescript";
-import { ComponentArgument, ComponentSeed } from "../../../classes/localex/local-execution-types";
+import { ComponentSeed } from "../../../classes/localex/local-execution-types";
 import { DataResource, Model, ModelIO } from "../../../classes/mint/mint-types";
 
 const ALLOCATION = "PT2050-DataX";
