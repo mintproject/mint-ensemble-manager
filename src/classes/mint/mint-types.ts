@@ -27,12 +27,17 @@ export interface UserPreferences {
     mint: MintPreferences;
 }
 
+interface TapisAuth {
+    username: string;
+    basePath: string;
+}
+
 export interface MintPreferences {
     data_catalog_api: string;
     data_catalog_type: string;
     data_catalog_key: string;
     data_catalog_extra: any;
-
+    tapis: TapisAuth;
     model_catalog_api?: string;
     ensemble_manager_api: string;
     ingestion_api: string;
@@ -148,12 +153,12 @@ export interface Dataset extends IdNameObject {
 }
 
 export interface Dataslice extends IdNameObject {
-    dataset: Dataset;
+    dataset?: Dataset;
     total_resources?: number;
     selected_resources?: number;
     resources: DataResource[];
     resources_loaded?: boolean;
-    time_period: DateRange;
+    time_period?: DateRange;
     spatial_coverage?: any;
 }
 
@@ -162,6 +167,7 @@ export interface DataResource extends IdNameObject {
     time_period?: DateRange;
     spatial_coverage?: any;
     selected?: boolean;
+    type?: string;
 }
 
 export interface DatasetDetail extends Dataset {

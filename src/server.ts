@@ -12,6 +12,7 @@ import v1MonitorsService from "./api/api-v1/services/monitorsService";
 import v1LogsService from "./api/api-v1/services/logsService";
 import v1ThreadsService from "./api/api-v1/services/threadsService";
 import v1ModelCacheService from "./api/api-v1/services/modelCacheService";
+import v1ExecutionTapisService from "./api/api-v1/services/executionsTapisService";
 
 import { initialize } from "express-openapi";
 import { getResource } from "./classes/wings/xhr-requests";
@@ -46,7 +47,8 @@ initialize({
         monitorsService: v1MonitorsService,
         threadsService: v1ThreadsService,
         logsService: v1LogsService,
-        modelCacheService: v1ModelCacheService
+        modelCacheService: v1ModelCacheService,
+        executionsTapisService: v1ExecutionTapisService
     },
     paths: path.resolve(__dirname, "./api/api-v1/paths"),
     routesGlob: "**/*.{ts,js}",
