@@ -1,3 +1,4 @@
+#import "../fragments/thread-events.graphql"
 
 fragment thread_info on thread {
     id
@@ -8,4 +9,5 @@ fragment thread_info on thread {
     region_id
     driving_variable_id
     response_variable_id
+    ...thread_events
 }
