@@ -1,12 +1,12 @@
 // ./api/api-v1/paths/executionsLocal.ts
 
-export default function (executionsKubernetesService: any) {
+export default function (executionsTapisService: any) {
     const operations = {
-        POST,
+        POST
     };
 
     function POST(req: any, res: any, next: any) {
-        executionsKubernetesService.submitExecution(req.body).then((result: any) => {
+        executionsTapisService.submitExecution(req.body).then((result: any) => {
             if (result.result == "error") {
                 res.status(406).json(result);
             } else {
