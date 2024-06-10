@@ -1,18 +1,17 @@
 // ./api/api-v1/paths/executionsLocal.ts
 
-export default function (executionsTapisService: any) {
+import { ModelThread } from "../../../classes/api";
+import { ExecutionsTapisService } from "../services/executionsTapisService";
+import { Request, Response } from "express";
+
+export default function (executionsTapisService: ExecutionsTapisService) {
     const operations = {
         POST
     };
 
-    function POST(req: any, res: any, next: any) {
-        executionsTapisService.submitExecution(req.body).then((result: any) => {
-            if (result.result == "error") {
-                res.status(406).json(result);
-            } else {
-                res.status(202).json(result);
-            }
-        });
+    async function POST(req: Request<null, null, ModelThread, null, null>, res: Response) {
+        const threadmodel = req.body;
+        return await executionsTapisService.submitExecution(threadmodel, res);
     }
 
     // NOTE: We could also use a YAML string here.

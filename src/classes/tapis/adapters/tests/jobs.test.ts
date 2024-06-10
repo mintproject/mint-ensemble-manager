@@ -1,10 +1,10 @@
-import { createJobRequest } from "../jobs";
+import { createJobFileInputsFromSeed } from "../jobs";
 import seeds from "./fixtures/seeds";
 import app from "./fixtures/app";
 import model from "./fixtures/model";
 import jobFileInputsExpected from "./expected/jobFileInputs";
 
 test("test create job file inputs from seed", () => {
-    const jobInputs = createJobRequest(app, seeds[0], model);
+    const jobInputs = createJobFileInputsFromSeed(seeds[0], app, model);
     expect(jobInputs).toEqual(jobFileInputsExpected);
 });

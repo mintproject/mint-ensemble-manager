@@ -1,22 +1,33 @@
 import { getThread } from "../../../classes/graphql/graphql_functions";
 import { Thread } from "../../../classes/mint/mint-types";
-import { createResponse } from "./util";
 import { ModelThread } from "../../../classes/api";
 import { saveAndRunExecutionsTapis } from "../../../classes/tapis/prepare-execution";
 import { fetchMintConfig } from "../../../classes/mint/mint-functions";
+import { Response } from "express";
+
+export interface ExecutionsTapisService {
+    submitExecution(threadmodel: ModelThread, response: Response): Promise<Response>;
+}
 
 const executionsTapisService = {
-    async submitExecution(threadmodel: ModelThread) {
-        const thread: Thread = await getThread(threadmodel.thread_id); //.then((thread: Thread) => {
+    async submitExecution(threadmodel: ModelThread, response: Response) {
+        const thread: Thread = await getThread(threadmodel.thread_id);
         if (thread) {
             const prefs = await fetchMintConfig();
             saveAndRunExecutionsTapis(thread, threadmodel.model_id, prefs);
-            return createResponse(
-                "success",
-                "Thread " + threadmodel.thread_id + " submitted for execution !"
-            );
+            response
+                .json({
+                    result: "success",
+                    message: "Thread " + threadmodel.thread_id + " submitted for execution !"
+                })
+                .status(202);
         }
-        return createResponse("failure", "Thread " + threadmodel.thread_id + " not found !");
+        response
+            .json({
+                result: "failure",
+                message: "Thread " + threadmodel.thread_id + " not found !"
+            })
+            .status(404);
     }
 };
 
