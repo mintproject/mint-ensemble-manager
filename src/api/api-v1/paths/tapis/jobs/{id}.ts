@@ -1,8 +1,9 @@
 // ./api/api-v1/paths/executionsLocal.ts
 
 import { Response } from "express";
+import { JobsService } from "../../../services/tapis/jobsService";
 
-export default function (executionsTapisService: any) {
+export default function (jobsService: JobsService) {
     const exports = {
         POST,
         parameters: [
@@ -15,9 +16,8 @@ export default function (executionsTapisService: any) {
     };
 
     async function POST(req: any, res: Response) {
-        console.log("Webhook for Job Status Change.");
-        console.log(req.body);
-        res.status(200).send("Job Status Change Received.");
+        jobsService.webhookJobStatusChange(req.body, req.params.jobId);
+        res.status(200).send({ message: "Job Status Change." });
     }
 
     // NOTE: We could also use a YAML string here.

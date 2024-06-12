@@ -24,6 +24,7 @@ const { ExpressAdapter } = require("@bull-board/express");
 
 import { EXECUTION_QUEUE_NAME, REDIS_URL } from "./config/redis";
 import { PORT, VERSION } from "./config/app";
+import jobsService from "./api/api-v1/services/tapis/jobsService";
 
 // Main Express Server
 const app = express();
@@ -43,6 +44,7 @@ initialize({
         executionsService: v1ExecutionsService,
         executionsLocalService: v1ExecutionsLocalService,
         executionQueueService: v1ExecutionQueueService,
+        jobsService: jobsService,
         registrationService: v1RegistrationService,
         monitorsService: v1MonitorsService,
         threadsService: v1ThreadsService,
