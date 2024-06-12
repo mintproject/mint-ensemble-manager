@@ -8,6 +8,7 @@ import { createJobRequest } from "./adapters/jobs";
 import detail from "./api/apps/detail";
 import submit from "./api/jobs/submit";
 import { Jobs } from "@tapis/tapis-typescript";
+import subscribe from "./api/jobs/subscribe";
 
 const prefs = getConfiguration();
 const username = prefs.tapis.username;
@@ -29,11 +30,38 @@ export const queueModelExecutions = async (
     const token = await getTapisToken();
     const { result: app } = await getTapisApp(tapisAppId, tapisAppVersion, token);
     const jobs = seeds.map((seed) => createJobRequest(app, seed, model));
-    return await Promise.all(jobs.map(async (job) => await submitTapisJob(job, token)));
+    return await Promise.all(
+        jobs.map(async (job) => {
+            const jobSubmission = await submitTapisJob(job, token);
+            await subscribeTapisJob(jobSubmission.result.uuid, token);
+            return jobSubmission;
+        })
+    );
 };
 
+const generateWebHookUrl = (jobUuid: string) => {
+    return "https://webhook.site/dbb05bdc-8f00-4315-8b5b-d16b723cb95d";
+    // return `${prefs.tapis.webhookUrl}/tapis/jobs/${jobUuid}`;
+};
+
+async function subscribeTapisJob(jobUuid: string, token) {
+    const notifDeliveryTarget: Jobs.NotifDeliveryTarget = {
+        deliveryMethod: Jobs.NotifDeliveryTargetDeliveryMethodEnum.Webhook,
+        deliveryAddress: generateWebHookUrl(jobUuid)
+    };
+
+    const request: Jobs.ReqSubscribe = {
+        description: "Test subscription",
+        enabled: true,
+        eventCategoryFilter: Jobs.ReqSubscribeEventCategoryFilterEnum.JobNewStatus,
+        deliveryTargets: [notifDeliveryTarget]
+        // ttlminutes: 60,
+    };
+    const response = await subscribe(request, basePath, jobUuid, token.access_token);
+    return response;
+}
+
 async function submitTapisJob(request: Jobs.ReqSubmitJob, token) {
-    console.log("Submitting job: ", request);
     const response = await submit(request, basePath, token.access_token);
     return response;
 }

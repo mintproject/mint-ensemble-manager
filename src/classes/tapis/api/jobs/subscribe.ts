@@ -2,7 +2,7 @@ import { Jobs } from "@tapis/tapis-typescript";
 import apiGenerator from "../../utils/apiGenerator";
 import errorDecoder from "../../utils/errorDecoder";
 
-const suscribeJob = (
+const suscribe = (
     request: Jobs.ReqSubscribe,
     basePath: string,
     jobUuid: string,
@@ -10,7 +10,7 @@ const suscribeJob = (
 ): Promise<Jobs.RespResourceUrl> => {
     const api: Jobs.SubscriptionsApi = apiGenerator<Jobs.SubscriptionsApi>(
         Jobs,
-        Jobs.JobsApi,
+        Jobs.SubscriptionsApi,
         basePath,
         jwt
     );
@@ -19,4 +19,4 @@ const suscribeJob = (
     );
 };
 
-export default suscribeJob;
+export default suscribe;
