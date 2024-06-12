@@ -1,5 +1,5 @@
-import model from "./fixtures/model";
-import bindings from "./fixtures/input-bindings";
+import model from "../fixtures/model";
+import bindings from "../fixtures/input-bindings";
 import { getInputDatasets } from "../helpers";
 test("get inputs datasets", () => {
     const key = "https://w3id.org/okn/i/mint/modflow_2005_BartonSprings_avg_Bas";

@@ -41,3 +41,7 @@ title Tracking the progress of the execution
     TaskCatalog ->>-EnsembleManager: Return Execution Status
 
 ```
+
+```
+curl
+```
