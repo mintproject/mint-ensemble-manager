@@ -3,11 +3,12 @@ import getJobOutputs from "../api/jobs/outputs";
 
 const getJobOutputList = async (
     jobUuid: string,
-    outputPath: string,
+    outputPath: string | undefined,
     basePath: string,
     token: string
 ): Promise<Jobs.RespGetJobOutputList> => {
-    return await getJobOutputs(jobUuid, outputPath, basePath, token);
+    const realOutputPath = outputPath || "/";
+    return await getJobOutputs(jobUuid, realOutputPath, basePath, token);
 };
 
 export { getJobOutputList };
