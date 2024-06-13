@@ -22,7 +22,7 @@ export default function (jobsService: JobsService) {
                 return res.status(404).send({ message: "Execution not found." });
             }
             res.status(200).send({
-                message: "Job Status Change.",
+                message: "Job Status Change",
                 newStatus: execution.status,
                 id: execution.id
             });

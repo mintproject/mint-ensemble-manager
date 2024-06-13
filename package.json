@@ -4,7 +4,7 @@
     "description": "",
     "scripts": {
         "start": "ts-node -r node-localstorage/register ./dist/server.js",
-        "start:watch": "npx webpack -w",
+        "start:watch": "nodemon ./dist/server.js",
         "build": "npx webpack",
         "test": "jest",
         "lint-staged": "lint-staged",
