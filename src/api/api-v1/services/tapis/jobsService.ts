@@ -1,26 +1,31 @@
 import { Jobs } from "@tapis/tapis-typescript";
 import { getExecution, updateExecutionStatus } from "../../../../classes/graphql/graphql_functions";
-// import { Execution } from "../../../../classes/mint/mint-types";
+import { Execution } from "../../../../classes/mint/mint-types";
 
 export interface JobsService {
-    webhookJobStatusChange(webHookEvent: any, jobId: string): Promise<void>;
+    webhookJobStatusChange(webHookEvent: any, executionId: string): Promise<Execution | undefined>;
 }
 
 const jobsService = {
-    async webhookJobStatusChange(webHookEvent: any, execution: any) {
-        const status = webHookEvent.event.data.newJobStatus;
-        await updateJobStatusOnGraphQL(execution, status);
-        await updateJobStatusOnGraphQL(execution, status);
+    async webhookJobStatusChange(
+        webHookEvent: any,
+        executionId: string
+    ): Promise<Execution | undefined> {
+        const execution = await getExecution(executionId);
+        if (execution !== undefined) {
+            const status = webHookEvent.event.data.newJobStatus;
+            await updateJobStatusOnGraphQL(execution, status);
+        }
+        return execution;
     }
 };
 
 export default jobsService;
 
-export const getExecutionById = async (executionId: string) => {
-    return await getExecution(executionId);
-};
-
-const updateJobStatusOnGraphQL = async (execution: any, status: Jobs.JobListDTOStatusEnum) => {
+const updateJobStatusOnGraphQL = async (
+    execution: Execution,
+    status: Jobs.JobListDTOStatusEnum
+) => {
     execution.status = adapterTapisStatusToMintStatus(status);
     await updateExecutionStatus(execution);
 };

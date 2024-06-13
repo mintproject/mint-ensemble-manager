@@ -1,7 +1,7 @@
 // ./api/api-v1/paths/executionsLocal.ts
 
 import { Response } from "express";
-import { getExecutionById, JobsService } from "../../../services/tapis/jobsService";
+import { JobsService } from "../../../services/tapis/jobsService";
 
 export default function (jobsService: JobsService) {
     const exports = {
@@ -17,17 +17,19 @@ export default function (jobsService: JobsService) {
 
     async function POST(req: any, res: Response) {
         try {
-            const executionId = req.params.id;
-            const execution = await getExecutionById(executionId);
-            if (!execution) {
-                return res.status(404).send({ message: "An error occurred." });
+            const execution = await jobsService.webhookJobStatusChange(req.body, req.params.id);
+            if (execution == undefined) {
+                return res.status(404).send({ message: "Execution not found." });
             }
-            await jobsService.webhookJobStatusChange(req.body, req.params.id);
+            res.status(200).send({
+                message: "Job Status Change.",
+                newStatus: execution.status,
+                id: execution.id
+            });
         } catch (error) {
             console.error(error);
             return res.status(500).send({ message: "An error occurred. " + error });
         }
-        res.status(200).send({ message: "Job Status Change." + req.params.executionId });
     }
 
     // NOTE: We could also use a YAML string here.
