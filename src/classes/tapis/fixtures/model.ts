@@ -1,5 +1,3 @@
-import { Model } from "../../../../classes/mint/mint-types";
-
 export default {
     id: "https://w3id.org/okn/i/mint/modflow_2005_BartonSprings_avg",
     name: "MODFLOW 2005 model setup calibrated for the Barton Springs region. Files for average conditions have been pre-selected",

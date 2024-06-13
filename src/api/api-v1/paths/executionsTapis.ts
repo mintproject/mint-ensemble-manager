@@ -1,6 +1,5 @@
 // ./api/api-v1/paths/executionsLocal.ts
 
-import { ModelThread } from "../../../classes/api";
 import { ExecutionsTapisService } from "../services/executionsTapisService";
 import { Request, Response } from "express";
 
@@ -9,9 +8,14 @@ export default function (executionsTapisService: ExecutionsTapisService) {
         POST
     };
 
-    async function POST(req: Request<null, null, ModelThread, null, null>, res: Response) {
+    async function POST(req: any, res: Response) {
         const threadmodel = req.body;
-        return await executionsTapisService.submitExecution(threadmodel, res);
+        const response = await executionsTapisService.submitExecution(threadmodel);
+        if (response) {
+            res.status(202).json(response);
+        } else {
+            res.status(404).json({ error: "Thread not found" });
+        }
     }
 
     // NOTE: We could also use a YAML string here.
