@@ -1,7 +1,7 @@
 import { Jobs } from "@tapis/tapis-typescript";
 import { getExecution, updateExecutionStatus } from "../../../../classes/graphql/graphql_functions";
 import { Execution } from "../../../../classes/mint/mint-types";
-import { getJobOutputList } from "../../../../classes/tapis/jobs";
+import { updateExecutionResultsFromJob } from "../../../../classes/tapis/jobs";
 
 export interface JobsService {
     webhookJobStatusChange(webHookEvent: any, executionId: string): Promise<Execution | undefined>;
@@ -17,7 +17,7 @@ const jobsService = {
         if (execution !== undefined) {
             const status = webHookEvent.event.data.newJobStatus;
             await updateJobStatusOnGraphQL(execution, status);
-            await registerJobOutputs(jobUuid, execution, status);
+            await updateExecutionResultsFromJob(jobUuid, execution.id, status);
         }
         return execution;
     }
@@ -30,18 +30,8 @@ const updateJobStatusOnGraphQL = async (
     status: Jobs.JobListDTOStatusEnum
 ) => {
     execution.status = adapterTapisStatusToMintStatus(status);
+    execution.run_progress = 1;
     await updateExecutionStatus(execution);
-};
-
-const registerJobOutputs = async (
-    jobUuid: string,
-    execution: Execution,
-    status: Jobs.JobListDTOStatusEnum
-) => {
-    if (status !== Jobs.JobListDTOStatusEnum.Finished) {
-        const { result: files } = await getJobOutputList(jobUuid, undefined, "", "");
-        console.log(files);
-    }
 };
 
 const adapterTapisStatusToMintStatus = (status: Jobs.JobListDTOStatusEnum) => {
