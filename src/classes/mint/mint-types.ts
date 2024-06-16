@@ -1,5 +1,23 @@
 import { env } from "process";
 
+export type Scalars = {
+    ID: { input: string; output: string };
+    String: { input: string; output: string };
+    Boolean: { input: boolean; output: boolean };
+    Int: { input: number; output: number };
+    Float: { input: number; output: number };
+    date: { input: any; output: any };
+    float8: { input: any; output: any };
+    geography: { input: any; output: any };
+    geometry: { input: any; output: any };
+    problem_statement_events: { input: any; output: any };
+    task_events: { input: any; output: any };
+    thread_events: { input: any; output: any };
+    timestamp: { input: any; output: any };
+    timestamptz: { input: any; output: any };
+    uuid: { input: any; output: any };
+};
+
 export interface IdMap<T> {
     [id: string]: T;
 }
@@ -265,6 +283,11 @@ export interface ModelIO extends IdNameObject {
     format?: string;
 }
 
+export interface ModelOutput {
+    position: number;
+    model_io: ModelIO;
+}
+
 export interface ModelParameter extends IdNameObject {
     type: string;
     description?: string;
@@ -495,6 +518,12 @@ export interface Execution {
     results: any[]; // Chosen results after completed run
     selected: boolean;
 }
+
+export type Execution_Result = {
+    execution?: Execution;
+    model_io: ModelIO;
+    resource: DataResource;
+};
 
 export interface InputBindings {
     [input: string]: string | DataResource;

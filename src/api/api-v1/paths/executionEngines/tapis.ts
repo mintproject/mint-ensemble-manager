@@ -1,7 +1,7 @@
 // ./api/api-v1/paths/executionsLocal.ts
 
-import { ExecutionsTapisService } from "../services/executionsTapisService";
-import { Request, Response } from "express";
+import { ExecutionsTapisService } from "../../services/executionsTapisService";
+import { Response } from "express";
 
 export default function (executionsTapisService: ExecutionsTapisService) {
     const operations = {
@@ -20,8 +20,9 @@ export default function (executionsTapisService: ExecutionsTapisService) {
 
     // NOTE: We could also use a YAML string here.
     POST.apiDoc = {
-        summary: "Submit modeling thread for local execution.",
-        operationId: "submitLocalExecution",
+        summary: "Submit modeling thread for execution using Tapis.",
+        operationId: "submitTapisExecution",
+        tags: ["Execution Engine"],
         requestBody: {
             description: "Modeling thread",
             required: true,

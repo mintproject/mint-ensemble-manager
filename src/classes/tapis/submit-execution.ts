@@ -74,10 +74,11 @@ async function getTapisApp(tapisAppId: string, tapisAppVersion: string, token) {
     );
 }
 
-async function getTapisToken() {
+export async function getTapisToken() {
+    console.log("Getting Tapis Token", username, basePath);
     const { result } = await login(username, password, basePath);
     const token = result.access_token;
-    return token;
+    return { token, basePath };
 }
 
 function createSeedsExecution(

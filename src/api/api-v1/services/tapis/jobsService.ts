@@ -1,6 +1,7 @@
 import { Jobs } from "@tapis/tapis-typescript";
 import { getExecution, updateExecutionStatus } from "../../../../classes/graphql/graphql_functions";
 import { Execution } from "../../../../classes/mint/mint-types";
+import { updateExecutionResultsFromJob } from "../../../../classes/tapis/jobs";
 
 export interface JobsService {
     webhookJobStatusChange(webHookEvent: any, executionId: string): Promise<Execution | undefined>;
@@ -12,9 +13,11 @@ const jobsService = {
         executionId: string
     ): Promise<Execution | undefined> {
         const execution = await getExecution(executionId);
+        const jobUuid = webHookEvent.event.data.jobUuid;
         if (execution !== undefined) {
             const status = webHookEvent.event.data.newJobStatus;
             await updateJobStatusOnGraphQL(execution, status);
+            await updateExecutionResultsFromJob(jobUuid, execution.id, status);
         }
         return execution;
     }
@@ -27,6 +30,7 @@ const updateJobStatusOnGraphQL = async (
     status: Jobs.JobListDTOStatusEnum
 ) => {
     execution.status = adapterTapisStatusToMintStatus(status);
+    execution.run_progress = 1;
     await updateExecutionStatus(execution);
 };
 

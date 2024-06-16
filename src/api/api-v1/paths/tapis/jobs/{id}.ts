@@ -22,7 +22,7 @@ export default function (jobsService: JobsService) {
                 return res.status(404).send({ message: "Execution not found." });
             }
             res.status(200).send({
-                message: "Job Status Change.",
+                message: "Job Status Change",
                 newStatus: execution.status,
                 id: execution.id
             });
@@ -38,7 +38,7 @@ export default function (jobsService: JobsService) {
         description:
             "Webhook for Job Status Change. TAPIS will send a POST request to this endpoint when a job status changes.",
         operationId: "tapisChangeJobStatus",
-        tags: ["Tapis Jobs"],
+        tags: ["Tapis"],
         requestBody: {
             description: "Job Status",
             required: true,
