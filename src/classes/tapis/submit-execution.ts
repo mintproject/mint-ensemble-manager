@@ -1,4 +1,3 @@
-import { Component, ComponentSeed } from "../localex/local-execution-types";
 import { Thread, Execution, Model } from "../mint/mint-types";
 import { Region } from "../mint/mint-types";
 import { getConfiguration } from "../mint/mint-functions";
@@ -9,26 +8,25 @@ import detail from "./api/apps/detail";
 import submit from "./api/jobs/submit";
 import { Jobs } from "@tapis/tapis-typescript";
 import subscribe from "./api/jobs/subscribe";
+import { TapisComponent, TapisComponentSeed } from "./typing";
 
 const prefs = getConfiguration();
 const username = prefs.tapis.username;
 const password = process.env.TAPIS_PASSWORD;
 const basePath = prefs.tapis.basePath;
 
-const tapisAppId = "modflow-2005";
-const tapisAppVersion = "0.0.6";
 // Create Jobs (Seeds) and Queue them
 export const queueModelExecutions = async (
     thread: Thread,
     modelid: string,
-    component: Component,
+    component: TapisComponent,
     region: Region,
     executions: Execution[]
 ): Promise<Jobs.RespSubmitJob[]> => {
     const model = thread.models[modelid];
     const seeds = createSeedsExecution(executions, model, region, component);
     const token = await getTapisToken();
-    const { result: app } = await getTapisApp(tapisAppId, tapisAppVersion, token);
+    const { result: app } = await getTapisApp(component.appId, component.appVersion, token);
     const jobs = seeds.map((seed) => createJobRequest(app, seed, model));
     return await Promise.all(
         jobs.map(async (job) => {
@@ -40,8 +38,7 @@ export const queueModelExecutions = async (
 };
 
 const generateWebHookUrl = (jobUuid: string) => {
-    return "https://webhook.site/dbb05bdc-8f00-4315-8b5b-d16b723cb95d";
-    // return `${prefs.tapis.webhookUrl}/tapis/jobs/${jobUuid}`;
+    return `${prefs.ensemble_manager_api}/tapis/jobs/${jobUuid}`;
 };
 
 async function subscribeTapisJob(jobUuid: string, token) {
@@ -85,7 +82,7 @@ function createSeedsExecution(
     executions: Execution[],
     model: Model,
     region: Region,
-    component: Component
+    component: TapisComponent
 ) {
     return executions.map((execution) => {
         const bindings = execution.bindings;
@@ -97,6 +94,6 @@ function createSeedsExecution(
             datasets: datasets,
             parameters: parameters,
             paramtypes: parameterTypes
-        } as ComponentSeed;
+        } as TapisComponentSeed;
     });
 }

@@ -1,6 +1,9 @@
 export default [
     {
         component: {
+            appId: "modflow-2005",
+            appVersion: "0.0.4",
+            type: "tapis",
             rundir: "/tmp/mintproject/data/code/ad311d1e248d7802d1adbb6618c19e7a/MODFLOW2005/src",
             softwareImage: "mintproject/modflow-2005:latest",
             inputs: [

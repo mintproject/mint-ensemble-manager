@@ -14,10 +14,11 @@ const executionsTapisService = {
         const thread: Thread = await getThread(threadmodel.thread_id);
         if (thread) {
             const prefs = await fetchMintConfig();
-            saveAndRunExecutionsTapis(thread, threadmodel.model_id, prefs);
+            await saveAndRunExecutionsTapis(thread, threadmodel.model_id, prefs);
             return thread;
+        } else {
+            return undefined;
         }
-        return undefined;
     }
 };
 

@@ -1,6 +1,6 @@
 import { Apps, Jobs } from "@tapis/tapis-typescript";
-import { ComponentSeed } from "../../../classes/localex/local-execution-types";
 import { DataResource, Model, ModelIO } from "../../../classes/mint/mint-types";
+import { TapisComponentSeed } from "../typing";
 
 const ALLOCATION = "PT2050-DataX";
 const SYSTEM_LOGICAL_QUEUE = "development";
@@ -8,7 +8,7 @@ const SYSTEM_ID = "ls6";
 
 const createJobRequest = (
     app: Apps.TapisApp,
-    seed: ComponentSeed,
+    seed: TapisComponentSeed,
     model: Model
 ): Jobs.ReqSubmitJob => {
     const jobFileInputs = createJobFileInputsFromSeed(seed, app, model);
@@ -44,7 +44,7 @@ const createJobRequest = (
 };
 
 const createJobFileInputsFromSeed = (
-    seed: ComponentSeed,
+    seed: TapisComponentSeed,
     app: Apps.TapisApp,
     model: Model
 ): Array<Jobs.JobFileInput> => {

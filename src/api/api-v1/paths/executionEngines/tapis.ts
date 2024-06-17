@@ -10,11 +10,15 @@ export default function (executionsTapisService: ExecutionsTapisService) {
 
     async function POST(req: any, res: Response) {
         const threadmodel = req.body;
-        const response = await executionsTapisService.submitExecution(threadmodel);
-        if (response) {
-            res.status(202).json(response);
-        } else {
+
+        try {
+            const response = await executionsTapisService.submitExecution(threadmodel);
+            if (response) {
+                res.status(202).json(response);
+            }
             res.status(404).json({ error: "Thread not found" });
+        } catch (error) {
+            res.status(500).json({ error: error.message });
         }
     }
 

@@ -11,7 +11,6 @@ import {
     setThreadModelExecutionIds,
     setThreadModelExecutionSummary
 } from "../graphql/graphql_functions";
-import { loadModelWCM } from "../localex/local-execution-functions";
 import {
     Execution,
     ExecutionSummary,
@@ -22,6 +21,7 @@ import {
     ThreadModelMap
 } from "../mint/mint-types";
 import { queueModelExecutions } from "./submit-execution";
+import { TapisComponent } from "./typing";
 
 export const saveAndRunExecutionsTapis = async (
     thread: Thread,
@@ -43,37 +43,51 @@ export const saveAndRunExecutionsModel = async (
     thread: Thread,
     prefs: MintPreferences
 ) => {
+    if (!thread.execution_summary) thread.execution_summary = {};
+
+    const model = thread.models[modelid];
+    const thread_model_id = thread.model_ensembles[modelid].id;
+    const thread_region = await getRegionDetails(thread.regionid);
+    const execution_details = getModelInputBindings(model, thread, thread_region);
+    const threadModel = execution_details[0] as ThreadModelMap;
+    const inputIds = execution_details[1] as string[];
+
+    // This is the part that creates all different run configurations
+    // - Cross product of all input collections
+    // - TODO: Change to allow flexibility
+    const configs = getModelInputConfigurations(threadModel, inputIds);
+
+    if (configs !== null)
+        await createExecutions(
+            configs,
+            thread_model_id,
+            model,
+            prefs,
+            inputIds,
+            modelid,
+            thread,
+            thread_region
+        );
+    return true;
+};
+
+const loadComponent = async (component_url: string) => {
     try {
-        if (!thread.execution_summary) thread.execution_summary = {};
-
-        const model = thread.models[modelid];
-        const thread_model_id = thread.model_ensembles[modelid].id;
-        const thread_region = await getRegionDetails(thread.regionid);
-        const execution_details = getModelInputBindings(model, thread, thread_region);
-        const threadModel = execution_details[0] as ThreadModelMap;
-        const inputIds = execution_details[1] as string[];
-
-        // This is the part that creates all different run configurations
-        // - Cross product of all input collections
-        // - TODO: Change to allow flexibility
-        const configs = getModelInputConfigurations(threadModel, inputIds);
-
-        if (configs !== null)
-            await createExecutions(
-                configs,
-                thread_model_id,
-                model,
-                prefs,
-                inputIds,
-                modelid,
-                thread,
-                thread_region
-            );
-        return true;
+        const response = await fetch(component_url);
+        if (response.ok) {
+            const data = await response.text();
+            const component = JSON.parse(data) as TapisComponent;
+            // Check if the component is valid
+            if (component.appId && component.appVersion && component.type == "tapis") {
+                return component;
+            } else {
+                throw new Error("Invalid component");
+            }
+        }
     } catch (e) {
         console.log(e);
+        throw Error(`Error loading component ${component_url}`);
     }
-    return false;
 };
 
 async function createExecutions(
@@ -88,7 +102,8 @@ async function createExecutions(
 ) {
     await createThreadModelExecutionSummary(configs, thread_model_id);
     await deleteThreadModelExecutionIds(thread_model_id);
-    const component = await loadModelWCM(model.code_url, model, prefs);
+
+    const component = await loadComponent(model.code_url);
 
     // Create executions in batches
     for (let i = 0; i < configs.length; i += batchSize) {
