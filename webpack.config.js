@@ -11,6 +11,7 @@ module.exports = {
     },
     entry: {
         execution: "./src/classes/localex/seed-execution.ts",
+        downloadTapisOutputQueue: "./src/classes/tapis/download-tapis-output.ts",
         server: "./src/server.ts"
     },
     output: {
