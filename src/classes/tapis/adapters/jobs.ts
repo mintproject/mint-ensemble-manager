@@ -50,7 +50,7 @@ const createJobFileInputsFromSeed = (
 ): Array<Jobs.JobFileInput> => {
     const jobInputs = app.jobAttributes.fileInputs.flatMap((fileInput: Apps.AppFileInput) => {
         const modelInput = model.input_files.find((modelInputFile: ModelIO) => {
-            return modelInputFile.name === fileInput.name;
+            return modelInputFile.name.toLowerCase() === fileInput.name.toLowerCase();
         });
         if (!modelInput) {
             throw new Error(`Component input not found for ${fileInput.name}`);

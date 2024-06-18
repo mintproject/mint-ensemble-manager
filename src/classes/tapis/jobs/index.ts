@@ -1,13 +1,10 @@
 import { Jobs } from "@tapis/tapis-typescript";
 import getJobOutputs from "../api/jobs/outputs";
-import {
-    getExecution,
-    getModelOutputsByModelId,
-    updateExecutionStatusAndResultsv2
-} from "../../../classes/graphql/graphql_functions";
-import { getTapisToken } from "../submit-execution";
+import { getModelOutputsByModelId } from "../../../classes/graphql/graphql_functions";
 import { Execution, Execution_Result, ModelOutput } from "../../../classes/mint/mint-types";
 import { getMd5Hash } from "../../../classes/graphql/graphql_adapter";
+import getJobOutputDownload from "../api/jobs/jobOutputDownload";
+import { getTapisToken } from "../authenticator";
 
 const getJobOutputList = async (
     jobUuid: string,
@@ -18,16 +15,9 @@ const getJobOutputList = async (
     return await getJobOutputs(jobUuid, realOutputPath, basePath, token.access_token);
 };
 
-const updateExecutionResultsFromJob = async (
-    jobUuid: string,
-    executionId: string,
-    status: Jobs.JobListDTOStatusEnum
-) => {
-    const execution = await getExecution(executionId);
-    if (status === Jobs.JobListDTOStatusEnum.Finished) {
-        execution.results = await getResults(jobUuid, execution);
-        updateExecutionStatusAndResultsv2(execution);
-    }
+const getJobOutputDownloadAll = async (jobUuid: string, outputPath: string): Promise<Blob> => {
+    const { token, basePath } = await getTapisToken();
+    return await getJobOutputDownload(jobUuid, outputPath, basePath, token.access_token);
 };
 
 const matchTapisOutputsToMintOutputs = (
@@ -58,11 +48,12 @@ const matchTapisOutputsToMintOutputs = (
         })
         .filter((result) => result !== undefined) as Execution_Result[];
 };
-async function getResults(jobUuid: string, execution: Execution) {
+
+async function getExecutionResultsFromJob(jobUuid: string, execution: Execution) {
     const { result: files } = await getJobOutputList(jobUuid, "");
     const mintOutputs = await getModelOutputsByModelId(execution.modelid);
     const executionResults: Execution_Result[] = matchTapisOutputsToMintOutputs(files, mintOutputs);
     return executionResults;
 }
 
-export { updateExecutionResultsFromJob, matchTapisOutputsToMintOutputs };
+export { matchTapisOutputsToMintOutputs, getExecutionResultsFromJob, getJobOutputDownloadAll };

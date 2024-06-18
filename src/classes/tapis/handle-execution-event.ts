@@ -1,7 +1,14 @@
 import { Jobs } from "@tapis/tapis-typescript";
 import { Execution } from "../mint/mint-types";
 import { getExecution, updateExecutionStatus } from "../graphql/graphql_functions";
-import { updateExecutionResultsFromJob } from "./jobs";
+import { getExecutionResultsFromJob } from "./jobs";
+import Queue from "bull";
+import { DOWNLOAD_TAPIS_OUTPUT_QUEUE_NAME, REDIS_URL } from "../../config/redis";
+import { getConfiguration } from "../mint/mint-functions";
+
+const prefs = getConfiguration();
+const downloadQueue = new Queue(DOWNLOAD_TAPIS_OUTPUT_QUEUE_NAME, REDIS_URL);
+downloadQueue.process(prefs.localex.parallelism, __dirname + "/downloadTapisOutputQueue.js");
 
 const handleExecutionEvent = async (event: any, executionId: string) => {
     const execution = await getExecution(executionId);
@@ -12,6 +19,18 @@ const handleExecutionEvent = async (event: any, executionId: string) => {
         await updateExecutionResultsFromJob(jobUuid, execution.id, status);
     }
     return execution;
+};
+
+const updateExecutionResultsFromJob = async (
+    jobUuid: string,
+    executionId: string,
+    status: Jobs.JobListDTOStatusEnum
+) => {
+    const execution = await getExecution(executionId);
+    if (status === Jobs.JobListDTOStatusEnum.Finished) {
+        execution.results = await getExecutionResultsFromJob(jobUuid, execution);
+        downloadQueue.add({ jobUuid, executionId, execution: execution });
+    }
 };
 
 const updateJobStatusOnGraphQL = async (

@@ -20,7 +20,9 @@
     },
     "tapis": {
         "username": "mosorio",
-        "basePath": "https://portals.tapis.io"
+        "basePath": "https://portals.tapis.io",
+        "datadir": "/tmp/mintproject/data/data",
+        "dataurl": "http://file:///tmp/mintproject/data"
     },
     "auth_server": "https://auth.mint.isi.edu/",
     "auth_realm": "production",

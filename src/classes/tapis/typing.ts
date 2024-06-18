@@ -1,4 +1,5 @@
 import {
+    ComponentArgument,
     ComponentDataBindings,
     ComponentParameterBindings,
     ComponentParameterTypes
@@ -6,9 +7,12 @@ import {
 import { Execution } from "../mint/mint-types";
 
 export type TapisComponent = {
-    appId: string;
-    appVersion: string;
-    type: string;
+    id: string;
+    version: string;
+    rundir: string;
+    softwareImage?: string;
+    inputs: ComponentArgument[];
+    outputs: ComponentArgument[];
 };
 
 export interface TapisComponentSeed {

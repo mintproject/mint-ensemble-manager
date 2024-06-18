@@ -45,9 +45,11 @@ export interface UserPreferences {
     mint: MintPreferences;
 }
 
-interface TapisAuth {
+interface TapisConfig {
     username: string;
     basePath: string;
+    dataurl: string;
+    datadir: string;
 }
 
 export interface MintPreferences {
@@ -55,7 +57,7 @@ export interface MintPreferences {
     data_catalog_type: string;
     data_catalog_key: string;
     data_catalog_extra: any;
-    tapis: TapisAuth;
+    tapis: TapisConfig;
     model_catalog_api?: string;
     ensemble_manager_api: string;
     ingestion_api: string;

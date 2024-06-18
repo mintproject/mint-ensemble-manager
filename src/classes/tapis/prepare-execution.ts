@@ -16,10 +16,13 @@ import {
     ExecutionSummary,
     MintPreferences,
     Model,
+    ModelIO,
+    ModelParameter,
     Region,
     Thread,
     ThreadModelMap
 } from "../mint/mint-types";
+import { getTapisAppWithoutLogin } from "./apps";
 import { queueModelExecutions } from "./submit-execution";
 import { TapisComponent } from "./typing";
 
@@ -71,25 +74,6 @@ export const saveAndRunExecutionsModel = async (
     return true;
 };
 
-const loadComponent = async (component_url: string) => {
-    try {
-        const response = await fetch(component_url);
-        if (response.ok) {
-            const data = await response.text();
-            const component = JSON.parse(data) as TapisComponent;
-            // Check if the component is valid
-            if (component.appId && component.appVersion && component.type == "tapis") {
-                return component;
-            } else {
-                throw new Error("Invalid component");
-            }
-        }
-    } catch (e) {
-        console.log(e);
-        throw Error(`Error loading component ${component_url}`);
-    }
-};
-
 async function createExecutions(
     configs: any[][],
     thread_model_id: string,
@@ -103,7 +87,11 @@ async function createExecutions(
     await createThreadModelExecutionSummary(configs, thread_model_id);
     await deleteThreadModelExecutionIds(thread_model_id);
 
-    const component = await loadComponent(model.code_url);
+    const component = await getModelDetails(model);
+    const { result: app } = await getTapisAppWithoutLogin(component.id, component.version);
+    if (!app) {
+        throw new Error("App not found");
+    }
 
     // Create executions in batches
     for (let i = 0; i < configs.length; i += batchSize) {
@@ -194,3 +182,69 @@ function createExecutionMetadata(modelid: string, inputBindings: any) {
     execution.id = getExecutionHash(execution);
     return execution;
 }
+
+const _getModelIODetails = (io: ModelIO, iotype: string) => {
+    if (!io.position) {
+        return null;
+    }
+    const pfx = iotype == "input" ? "-i" : "-o";
+    return {
+        id: io.id,
+        role: io.name,
+        prefix: pfx + io.position,
+        isParam: false,
+        format: io.format,
+        type: io.type
+    };
+};
+
+const _getModelParamDetails = (param: ModelParameter) => {
+    return {
+        id: param.id,
+        role: param.name,
+        prefix: "-p" + param.position,
+        isParam: true,
+        type: param.type
+    };
+};
+
+const loadComponent = async (component_url: string) => {
+    try {
+        const response = await fetch(component_url);
+        if (response.ok) {
+            const data = await response.text();
+            const component = JSON.parse(data) as TapisComponent;
+            // Check if the component is valid
+            if (component.id && component.version) {
+                return component;
+            } else {
+                throw new Error("Invalid component");
+            }
+        }
+    } catch (e) {
+        console.log(e);
+        throw Error(`Error loading component ${component_url}`);
+    }
+};
+
+const getModelDetails = async (model: Model) => {
+    const comp = await loadComponent(model.code_url);
+    comp.inputs = [];
+    comp.outputs = [];
+    model.input_files.map((input) => {
+        const details = _getModelIODetails(input, "input");
+        if (!details) throw new Error("Input file missing position: " + input.id);
+        comp.inputs.push(details);
+    });
+    model.input_parameters.map((param) => {
+        const details = _getModelParamDetails(param);
+        if (!details) throw new Error("Input parameter missing position: " + param.id);
+        comp.inputs.push(details);
+    });
+    model.output_files.map((output) => {
+        const details = _getModelIODetails(output, "output");
+        if (!details) throw new Error("Output file missing position: " + output.id);
+        comp.outputs.push(details);
+    });
+    return comp;
+};

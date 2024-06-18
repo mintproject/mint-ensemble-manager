@@ -22,7 +22,7 @@ const { createBullBoard } = require("@bull-board/api");
 const { BullAdapter } = require("@bull-board/api/bullAdapter");
 const { ExpressAdapter } = require("@bull-board/express");
 
-import { EXECUTION_QUEUE_NAME, REDIS_URL } from "./config/redis";
+import { DOWNLOAD_TAPIS_OUTPUT_QUEUE_NAME, EXECUTION_QUEUE_NAME, REDIS_URL } from "./config/redis";
 import { PORT, VERSION } from "./config/app";
 import jobsService from "./api/api-v1/services/tapis/jobsService";
 
@@ -66,13 +66,14 @@ app.use(((err, req, res, next) => {
 
 // Setup Queue
 const executionQueue = new Queue(EXECUTION_QUEUE_NAME, REDIS_URL);
+const downloadTapisOutputQueue = new Queue(DOWNLOAD_TAPIS_OUTPUT_QUEUE_NAME, REDIS_URL);
 
 // Setup Bull Dashboard
 const serverAdapter = new ExpressAdapter();
 serverAdapter.setBasePath(dashboard_url);
 
 const { addQueue, removeQueue, setQueues, replaceQueues } = createBullBoard({
-    queues: [new BullAdapter(executionQueue)],
+    queues: [new BullAdapter(executionQueue), new BullAdapter(downloadTapisOutputQueue)],
     serverAdapter: serverAdapter
 });
 
