@@ -15,7 +15,7 @@ const getJobOutputList = async (
     return await getJobOutputs(jobUuid, realOutputPath, basePath, token.access_token);
 };
 
-const getJobOutputDownloadAll = async (jobUuid: string, outputPath: string): Promise<Blob> => {
+const getJobOutputDownloadFile = async (jobUuid: string, outputPath: string): Promise<Blob> => {
     const { token, basePath } = await getTapisToken();
     return await getJobOutputDownload(jobUuid, outputPath, basePath, token.access_token);
 };
@@ -56,4 +56,4 @@ async function getExecutionResultsFromJob(jobUuid: string, execution: Execution)
     return executionResults;
 }
 
-export { matchTapisOutputsToMintOutputs, getExecutionResultsFromJob, getJobOutputDownloadAll };
+export { matchTapisOutputsToMintOutputs, getExecutionResultsFromJob, getJobOutputDownloadFile };

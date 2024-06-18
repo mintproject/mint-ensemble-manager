@@ -1,6 +1,6 @@
 import { Job } from "bull";
 import { Execution, Execution_Result } from "../mint/mint-types";
-import { getJobOutputDownloadAll } from "./jobs";
+import { getJobOutputDownloadFile } from "./jobs";
 import { writeFile, existsSync, mkdirSync } from "fs";
 import { getConfiguration } from "../mint/mint-functions";
 import { updateExecutionStatusAndResultsv2 } from "../graphql/graphql_functions";
@@ -54,7 +54,7 @@ const downloadData = async (
     const promises = results.map((result) => {
         // join the execution directory with the file name
         const filePath = `${executionDirectory}/${result.resource.name}`;
-        return getJobOutputDownloadAll(tapisJobUuid, result.resource.name)
+        return getJobOutputDownloadFile(tapisJobUuid, result.resource.name)
             .then((blob) => {
                 saveBlobToFile(blob, filePath);
             })
