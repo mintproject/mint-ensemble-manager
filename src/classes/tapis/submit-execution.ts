@@ -9,6 +9,10 @@ import { TapisComponent, TapisComponentSeed } from "./typing";
 import { getTapisToken } from "./authenticator";
 import { getTapisApp } from "./apps";
 import { getConfiguration } from "../mint/mint-functions";
+import {
+    incrementThreadModelFailedRuns,
+    updateExecutionStatus
+} from "../graphql/graphql_functions";
 
 const prefs = getConfiguration();
 const basePath = prefs.tapis.basePath;
@@ -23,6 +27,7 @@ export const queueModelExecutions = async (
 ): Promise<Jobs.RespSubmitJob[]> => {
     const model = thread.models[modelid];
     if (model === undefined) {
+        markExecutionsAsFailed(executions, thread.id);
         throw new Error(`Model ${modelid} not found in thread`);
     }
     const seeds = createSeedsExecution(executions, model, region, component);
@@ -34,14 +39,29 @@ export const queueModelExecutions = async (
         basePath
     );
 
-    const jobs = seeds.map((seed) => createJobRequest(app, seed, model));
-    return await Promise.all(
-        jobs.map(async (job) => {
-            const jobSubmission = await submitTapisJob(job, token);
+    const promises = seeds.map(async (seed) => {
+        try {
+            const jobRequest = createJobRequest(app, seed, model);
+            const jobSubmission = await submitTapisJob(jobRequest, token);
             await subscribeTapisJob(jobSubmission.result.uuid, token);
             return jobSubmission;
-        })
-    );
+        } catch (error) {
+            markExecutionAsFailed(seed.execution, thread.id);
+        }
+    });
+    return await Promise.all(promises);
+};
+
+const markExecutionsAsFailed = async (executions: Execution[], thread_id: string) => {
+    executions.forEach((execution) => {
+        markExecutionAsFailed(execution, thread_id);
+    });
+};
+
+const markExecutionAsFailed = async (execution: Execution, thread_id: string) => {
+    execution.status = "FAILURE";
+    updateExecutionStatus(execution);
+    incrementThreadModelFailedRuns(thread_id);
 };
 
 const generateWebHookUrl = (jobUuid: string) => {
@@ -59,7 +79,6 @@ async function subscribeTapisJob(jobUuid: string, token) {
         enabled: true,
         eventCategoryFilter: Jobs.ReqSubscribeEventCategoryFilterEnum.JobNewStatus,
         deliveryTargets: [notifDeliveryTarget]
-        // ttlminutes: 60,
     };
     const response = await subscribe(request, basePath, jobUuid, token.access_token);
     return response;
