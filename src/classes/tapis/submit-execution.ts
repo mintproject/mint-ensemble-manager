@@ -3,7 +3,7 @@ import { Region } from "../mint/mint-types";
 import { getInputsParameters, getInputDatasets } from "./helpers";
 import { createJobRequest } from "./adapters/jobs";
 import submit from "./api/jobs/submit";
-import { Jobs } from "@tapis/tapis-typescript";
+import { Jobs } from "@mfosorio/tapis-typescript";
 import subscribe from "./api/jobs/subscribe";
 import { TapisComponent, TapisComponentSeed } from "./typing";
 import { getTapisToken } from "./authenticator";

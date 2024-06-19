@@ -1,4 +1,4 @@
-import { Authenticator } from "@tapis/tapis-typescript";
+import { Authenticator } from "@mfosorio/tapis-typescript";
 import apiGenerator from "../../utils/apiGenerator";
 import errorDecoder from "../../utils/errorDecoder";
 

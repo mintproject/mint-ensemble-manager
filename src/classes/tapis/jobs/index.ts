@@ -1,4 +1,4 @@
-import { Jobs } from "@tapis/tapis-typescript";
+import { Jobs } from "@mfosorio/tapis-typescript";
 import getJobOutputs from "../api/jobs/outputs";
 import { getModelOutputsByModelId } from "../../../classes/graphql/graphql_functions";
 import { Execution, Execution_Result, ModelOutput } from "../../../classes/mint/mint-types";

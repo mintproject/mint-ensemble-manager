@@ -1,4 +1,4 @@
-import { Apps, Jobs } from "@tapis/tapis-typescript";
+import { Apps, Jobs } from "@mfosorio/tapis-typescript";
 import apiGenerator from "../../utils/apiGenerator";
 import errorDecoder from "../../utils/errorDecoder";
 
