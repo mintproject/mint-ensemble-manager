@@ -4,12 +4,14 @@ import {
     getModelInputBindings,
     getModelInputConfigurations,
     getRegionDetails,
+    incrementThreadModelFailedRuns,
     incrementThreadModelSubmittedRuns,
     incrementThreadModelSuccessfulRuns,
     listSuccessfulExecutionIds,
     setExecutions,
     setThreadModelExecutionIds,
-    setThreadModelExecutionSummary
+    setThreadModelExecutionSummary,
+    updateExecutionStatus
 } from "../graphql/graphql_functions";
 import {
     Execution,
@@ -88,10 +90,6 @@ async function createExecutions(
     await deleteThreadModelExecutionIds(thread_model_id);
 
     const component = await getModelDetails(model);
-    const { result: app } = await getTapisAppWithoutLogin(component.id, component.version);
-    if (!app) {
-        throw new Error("App not found");
-    }
 
     // Create executions in batches
     for (let i = 0; i < configs.length; i += batchSize) {
@@ -109,26 +107,46 @@ async function createExecutions(
             (e) => successful_execution_ids.indexOf(e.id) < 0
         );
 
-        console.log(
-            "Total " +
-                executionsBatch.length +
-                " executions, " +
-                successful_execution_ids.length +
-                " already run, " +
-                executions_to_be_run.length +
-                " to be run"
-        );
-
         // Create Executions and Thread Model Mappings to those executions
         await setExecutions(executions_to_be_run, thread_model_id);
         await setThreadModelExecutionIds(thread_model_id, executionIdsBatch);
         await updateSuccessfulExecutionOnThread(successful_execution_ids, thread_model_id);
-
-        // // Queue the model executions
-        await queueModelExecutions(thread, modelid, component, thread_region, executions_to_be_run);
-        if (executions_to_be_run.length > 0)
-            console.log("Finished submitting all executions for model: " + modelid);
+        // Increment the number of submitted runs
+        await incrementThreadModelSubmittedRuns(thread_model_id, executions_to_be_run.length);
+        // Check if the component is valid
+        if ((await isValidTapisComponent(component)) === false) {
+            await handleInvalidComponent(thread_model_id, executions_to_be_run);
+        } else {
+            await queueModelExecutions(
+                thread,
+                modelid,
+                component,
+                thread_region,
+                executions_to_be_run
+            );
+        }
     }
+}
+
+const isValidTapisComponent = async (component: TapisComponent) => {
+    try {
+        const { result: app } = await getTapisAppWithoutLogin(component.id, component.version);
+        if (!app) {
+            return false;
+        }
+    } catch (e) {
+        return false;
+    }
+    return true;
+};
+
+async function handleInvalidComponent(thread_model_id: string, executions_to_be_run: Execution[]) {
+    await incrementThreadModelFailedRuns(thread_model_id, executions_to_be_run.length);
+    executions_to_be_run.map((execution) => {
+        execution.status = "FAILURE";
+        execution.run_progress = 0;
+        updateExecutionStatus(execution);
+    });
 }
 
 async function updateSuccessfulExecutionOnThread(

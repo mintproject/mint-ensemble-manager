@@ -1,4 +1,4 @@
-import { Jobs } from "@tapis/tapis-typescript";
+import { Jobs } from "@mfosorio/tapis-typescript";
 import { Execution } from "../mint/mint-types";
 import { getExecution, updateExecutionStatus } from "../graphql/graphql_functions";
 import { getExecutionResultsFromJob } from "./jobs";
