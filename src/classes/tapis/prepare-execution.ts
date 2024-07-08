@@ -238,6 +238,7 @@ const loadComponent = async (component_url: string) => {
             if (component.id && component.version) {
                 return component;
             } else {
+                console.error(`Invalid component: ${component_url}`);
                 throw new Error("Invalid component");
             }
         }
