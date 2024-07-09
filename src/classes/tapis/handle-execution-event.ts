@@ -34,9 +34,14 @@ const updateExecutionResultsFromJob = async (
     executionId: string,
     status: Jobs.JobListDTOStatusEnum
 ) => {
+    console.log(
+        `Updating results for job ${jobUuid} - execution ${executionId} - status ${status}`
+    );
     const execution = await getExecution(executionId);
     if (downloadQueue && status === Jobs.JobListDTOStatusEnum.Finished) {
+        console.log(`Getting results for job ${jobUuid} - execution ${executionId}`);
         execution.results = await getExecutionResultsFromJob(jobUuid, execution);
+        console.log(JSON.stringify(execution.results));
         downloadQueue.add({ jobUuid, executionId, execution: execution });
     }
 };
