@@ -22,6 +22,7 @@ module.exports = async (job: Job<JobDataProps>) => {
     execution.results.map((result) => {
         result.resource.url = dataUrl + "/" + executionDirectoryName + "/" + result.resource.name;
     });
+    execution.status = "SUCCESS";
     updateExecutionStatusAndResultsv2(execution);
 };
 
