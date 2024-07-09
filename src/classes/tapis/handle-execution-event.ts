@@ -18,6 +18,7 @@ if (prefs.execution_engine === "tapis") {
 }
 
 const handleExecutionEvent = async (event: any, executionId: string) => {
+    console.log(JSON.stringify(event));
     const execution = await getExecution(executionId);
     const jobUuid = event.data.jobUuid;
     if (execution !== undefined) {
