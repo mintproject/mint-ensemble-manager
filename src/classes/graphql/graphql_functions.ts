@@ -691,7 +691,7 @@ export const incrementThreadModelRegisteredRunsByExecutionId = (
 ) => {
     const APOLLO_CLIENT = GraphQL.instance(KeycloakAdapter.getUser());
     return APOLLO_CLIENT.mutate({
-        mutation: incRegisteredRunsGQL,
+        mutation: incRegisteredRunsByExecutionIdGQL,
         variables: {
             modelId: model_id,
             executionId: execution_id,
