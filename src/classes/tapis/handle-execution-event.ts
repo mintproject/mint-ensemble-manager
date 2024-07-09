@@ -5,6 +5,7 @@ import { getExecutionResultsFromJob } from "./jobs";
 import Queue from "bull";
 import { DOWNLOAD_TAPIS_OUTPUT_QUEUE_NAME, REDIS_URL } from "../../config/redis";
 import { getConfiguration } from "../mint/mint-functions";
+import { TapisNotification } from "./adapters/notification";
 
 const prefs = getConfiguration();
 
@@ -17,14 +18,14 @@ if (prefs.execution_engine === "tapis") {
     downloadQueue.process(prefs.tapis.parallelism, __dirname + "/downloadTapisOutputQueue.js");
 }
 
-const handleExecutionEvent = async (event: any, executionId: string) => {
+const handleExecutionEvent = async (event: TapisNotification, executionId: string) => {
     console.log(JSON.stringify(event));
     const execution = await getExecution(executionId);
-    const jobUuid = event.data.jobUuid;
+    const jobUuid = event.subject;
     if (execution !== undefined) {
-        const status = event.data.newJobStatus;
-        await updateJobStatusOnGraphQL(execution, status);
-        await updateExecutionResultsFromJob(jobUuid, execution.id, status);
+        const statusType = event.type;
+        await updateJobStatusOnGraphQL(execution, statusType);
+        await updateExecutionResultsFromJob(jobUuid, execution.id, statusType);
     }
     return execution;
 };
@@ -32,13 +33,13 @@ const handleExecutionEvent = async (event: any, executionId: string) => {
 const updateExecutionResultsFromJob = async (
     jobUuid: string,
     executionId: string,
-    status: Jobs.JobListDTOStatusEnum
+    status: string
 ) => {
     console.log(
         `Updating results for job ${jobUuid} - execution ${executionId} - status ${status}`
     );
     const execution = await getExecution(executionId);
-    if (downloadQueue && status === Jobs.JobListDTOStatusEnum.Finished) {
+    if (downloadQueue && status === `jobs.JOB_NEW_STATUS.FINISHED`) {
         console.log(`Getting results for job ${jobUuid} - execution ${executionId}`);
         execution.results = await getExecutionResultsFromJob(jobUuid, execution);
         console.log(JSON.stringify(execution.results));
@@ -46,42 +47,40 @@ const updateExecutionResultsFromJob = async (
     }
 };
 
-const updateJobStatusOnGraphQL = async (
-    execution: Execution,
-    status: Jobs.JobListDTOStatusEnum
-) => {
+const updateJobStatusOnGraphQL = async (execution: Execution, status: string) => {
     execution.status = adapterTapisStatusToMintStatus(status);
     execution.run_progress = 1;
     await updateExecutionStatus(execution);
 };
 
-const adapterTapisStatusToMintStatus = (status: Jobs.JobListDTOStatusEnum) => {
+const adapterTapisStatusToMintStatus = (status: string) => {
+    // Example of status: jobs.JOB_NEW_STATUS.FINISHED
     switch (status) {
-        case Jobs.JobListDTOStatusEnum.Pending:
+        case "jobs.JOB_NEW_STATUS.PENDING":
             return "WAITING";
-        case Jobs.JobListDTOStatusEnum.ProcessingInputs:
+        case "jobs.JOB_NEW_STATUS.PROCESSING_INPUTS":
             return "RUNNING";
-        case Jobs.JobListDTOStatusEnum.StagingInputs:
+        case "jobs.JOB_NEW_STATUS.STAGING_INPUTS":
             return "RUNNING";
-        case Jobs.JobListDTOStatusEnum.StagingJob:
+        case "jobs.JOB_NEW_STATUS.STAGING_JOB":
             return "RUNNING";
-        case Jobs.JobListDTOStatusEnum.SubmittingJob:
+        case "jobs.JOB_NEW_STATUS.SUBMITTING_JOB":
             return "WAITING";
-        case Jobs.JobListDTOStatusEnum.Queued:
+        case "jobs.JOB_NEW_STATUS.QUEUED":
             return "WAITING";
-        case Jobs.JobListDTOStatusEnum.Running:
+        case "jobs.JOB_NEW_STATUS.RUNNING":
             return "RUNNING";
-        case Jobs.JobListDTOStatusEnum.Archiving:
+        case "jobs.JOB_NEW_STATUS.ARCHIVING":
             return "RUNNING";
-        case Jobs.JobListDTOStatusEnum.Blocked:
+        case "jobs.JOB_NEW_STATUS.BLOCKED":
             return "WAITING";
-        case Jobs.JobListDTOStatusEnum.Paused:
+        case "jobs.JOB_NEW_STATUS.PAUSED":
             return "WAITING";
-        case Jobs.JobListDTOStatusEnum.Finished:
+        case "jobs.JOB_NEW_STATUS.FINISHED":
             return "SUCCESS";
-        case Jobs.JobListDTOStatusEnum.Cancelled:
+        case "jobs.JOB_NEW_STATUS.CANCELLED":
             return "FAILURE";
-        case Jobs.JobListDTOStatusEnum.Failed:
+        case "jobs.JOB_NEW_STATUS.FAILED":
             return "FAILURE";
         default:
             return "WAITING";
