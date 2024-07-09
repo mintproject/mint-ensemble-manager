@@ -16,10 +16,11 @@ module.exports = async (job: Job<JobDataProps>) => {
     const tapisJobUuid = job.data.jobUuid;
     const results = execution.results as Execution_Result[];
     const dataUrl = prefs.tapis.dataurl;
-    const executionDirectory = prefs.tapis.datadir + "/" + job.data.execution.id;
-    await downloadData(executionDirectory, results, tapisJobUuid);
+    const executionDirectoryName = job.data.execution.id;
+    const executionDirectoryPath = prefs.tapis.datadir + "/" + executionDirectoryName;
+    await downloadData(executionDirectoryPath, results, tapisJobUuid);
     execution.results.map((result) => {
-        result.resource.url = dataUrl + "/" + executionDirectory + "/" + result.resource.name;
+        result.resource.url = dataUrl + "/" + executionDirectoryName + "/" + result.resource.name;
     });
     updateExecutionStatusAndResultsv2(execution);
 };
