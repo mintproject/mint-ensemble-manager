@@ -1,4 +1,4 @@
-name: ensemble-manager
+name: build image amd64
 
 on:
     push:

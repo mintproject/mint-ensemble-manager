@@ -1,4 +1,4 @@
-name: ensemble-manager
+name: build image arm64
 
 on:
     push:
