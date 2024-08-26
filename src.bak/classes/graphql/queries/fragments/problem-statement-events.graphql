@@ -1,8 +1,0 @@
-fragment problem_statement_events on problem_statement {
-  events {
-    event
-    timestamp
-    userid
-    notes
-  }
-}
