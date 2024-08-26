@@ -1,4 +1,5 @@
 {
+   "old_data_catalog_api": "http://localhost:30002",
    "data_catalog_api": "http://localhost:5000",
    "data_catalog_type": "CKAN",
    "data_catalog_key": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJaUGd3Snk1YUxRbW9keTBnd1R0SkNDMG5QeU5vMjg3QnRCd0J4WVVpWHFBIiwiaWF0IjoxNzAxNTMyNzE1fQ.yX8S6H1MD7eZYoDTX6Adybv3V5ezrgz-Y2zNOqjhEXo",
