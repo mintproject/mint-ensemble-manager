@@ -37,9 +37,45 @@ const v1ApiDoc = require("./api/api-doc");
 app.use(bodyParser.json());
 app.use(cors());
 
+const verifyToken = (token: string) => {
+    // TODO: Implement token verification
+    return true;
+};
+
+const securityHandlers = {
+    BearerAuth: async (req, scopes) => {
+        // Get the token from the Authorization header
+        const authHeader = req.headers.authorization;
+        if (!authHeader || !authHeader.startsWith("Bearer ")) {
+            return false;
+        }
+
+        const token = authHeader.split(" ")[1];
+        console.log(token);
+        return true;
+    },
+    ImplicitAuth: async (req, scopes) => {
+        // Get the token from the Authorization header
+        const authHeader = req.headers.authorization;
+        if (!authHeader || !authHeader.startsWith("Bearer ")) {
+            return false;
+        }
+
+        const token = authHeader.split(" ")[1];
+
+        try {
+            return verifyToken(token);
+        } catch (error) {
+            console.error("Token validation error:", error);
+            return false;
+        }
+    }
+};
+
 initialize({
     app,
     apiDoc: v1ApiDoc,
+    securityHandlers: securityHandlers,
     dependencies: {
         executionsService: v1ExecutionsService,
         executionsLocalService: v1ExecutionsLocalService,
@@ -87,7 +123,17 @@ app.listen(port, () => {
         onError: () => {},
         onLoad: (resp: any) => {
             const apidoc = JSON.parse(resp.target.responseText);
-            app.use("/" + version + "/ui", swaggerUi.serve, swaggerUi.setup(apidoc));
+            app.use(
+                "/" + version + "/ui",
+                swaggerUi.serve,
+                swaggerUi.setup(apidoc, {
+                    swaggerOptions: {
+                        oauth: {
+                            clientId: "me3"
+                        }
+                    }
+                })
+            );
         }
     });
 });

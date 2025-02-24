@@ -6,6 +6,21 @@ module.exports = {
     },
     servers: [{ url: "http://localhost:3000/v1" }, { url: "https://ensemble.mint.isi.edu/v1" }],
     components: {
+        securitySchemes: {
+            BearerAuth: {
+                type: "http",
+                scheme: "bearer",
+                bearerFormat: "JWT"
+            },
+            oauth2: {
+                type: "oauth2",
+                flows: {
+                    implicit: {
+                        authorizationUrl: "https://portals.tapis.io/v3/oauth2/authorize"
+                    }
+                }
+            }
+        },
         schemas: {
             WebHookEvent: {
                 type: "object",
