@@ -16,6 +16,7 @@ export default function (jobsService: JobsService) {
     };
 
     async function POST(req: any, res: Response) {
+        res.status(200).send({ message: "Job Status Change" });
         try {
             const execution = await jobsService.webhookJobStatusChange(req.body, req.params.id);
             if (execution == undefined) {

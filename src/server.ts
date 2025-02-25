@@ -18,6 +18,7 @@ import { initialize } from "express-openapi";
 import { getResource } from "./classes/wings/xhr-requests";
 
 import Queue from "bull";
+import { securityHandlers } from "./utils/authUtils";
 const { createBullBoard } = require("@bull-board/api");
 const { BullAdapter } = require("@bull-board/api/bullAdapter");
 const { ExpressAdapter } = require("@bull-board/express");
@@ -25,8 +26,6 @@ const { ExpressAdapter } = require("@bull-board/express");
 import { DOWNLOAD_TAPIS_OUTPUT_QUEUE_NAME, EXECUTION_QUEUE_NAME, REDIS_URL } from "./config/redis";
 import { PORT, VERSION } from "./config/app";
 import jobsService from "./api/api-v1/services/tapis/jobsService";
-import jwt from "jsonwebtoken";
-import jwksClient from "jwks-rsa";
 
 // Main Express Server
 const app = express();
@@ -35,74 +34,11 @@ const version = VERSION;
 const dashboard_url = "/admin/queues";
 
 const CLIENT_ID = process.env.CLIENT_ID;
-const secretKey = process.env.JWT_SECRET_KEY;
-
-// jwt
-const client = jwksClient({
-    jwksUri: "https://portals.tapis.io/v3/oauth2/jwks"
-});
 
 // Setup API
 const v1ApiDoc = require("./api/api-doc");
 app.use(bodyParser.json());
 app.use(cors());
-
-function getKey(header, callback) {
-    client.getSigningKey(header.kid, function (err, key) {
-        var signingKey = key.getPublicKey();
-        callback(null, signingKey);
-    });
-}
-
-const verifyToken = (token: string): Promise<any> => {
-    return new Promise((resolve, reject) => {
-        // Get the unverified token header to extract the kid
-        const decodedHeader = jwt.decode(token, { complete: true });
-        if (!decodedHeader || !decodedHeader.header) {
-            reject(new Error("Invalid token format"));
-            return;
-        }
-
-        jwt.verify(token, getKey, {}, (err, decoded) => {
-            if (err) {
-                console.error("Token verification error:", err);
-                reject(err);
-            } else {
-                resolve(decoded);
-            }
-        });
-    });
-};
-
-const securityHandlers = {
-    BearerAuth: async (req, scopes) => {
-        // Get the token from the Authorization header
-        const authHeader = req.headers.authorization;
-        if (!authHeader || !authHeader.startsWith("Bearer ")) {
-            return false;
-        }
-
-        const token = authHeader.split(" ")[1];
-        console.log(token);
-        return true;
-    },
-    ImplicitAuth: async (req, scopes) => {
-        const authHeader = req.headers.authorization;
-        if (!authHeader || !authHeader.startsWith("Bearer ")) {
-            return false;
-        }
-
-        const token = authHeader.split(" ")[1];
-
-        try {
-            const decoded = await verifyToken(token);
-            return decoded;
-        } catch (error) {
-            console.error("Token validation error:", error);
-            return false;
-        }
-    }
-};
 
 initialize({
     app,
