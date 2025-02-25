@@ -32,7 +32,13 @@ export const securityHandlers = {
         }
 
         const token = authHeader.split(" ")[1];
-        return true;
+
+        try {
+            return verifyToken(token);
+        } catch (error) {
+            console.error("Token validation error:", error);
+            return false;
+        }
     },
     oauth2: async (req, scopes) => {
         // Get the token from the Authorization header
