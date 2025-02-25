@@ -6,6 +6,11 @@ Ensemble Manager for MINT
 
 The following environment variables need to be configured:
 
+## WARNING
+
+Security has been activated for the API in version 6.0.0. This means that the API is now protected and requires a valid JWT to access.
+If you are facing authorization issues, rollback to version 5.0.0.
+
 ### Authentication
 
 -   `PUBLIC_KEY`: RSA public key in PEM format for JWT verification
