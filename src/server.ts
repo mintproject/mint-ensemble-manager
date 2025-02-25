@@ -25,6 +25,8 @@ const { ExpressAdapter } = require("@bull-board/express");
 import { DOWNLOAD_TAPIS_OUTPUT_QUEUE_NAME, EXECUTION_QUEUE_NAME, REDIS_URL } from "./config/redis";
 import { PORT, VERSION } from "./config/app";
 import jobsService from "./api/api-v1/services/tapis/jobsService";
+import jwt from "jsonwebtoken";
+import jwksClient from "jwks-rsa";
 
 // Main Express Server
 const app = express();
@@ -32,14 +34,44 @@ const port = PORT;
 const version = VERSION;
 const dashboard_url = "/admin/queues";
 
+const CLIENT_ID = process.env.CLIENT_ID;
+const secretKey = process.env.JWT_SECRET_KEY;
+
+// jwt
+const client = jwksClient({
+    jwksUri: "https://portals.tapis.io/v3/oauth2/jwks"
+});
+
 // Setup API
 const v1ApiDoc = require("./api/api-doc");
 app.use(bodyParser.json());
 app.use(cors());
 
-const verifyToken = (token: string) => {
-    // TODO: Implement token verification
-    return true;
+function getKey(header, callback) {
+    client.getSigningKey(header.kid, function (err, key) {
+        var signingKey = key.getPublicKey();
+        callback(null, signingKey);
+    });
+}
+
+const verifyToken = (token: string): Promise<any> => {
+    return new Promise((resolve, reject) => {
+        // Get the unverified token header to extract the kid
+        const decodedHeader = jwt.decode(token, { complete: true });
+        if (!decodedHeader || !decodedHeader.header) {
+            reject(new Error("Invalid token format"));
+            return;
+        }
+
+        jwt.verify(token, getKey, {}, (err, decoded) => {
+            if (err) {
+                console.error("Token verification error:", err);
+                reject(err);
+            } else {
+                resolve(decoded);
+            }
+        });
+    });
 };
 
 const securityHandlers = {
@@ -55,7 +87,6 @@ const securityHandlers = {
         return true;
     },
     ImplicitAuth: async (req, scopes) => {
-        // Get the token from the Authorization header
         const authHeader = req.headers.authorization;
         if (!authHeader || !authHeader.startsWith("Bearer ")) {
             return false;
@@ -64,7 +95,8 @@ const securityHandlers = {
         const token = authHeader.split(" ")[1];
 
         try {
-            return verifyToken(token);
+            const decoded = await verifyToken(token);
+            return decoded;
         } catch (error) {
             console.error("Token validation error:", error);
             return false;
@@ -129,7 +161,7 @@ app.listen(port, () => {
                 swaggerUi.setup(apidoc, {
                     swaggerOptions: {
                         oauth: {
-                            clientId: "me3"
+                            clientId: CLIENT_ID
                         }
                     }
                 })

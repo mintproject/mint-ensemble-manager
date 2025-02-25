@@ -1,3 +1,5 @@
+const AUTHORIZATION_URL = process.env.AUTHORIZATION_URL;
+
 module.exports = {
     openapi: "3.0.0",
     info: {
@@ -16,7 +18,7 @@ module.exports = {
                 type: "oauth2",
                 flows: {
                     implicit: {
-                        authorizationUrl: "https://portals.tapis.io/v3/oauth2/authorize"
+                        authorizationUrl: AUTHORIZATION_URL
                     }
                 }
             }
