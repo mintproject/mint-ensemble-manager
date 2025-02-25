@@ -1,13 +1,24 @@
-import jwt from "jsonwebtoken";
+import jwt, { Algorithm } from "jsonwebtoken";
 
 export const verifyToken = (token: string): boolean => {
-    const PUBLIC_KEY = process.env.PUBLIC_KEY;
+    // Use the RSA public key from the environment variable
+    // The key should be in PEM format as shown in the tenant response
+    const PUBLIC_KEY = process.env.PUBLIC_KEY.replace(/\\n/g, "\n");
+    // Get algorithms from env or default to RS256
+    const algorithms: Algorithm[] = process.env.JWT_ALGORITHMS
+        ? process.env.JWT_ALGORITHMS.split(",").map((alg) => alg.trim() as Algorithm)
+        : ["RS256"];
+
+    if (!PUBLIC_KEY) {
+        console.error("Public key not found in environment variables");
+        return false;
+    }
+
     try {
-        const decoded = jwt.verify(token, PUBLIC_KEY);
-        console.log(decoded);
+        // Verify the token using configured algorithms
+        const decoded = jwt.verify(token, PUBLIC_KEY, { algorithms });
         return true;
     } catch (error) {
-        console.error("Token verification error:", error);
         return false;
     }
 };
@@ -21,7 +32,6 @@ export const securityHandlers = {
         }
 
         const token = authHeader.split(" ")[1];
-        console.log(token);
         return true;
     },
     oauth2: async (req, scopes) => {
