@@ -57,7 +57,8 @@ export class TapisExecutionService implements IExecutionService {
         executions: Execution[],
         model: Model,
         region: Region,
-        component: TapisComponent
+        component: TapisComponent,
+        threadId: string
     ) {
         const app = await this.loadTapisApp(component);
 
@@ -65,7 +66,10 @@ export class TapisExecutionService implements IExecutionService {
         const promises = this.seeds.map(async (seed) => {
             const jobRequest = this.jobService.createJobRequest(app, seed, model);
             const jobId = await this.submitJob(jobRequest);
-            const subscription = TapisJobSubscriptionService.createRequest(seed.execution.id);
+            const subscription = TapisJobSubscriptionService.createRequest(
+                seed.execution.id,
+                threadId
+            );
             await this.jobSubscriptionService.submit(jobId, subscription);
             return jobId;
         });
