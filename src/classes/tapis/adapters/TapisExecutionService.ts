@@ -63,16 +63,24 @@ export class TapisExecutionService implements IExecutionService {
     ) {
         const app = await this.loadTapisApp(component);
 
+        console.log("Submitting executions", executions);
         this.seeds = this.seedExecutions(executions, model, region, component);
+        console.log("Seeds", JSON.stringify(this.seeds));
         const promises = this.seeds.map(async (seed) => {
+            console.log("Seed", JSON.stringify(seed));
             const jobRequest = this.jobService.createJobRequest(app, seed, model);
+            console.log("Job request", JSON.stringify(jobRequest));
             const jobId = await this.submitJob(jobRequest);
+            console.log("Job id", jobId);
             await updateExecutionRunId(seed.execution.id, jobId);
+            console.log("Updated execution run id", seed.execution.id, jobId);
             const subscription = TapisJobSubscriptionService.createRequest(
                 seed.execution.id,
                 threadId
             );
+            console.log("Subscription", JSON.stringify(subscription));
             await this.jobSubscriptionService.submit(jobId, subscription);
+            console.log("Submitted subscription", jobId, subscription);
             return jobId;
         });
         return await Promise.all(promises);
