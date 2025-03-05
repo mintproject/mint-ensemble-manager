@@ -7,12 +7,12 @@ import {
 import { TapisExecutionService } from "@/classes/tapis/adapters/TapisExecutionService";
 import { getTokenFromAuthorizationHeader } from "@/utils/authUtils";
 
-export interface ThreadsOutputsService {
-    registerOutputs(threadId: string, authorization: string): void;
+export interface ModelEnsemblesOutputsService {
+    registerOutputs(modelEnsembleId: string, authorization: string): void;
 }
 
-const threadsOutputsService: ThreadsOutputsService = {
-    async registerOutputs(threadId: string, authorization: string): Promise<void> {
+const modelEnsemblesOutputsService: ModelEnsemblesOutputsService = {
+    async registerOutputs(modelEnsembleId: string, authorization: string): Promise<void> {
         const token = getTokenFromAuthorizationHeader(authorization);
         if (!token) {
             throw new Error("Unauthorized");
@@ -21,21 +21,21 @@ const threadsOutputsService: ThreadsOutputsService = {
         const prefs = getConfiguration();
         const tapisExecution = new TapisExecutionService(token, prefs.tapis.basePath);
 
-        // Get all execution IDs for the thread
-        const executionIds = await getThreadModelExecutionIds(threadId);
+        // Get all execution IDs for the model ensemble
+        const executionIds = await getThreadModelExecutionIds(modelEnsembleId);
 
-        toggleThreadModelExecutionSummaryPublishing(threadId, true);
+        toggleThreadModelExecutionSummaryPublishing(modelEnsembleId, true);
         // Process each execution asynchronously without waiting
         for (const executionId of executionIds) {
             try {
                 await tapisExecution.registerExecutionOutputs(executionId);
-                await incrementPublishedRuns(threadId);
+                await incrementPublishedRuns(modelEnsembleId);
             } catch (error) {
                 console.error(`Error registering outputs for execution ${executionId}:`, error);
             }
         }
-        toggleThreadModelExecutionSummaryPublishing(threadId, false);
+        toggleThreadModelExecutionSummaryPublishing(modelEnsembleId, false);
     }
 };
 
-export default threadsOutputsService;
+export default modelEnsemblesOutputsService;

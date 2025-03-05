@@ -51,7 +51,7 @@ import updateExecutionSummary from "./queries/execution/update-execution-summary
 import incFailedRunsGQL from "./queries/execution/increment-failed-runs.graphql";
 import incSuccessfulRunsGQL from "./queries/execution/increment-successful-runs.graphql";
 import incSubmittedRunsGQL from "./queries/execution/increment-submitted-runs.graphql";
-import toggleThreadModelExecutionSummaryPublishingGQL from "./queries/execution/toggle-thread-model-execution-summary-publishing.graphql";
+import toggleThreadModelExecutionSummaryPublishingGQL from "./queries/execution/toggle-summary-publishing.graphql";
 import incRegisteredRunsGQL from "./queries/execution/increment-registered-runs.graphql";
 import incRegisteredRunsByExecutionIdGQL from "./queries/execution/increment-registered-runs-by-execution-id.graphql";
 

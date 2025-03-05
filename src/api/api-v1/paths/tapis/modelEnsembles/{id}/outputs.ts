@@ -1,13 +1,13 @@
 import { Response } from "express";
-import { ThreadsOutputsService } from "@/api/api-v1/services/tapis/threads/outputs/threadsOutputsService";
+import { ModelEnsemblesOutputsService } from "@/api/api-v1/services/tapis/modelEnsembles/outputs/modelEnsemblesOutputsService";
 
-export default function (threadsOutputsService: ThreadsOutputsService) {
+export default function (modelEnsemblesOutputsService: ModelEnsemblesOutputsService) {
     const exports = {
         POST,
         parameters: [
             {
                 in: "path",
-                name: "threadId",
+                name: "id",
                 required: true,
                 schema: {
                     type: "string"
@@ -19,11 +19,11 @@ export default function (threadsOutputsService: ThreadsOutputsService) {
     async function POST(req: any, res: Response) {
         try {
             // Start the registration process asynchronously
-            threadsOutputsService.registerOutputs(req.params.threadId, req.headers.authorization);
+            modelEnsemblesOutputsService.registerOutputs(req.params.id, req.headers.authorization);
 
             // Return immediate acknowledgment
             res.status(202).json({
-                message: "Thread outputs registration process started"
+                message: "Model ensemble outputs registration process started"
             });
         } catch (error) {
             console.error(error);
@@ -34,10 +34,10 @@ export default function (threadsOutputsService: ThreadsOutputsService) {
     }
 
     POST.apiDoc = {
-        summary: "Register Thread Execution Outputs",
+        summary: "Register Model Ensemble Execution Outputs",
         description:
-            "Register all execution outputs for a thread in the data catalog asynchronously",
-        operationId: "registerThreadExecutionOutputs",
+            "Register all execution outputs for a model ensemble in the data catalog asynchronously",
+        operationId: "registerModelEnsembleExecutionOutputs",
         tags: ["Tapis"],
         security: [
             {
