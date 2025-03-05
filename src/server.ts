@@ -28,6 +28,7 @@ import { PORT, VERSION } from "./config/app";
 import jobsService from "./api/api-v1/services/tapis/jobsService";
 import { getConfiguration } from "./classes/mint/mint-functions";
 import executionOutputsService from "./api/api-v1/services/tapis/executionOutputsService";
+import threadsOutputsService from "./api/api-v1/services/tapis/threads/outputs/threadsOutputsService";
 
 // Main Express Server
 const app = express();
@@ -58,7 +59,8 @@ initialize({
         modelCacheService: v1ModelCacheService,
         executionsTapisService: v1ExecutionTapisService,
         threadsExecutionsService: v1ThreadsExecutionsService,
-        executionOutputsService: executionOutputsService
+        executionOutputsService: executionOutputsService,
+        threadsOutputsService: threadsOutputsService
     },
     paths: path.resolve(__dirname, "./api/api-v1/paths"),
     routesGlob: "**/*.{ts,js}",
