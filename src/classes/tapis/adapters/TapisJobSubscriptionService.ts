@@ -31,6 +31,6 @@ export class TapisJobSubscriptionService {
 
     static generateWebHookUrl(threadId: string, executionId: string) {
         const prefs = getConfiguration();
-        return `${prefs.ensemble_manager_api}/threads/${threadId}/executions/${executionId}/webhook`;
+        return `${prefs.ensemble_manager_api}/tapis/threads/${threadId}/executions/${executionId}/webhook`;
     }
 }
