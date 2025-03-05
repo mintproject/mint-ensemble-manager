@@ -15,7 +15,8 @@ import {
     incrementThreadModelFailedRuns,
     updateExecutionStatus,
     updateExecutionStatusAndResultsv2,
-    getThreadModelByThreadIdExecutionId
+    getThreadModelByThreadIdExecutionId,
+    updateExecutionRunId
 } from "@/classes/graphql/graphql_functions";
 import { matchTapisOutputsToMintOutputs } from "@/classes/tapis/jobs";
 import { Status } from "@/interfaces/IExecutionService";
@@ -66,6 +67,7 @@ export class TapisExecutionService implements IExecutionService {
         const promises = this.seeds.map(async (seed) => {
             const jobRequest = this.jobService.createJobRequest(app, seed, model);
             const jobId = await this.submitJob(jobRequest);
+            await updateExecutionRunId(seed.execution.id, jobId);
             const subscription = TapisJobSubscriptionService.createRequest(
                 seed.execution.id,
                 threadId
@@ -145,10 +147,11 @@ export class TapisExecutionService implements IExecutionService {
 
     async submitJob(jobRequest: Jobs.ReqSubmitJob): Promise<string> {
         try {
-            const jobSubmission = await errorDecoder<Jobs.RespSubmitJob>(() =>
+            const { result: jobSubmission } = await errorDecoder<Jobs.RespSubmitJob>(() =>
                 this.jobsClient.submitJob({ reqSubmitJob: jobRequest })
             );
-            return jobSubmission.result.uuid;
+            console.log(`Job submitted with id ${jobSubmission.uuid}`);
+            return jobSubmission.uuid;
         } catch (error) {
             if (error.status === 400) {
                 // Handle HTTP 400 Bad Request specifically
