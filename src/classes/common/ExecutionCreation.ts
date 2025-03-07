@@ -1,17 +1,14 @@
 import {
     deleteThreadModelExecutionIds,
     getExecutionHash,
-    getModelInputBindings,
     getModelInputConfigurations,
     getRegionDetails,
-    incrementThreadModelFailedRuns,
     incrementThreadModelSubmittedRuns,
     incrementThreadModelSuccessfulRuns,
     listSuccessfulExecutionIds,
     setExecutions,
     setThreadModelExecutionIds,
-    setThreadModelExecutionSummary,
-    updateExecutionStatus
+    setThreadModelExecutionSummary
 } from "../graphql/graphql_functions";
 import {
     Execution,
@@ -25,6 +22,7 @@ import {
 } from "../mint/mint-types";
 import { TapisComponent } from "../tapis/typing";
 
+const MAX_CONFIGURATIONS = 1000000;
 // Add interface for IO/Parameter details
 interface ComponentIODetails {
     id: string;
@@ -68,16 +66,18 @@ export class ExecutionCreation {
         if (!this.thread.execution_summary) this.thread.execution_summary = {};
 
         this.model = this.thread.models[modelid];
-        const thread_model_id = this.thread.model_ensembles[modelid].id;
+        const modelEnsembleId = this.thread.model_ensembles[modelid].id;
         this.threadRegion = await getRegionDetails(this.thread.regionid);
-        const execution_details = getModelInputBindings(this.model, this.thread, this.threadRegion);
-        const threadModel = execution_details[0] as ThreadModelMap;
-        const inputIds = execution_details[1] as string[];
-
+        const executionDetails = ExecutionCreation.getModelInputBindings(
+            this.model,
+            this.thread,
+            this.threadRegion
+        );
+        const threadModel = executionDetails[0] as ThreadModelMap;
+        const inputIds = executionDetails[1] as string[];
         const configs = getModelInputConfigurations(threadModel, inputIds);
-
         if (configs !== null) {
-            await this.createExecutions(configs, thread_model_id, inputIds, modelid);
+            await this.createExecutions(configs, modelEnsembleId, inputIds, modelid);
         }
         return true;
     }
@@ -244,4 +244,91 @@ export class ExecutionCreation {
             type: param.type
         };
     }
+
+    private static getModelInputBindings = (model: Model, thread: Thread, region: Region) => {
+        const me = thread.model_ensembles[model.id];
+        const threadModel = {
+            id: me.id,
+            bindings: Object.assign({}, me.bindings)
+        } as ThreadModelMap;
+        const inputIds: any[] = [];
+
+        model.input_files.map((io) => {
+            inputIds.push(io.id);
+            if (!io.value) {
+                // Expand a dataset to it's constituent "selected" resources
+                // FIXME: Create a collection if the model input has dimensionality of 1
+                if (threadModel.bindings[io.id]) {
+                    console.log(threadModel.bindings[io.id]);
+                    let nexecution: any[] = [];
+                    threadModel.bindings[io.id].map((dsid) => {
+                        const ds = thread.data[dsid];
+                        let selected_resources = ds.resources.filter((res) => res.selected);
+                        // Fix for older saved resources
+                        if (selected_resources.length == 0) selected_resources = ds.resources;
+                        nexecution = nexecution.concat(selected_resources);
+                    });
+                    threadModel.bindings[io.id] = nexecution;
+                }
+            } else {
+                threadModel.bindings[io.id] = io.value.resources as any[];
+            }
+        });
+
+        // Add adjustable parameters to the input ids
+        model.input_parameters.map((io) => {
+            inputIds.push(io.id);
+
+            if (io.value) {
+                // If this is a non-adjustable parameter, set the binding value to the fixed value
+                threadModel.bindings[io.id] = [io.value];
+            }
+
+            // HACK: Add region id to __region_geojson (Not replacing )
+            if (
+                threadModel.bindings[io.id] &&
+                threadModel.bindings[io.id][0] == "__region_geojson"
+            ) {
+                threadModel.bindings[io.id] = ["__region_geojson:" + region.id];
+            }
+        });
+
+        return [threadModel, inputIds];
+    };
+
+    private static getModelInputConfigurations = (
+        threadModel: ThreadModelMap,
+        inputIds: string[]
+    ) => {
+        const dataBindings = threadModel.bindings;
+        const inputBindings: any[] = [];
+        let totalproducts = 1;
+        inputIds.map((inputid) => {
+            inputBindings.push(dataBindings[inputid]);
+            if (dataBindings[inputid]) totalproducts *= dataBindings[inputid].length;
+        });
+        if (totalproducts < MAX_CONFIGURATIONS) {
+            return ExecutionCreation.cartProd(inputBindings);
+        } else {
+            return null;
+        }
+    };
+
+    private static cartProd = (lists: any[]) => {
+        let ps: any[] = [],
+            acc: any[][] = [[]],
+            i = lists.length;
+        while (i--) {
+            let subList = lists[i],
+                j = subList.length;
+            while (j--) {
+                let x = subList[j],
+                    k = acc.length;
+                while (k--) ps.push([x].concat(acc[k]));
+            }
+            acc = ps;
+            ps = [];
+        }
+        return acc.reverse();
+    };
 }
