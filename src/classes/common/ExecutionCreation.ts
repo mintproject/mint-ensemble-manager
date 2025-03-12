@@ -249,30 +249,34 @@ export class ExecutionCreation {
         };
     }
 
-    private static processInputFile(
-        io: ModelIO,
+    public static processInputFiles(
+        modelInputFiles: ModelIO[],
         threadModel: ThreadModelMap,
-        thread: Thread,
-        inputIds: string[]
-    ): void {
-        inputIds.push(io.id);
-        if (!io.value) {
-            // Expand a dataset to its constituent "selected" resources
-            // FIXME: Create a collection if the model input has dimensionality of 1
-            if (threadModel.bindings[io.id]) {
-                let nexecution: any[] = [];
-                threadModel.bindings[io.id].map((dsid) => {
-                    const ds = thread.data[dsid];
-                    let selected_resources = ds.resources.filter((res) => res.selected);
-                    // Fix for older saved resources
-                    if (selected_resources.length == 0) selected_resources = ds.resources;
-                    nexecution = nexecution.concat(selected_resources);
-                });
-                threadModel.bindings[io.id] = nexecution;
+        thread: Thread
+    ): string[] {
+        const inputIds = [];
+        modelInputFiles.forEach((io) => {
+            inputIds.push(io.id);
+
+            if (!io.value) {
+                // Expand a dataset to its constituent "selected" resources
+                // FIXME: Create a collection if the model input has dimensionality of 1
+                if (threadModel.bindings[io.id]) {
+                    let nexecution: any[] = [];
+                    threadModel.bindings[io.id].map((dsid) => {
+                        const ds = thread.data[dsid];
+                        let selected_resources = ds.resources.filter((res) => res.selected);
+                        // Fix for older saved resources
+                        if (selected_resources.length == 0) selected_resources = ds.resources;
+                        nexecution = nexecution.concat(selected_resources);
+                    });
+                    threadModel.bindings[io.id] = nexecution;
+                }
+            } else {
+                threadModel.bindings[io.id] = io.value.resources as any[];
             }
-        } else {
-            threadModel.bindings[io.id] = io.value.resources as any[];
-        }
+        });
+        return inputIds;
     }
 
     public static processInputParameter(
@@ -300,9 +304,10 @@ export class ExecutionCreation {
             id: modelEnsemble.id,
             bindings: Object.assign({}, modelEnsemble.bindings)
         } as ThreadModelMap;
-        const inputIds: any[] = [];
-        model.input_files.forEach((io) =>
-            ExecutionCreation.processInputFile(io, threadModel, thread, inputIds)
+        const inputIds = ExecutionCreation.processInputFiles(
+            model.input_files,
+            threadModel,
+            thread
         );
         model.input_parameters.map((io) =>
             ExecutionCreation.processInputParameter(io, threadModel, inputIds, region.id)
