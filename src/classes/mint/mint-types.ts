@@ -526,7 +526,7 @@ export interface ThreadModelMap {
 
 // Mapping of model input to list of values (data ids or parameter values)
 export interface ModelIOBindings {
-    [inputid: string]: string[] | DataResource[];
+    [inputid: string]: string[];
 }
 
 export interface ExecutionSummary {

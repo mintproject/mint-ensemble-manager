@@ -317,7 +317,6 @@ export const getModelInputBindings = (model: Model, thread: Thread, region: Regi
             // Expand a dataset to it's constituent "selected" resources
             // FIXME: Create a collection if the model input has dimensionality of 1
             if (threadModel.bindings[io.id]) {
-                console.log(threadModel.bindings[io.id]);
                 let nexecution: any[] = [];
                 threadModel.bindings[io.id].map((dsid) => {
                     const ds = thread.data[dsid];
