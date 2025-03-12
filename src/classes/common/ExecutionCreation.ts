@@ -249,53 +249,64 @@ export class ExecutionCreation {
         };
     }
 
+    private static processInputFile(
+        io: ModelIO,
+        threadModel: ThreadModelMap,
+        thread: Thread,
+        inputIds: string[]
+    ): void {
+        inputIds.push(io.id);
+        if (!io.value) {
+            // Expand a dataset to its constituent "selected" resources
+            // FIXME: Create a collection if the model input has dimensionality of 1
+            if (threadModel.bindings[io.id]) {
+                let nexecution: any[] = [];
+                threadModel.bindings[io.id].map((dsid) => {
+                    const ds = thread.data[dsid];
+                    let selected_resources = ds.resources.filter((res) => res.selected);
+                    // Fix for older saved resources
+                    if (selected_resources.length == 0) selected_resources = ds.resources;
+                    nexecution = nexecution.concat(selected_resources);
+                });
+                threadModel.bindings[io.id] = nexecution;
+            }
+        } else {
+            threadModel.bindings[io.id] = io.value.resources as any[];
+        }
+    }
+
+    public static processInputParameter(
+        io: ModelParameter,
+        threadModel: ThreadModelMap,
+        inputIds: string[],
+        region_id: string
+    ): void {
+        inputIds.push(io.id);
+
+        if (io.value) {
+            // If this is a non-adjustable parameter, set the binding value to the fixed value
+            threadModel.bindings[io.id] = [io.value];
+        }
+
+        // HACK: Add region id to __region_geojson (Not replacing )
+        if (threadModel.bindings[io.id] && threadModel.bindings[io.id][0] == "__region_geojson") {
+            threadModel.bindings[io.id] = ["__region_geojson:" + region_id];
+        }
+    }
+
     public static getModelInputBindings = (model: Model, thread: Thread, region: Region) => {
-        const me = thread.model_ensembles[model.id];
+        const modelEnsemble = thread.model_ensembles[model.id];
         const threadModel = {
-            id: me.id,
-            bindings: Object.assign({}, me.bindings)
+            id: modelEnsemble.id,
+            bindings: Object.assign({}, modelEnsemble.bindings)
         } as ThreadModelMap;
         const inputIds: any[] = [];
-
-        model.input_files.map((io) => {
-            inputIds.push(io.id);
-            if (!io.value) {
-                // Expand a dataset to it's constituent "selected" resources
-                // FIXME: Create a collection if the model input has dimensionality of 1
-                if (threadModel.bindings[io.id]) {
-                    let nexecution: any[] = [];
-                    threadModel.bindings[io.id].map((dsid) => {
-                        const ds = thread.data[dsid];
-                        let selected_resources = ds.resources.filter((res) => res.selected);
-                        // Fix for older saved resources
-                        if (selected_resources.length == 0) selected_resources = ds.resources;
-                        nexecution = nexecution.concat(selected_resources);
-                    });
-                    threadModel.bindings[io.id] = nexecution;
-                }
-            } else {
-                threadModel.bindings[io.id] = io.value.resources as any[];
-            }
-        });
-
-        // Add adjustable parameters to the input ids
-        model.input_parameters.map((io) => {
-            inputIds.push(io.id);
-
-            if (io.value) {
-                // If this is a non-adjustable parameter, set the binding value to the fixed value
-                threadModel.bindings[io.id] = [io.value];
-            }
-
-            // HACK: Add region id to __region_geojson (Not replacing )
-            if (
-                threadModel.bindings[io.id] &&
-                threadModel.bindings[io.id][0] == "__region_geojson"
-            ) {
-                threadModel.bindings[io.id] = ["__region_geojson:" + region.id];
-            }
-        });
-
+        model.input_files.forEach((io) =>
+            ExecutionCreation.processInputFile(io, threadModel, thread, inputIds)
+        );
+        model.input_parameters.map((io) =>
+            ExecutionCreation.processInputParameter(io, threadModel, inputIds, region.id)
+        );
         return [threadModel, inputIds];
     };
 
