@@ -3,7 +3,7 @@ import { ModelIOBindings } from "../../mint/mint-types";
 import { ThreadModelMap } from "../../mint/mint-types";
 import { Thread } from "../../mint/mint-types";
 import { ModelIO } from "../../mint/mint-types";
-
+import { getRegionMockTexas } from "./mocks/getRegionMockTexas";
 describe("ExecutionCreation", () => {
     describe("getInputBindingsAndTotalProducts", () => {
         it("should return correct input bindings and total products", () => {
@@ -56,7 +56,6 @@ describe("ExecutionCreation", () => {
 
     describe("processInputParameter", () => {
         let threadModel: ThreadModelMap;
-        let inputIds: string[];
 
         beforeEach(() => {
             // Reset test objects before each test
@@ -64,7 +63,6 @@ describe("ExecutionCreation", () => {
                 id: "test-model",
                 bindings: {}
             };
-            inputIds = [];
         });
 
         it("should handle parameter with fixed value", () => {
@@ -76,7 +74,11 @@ describe("ExecutionCreation", () => {
                 type: "string"
             };
 
-            ExecutionCreation.processInputParameter(param, threadModel, inputIds, "region-123");
+            const inputIds = ExecutionCreation.processInputParameters(
+                [param],
+                threadModel,
+                getRegionMockTexas
+            );
 
             expect(inputIds).toContain("param1");
             expect(threadModel.bindings["param1"]).toEqual(["fixed-value"]);
@@ -91,10 +93,14 @@ describe("ExecutionCreation", () => {
             };
             threadModel.bindings["region_param"] = ["__region_geojson"];
 
-            ExecutionCreation.processInputParameter(param, threadModel, inputIds, "region-123");
+            const inputIds = ExecutionCreation.processInputParameters(
+                [param],
+                threadModel,
+                getRegionMockTexas
+            );
 
             expect(inputIds).toContain("region_param");
-            expect(threadModel.bindings["region_param"]).toEqual(["__region_geojson:region-123"]);
+            expect(threadModel.bindings["region_param"]).toEqual(["__region_geojson:texas"]);
         });
 
         it("should not modify bindings for parameter without value or special case", () => {
@@ -106,7 +112,11 @@ describe("ExecutionCreation", () => {
             };
             threadModel.bindings["param2"] = ["existing-value"];
 
-            ExecutionCreation.processInputParameter(param, threadModel, inputIds, "region-123");
+            const inputIds = ExecutionCreation.processInputParameters(
+                [param],
+                threadModel,
+                getRegionMockTexas
+            );
 
             expect(inputIds).toContain("param2");
             expect(threadModel.bindings["param2"]).toEqual(["existing-value"]);
@@ -120,7 +130,11 @@ describe("ExecutionCreation", () => {
                 type: "string"
             };
 
-            ExecutionCreation.processInputParameter(param, threadModel, inputIds, "region-123");
+            const inputIds = ExecutionCreation.processInputParameters(
+                [param],
+                threadModel,
+                getRegionMockTexas
+            );
 
             expect(inputIds).toContain("param3");
             expect(threadModel.bindings["param3"]).toBeUndefined();

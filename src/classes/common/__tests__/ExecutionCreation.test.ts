@@ -2,9 +2,8 @@ import { ExecutionCreation } from "../ExecutionCreation";
 import { getRegionDetails, listSuccessfulExecutionIds } from "../../graphql/graphql_functions";
 import { getThreadMock } from "./mocks/getThreadMock";
 import { getRegionMockTexas } from "./mocks/getRegionMockTexas";
-import { Region } from "@/classes/mint/mint-types";
 import { threadFromGQL } from "../../graphql/graphql_adapter";
-
+import { Region } from "../../mint/mint-types";
 // Mock all the imported functions
 jest.mock("../../graphql/graphql_functions");
 

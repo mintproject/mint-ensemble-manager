@@ -279,23 +279,29 @@ export class ExecutionCreation {
         return inputIds;
     }
 
-    public static processInputParameter(
-        io: ModelParameter,
+    public static processInputParameters(
+        modelInputParameters: ModelParameter[],
         threadModel: ThreadModelMap,
-        inputIds: string[],
-        region_id: string
-    ): void {
-        inputIds.push(io.id);
+        region: Region
+    ): string[] {
+        const inputIds = [];
+        modelInputParameters.forEach((io) => {
+            inputIds.push(io.id);
 
-        if (io.value) {
-            // If this is a non-adjustable parameter, set the binding value to the fixed value
-            threadModel.bindings[io.id] = [io.value];
-        }
+            if (io.value) {
+                // If this is a non-adjustable parameter, set the binding value to the fixed value
+                threadModel.bindings[io.id] = [io.value];
+            }
 
-        // HACK: Add region id to __region_geojson (Not replacing )
-        if (threadModel.bindings[io.id] && threadModel.bindings[io.id][0] == "__region_geojson") {
-            threadModel.bindings[io.id] = ["__region_geojson:" + region_id];
-        }
+            // HACK: Add region id to __region_geojson (Not replacing )
+            if (
+                threadModel.bindings[io.id] &&
+                threadModel.bindings[io.id][0] == "__region_geojson"
+            ) {
+                threadModel.bindings[io.id] = ["__region_geojson:" + region.id];
+            }
+        });
+        return inputIds;
     }
 
     public static getModelInputBindings = (model: Model, thread: Thread, region: Region) => {
@@ -304,15 +310,18 @@ export class ExecutionCreation {
             id: modelEnsemble.id,
             bindings: Object.assign({}, modelEnsemble.bindings)
         } as ThreadModelMap;
-        const inputIds = ExecutionCreation.processInputFiles(
+        const inputFileIds = ExecutionCreation.processInputFiles(
             model.input_files,
             threadModel,
             thread
         );
-        model.input_parameters.map((io) =>
-            ExecutionCreation.processInputParameter(io, threadModel, inputIds, region.id)
+        const parameterIds = ExecutionCreation.processInputParameters(
+            model.input_parameters,
+            threadModel,
+            region
         );
-        return [threadModel, inputIds];
+
+        return [threadModel, [...inputFileIds, ...parameterIds]];
     };
 
     /**
