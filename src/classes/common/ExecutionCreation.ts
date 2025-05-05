@@ -227,8 +227,8 @@ export class ExecutionCreation {
             }
         });
         if (response.ok) {
-            const data = await response.json();
-            return data as TapisComponent;
+            const { result } = await response.json();
+            return result as TapisComponent;
         } else if (response.status === 401) {
             throw new Error("Unauthorized");
         } else {
