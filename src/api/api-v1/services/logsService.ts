@@ -40,7 +40,7 @@ const logsService: LogsService = {
                 const response = await tapisExecutionService.getJobHistory(execution.runid);
                 let log = "";
                 for (const result of response.result) {
-                    log += `[${result.created} - ${result.event}] ${result.description}\n`;
+                    log += `[${result.created} - ${result.event}] ${result.eventDetail}\n`;
                 }
                 return log;
             }
