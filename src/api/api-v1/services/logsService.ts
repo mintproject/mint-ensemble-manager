@@ -24,9 +24,9 @@ const logsService: LogsService = {
     async fetchLog(execution_id: string, authorizationHeader: string) {
         try {
             const prefs = await fetchMintConfig();
-            const ensemble: Execution = await getExecution(execution_id);
-            if (!ensemble.execution_engine || prefs.execution_engine == "wings") {
-                const log = await fetchWingsRunLog(ensemble.runid, prefs);
+            const execution: Execution = await getExecution(execution_id);
+            if (!execution.execution_engine || prefs.execution_engine == "wings") {
+                const log = await fetchWingsRunLog(execution.runid, prefs);
                 return log;
             } else if (prefs.execution_engine == "localex") {
                 const log = fetchLocalRunLog(execution_id, prefs);
@@ -37,7 +37,7 @@ const logsService: LogsService = {
                     access_token,
                     prefs.tapis.basePath
                 );
-                const response = await tapisExecutionService.getJobHistory(execution_id);
+                const response = await tapisExecutionService.getJobHistory(execution.runid);
                 let log = "";
                 for (const result of response.result) {
                     log += `[${result.created} - ${result.event}] ${result.description}\n`;
