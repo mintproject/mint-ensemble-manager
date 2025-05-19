@@ -37,6 +37,12 @@ const logsService: LogsService = {
                     access_token,
                     prefs.tapis.basePath
                 );
+                if (!execution.runid) {
+                    return createResponse(
+                        "failure",
+                        "Run ID is not set for this execution. Please try again later."
+                    );
+                }
                 const response = await tapisExecutionService.getJobHistory(execution.runid);
                 let log = "";
                 for (const result of response.result) {
