@@ -903,5 +903,81 @@ module.exports = {
             }
         }
     },
-    paths: {}
+    paths: {
+        "/problemStatements/{id}": {
+            get: {
+                summary: "Get a problem statement by ID",
+                operationId: "getProblemStatement",
+                security: [
+                    {
+                        BearerAuth: [],
+                        oauth2: []
+                    }
+                ],
+                parameters: [
+                    {
+                        in: "path",
+                        name: "id",
+                        required: true,
+                        schema: {
+                            type: "string"
+                        }
+                    }
+                ],
+                responses: {
+                    "200": {
+                        description: "Successful response",
+                        content: {
+                            "application/json": {
+                                schema: {
+                                    $ref: "#/components/schemas/ProblemStatement"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        description: "Problem statement not found"
+                    },
+                    default: {
+                        description: "An error occurred"
+                    }
+                }
+            },
+            post: {
+                summary: "Create a new problem statement",
+                operationId: "createProblemStatement",
+                security: [
+                    {
+                        BearerAuth: [],
+                        oauth2: []
+                    }
+                ],
+                requestBody: {
+                    required: true,
+                    content: {
+                        "application/json": {
+                            schema: {
+                                $ref: "#/components/schemas/ProblemStatement"
+                            }
+                        }
+                    }
+                },
+                responses: {
+                    "201": {
+                        description: "Problem statement created successfully",
+                        content: {
+                            "application/json": {
+                                schema: {
+                                    $ref: "#/components/schemas/ProblemStatement"
+                                }
+                            }
+                        }
+                    },
+                    default: {
+                        description: "An error occurred"
+                    }
+                }
+            }
+        }
+    }
 };

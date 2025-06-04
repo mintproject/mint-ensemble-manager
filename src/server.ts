@@ -14,6 +14,7 @@ import v1ThreadsService from "./api/api-v1/services/threadsService";
 import v1ModelCacheService from "./api/api-v1/services/modelCacheService";
 import v1ExecutionTapisService from "./api/api-v1/services/executionsTapisService";
 import v1ThreadsExecutionsService from "./api/api-v1/services/tapis/threads/executions/threadsExecutionsService";
+import v1ProblemStatementsService from "./api/api-v1/services/problemStatementsService";
 import { initialize } from "express-openapi";
 import { getResource } from "./classes/wings/xhr-requests";
 
@@ -47,6 +48,7 @@ initialize({
     apiDoc: v1ApiDoc,
     securityHandlers: securityHandlers,
     dependencies: {
+        problemStatementsService: v1ProblemStatementsService,
         executionsService: v1ExecutionsService,
         executionsLocalService: v1ExecutionsLocalService,
         executionQueueService: v1ExecutionQueueService,
