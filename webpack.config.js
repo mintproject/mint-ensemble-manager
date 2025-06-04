@@ -1,3 +1,5 @@
+/* eslint-env node */
+/* eslint-disable @typescript-eslint/no-var-requires */
 const path = require("path");
 const NodemonPlugin = require("nodemon-webpack-plugin");
 const CopyWebpackPlugin = require("copy-webpack-plugin");
