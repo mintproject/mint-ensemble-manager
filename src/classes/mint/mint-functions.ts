@@ -24,9 +24,7 @@ import {
 
 import fs from "fs-extra";
 
-import { DEVMODE } from "../../config/app";
-import { DEVHOMEDIR } from "../../config/app";
-import { PORT } from "../../config/app";
+import { DEVMODE, DEVHOMEDIR, PORT } from "@/config/app";
 
 export const getConfiguration = (): MintPreferences => {
     let config_file = process.env.ENSEMBLE_MANAGER_CONFIG_FILE;
