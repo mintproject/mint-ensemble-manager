@@ -1,4 +1,4 @@
-import { Response } from "express";
+import { Response, Request } from "express";
 import { ExecutionOutputsService } from "@/api/api-v1/services/tapis/executionOutputsService";
 
 export default function (executionOutputsService: ExecutionOutputsService) {
@@ -16,7 +16,33 @@ export default function (executionOutputsService: ExecutionOutputsService) {
         ]
     };
 
-    async function POST(req: any, res: Response) {
+    /**
+     * @swagger
+     * /tapis/executions/{executionId}/outputs:
+     *   post:
+     *     summary: Register Tapis Execution Outputs
+     *     description: Register the outputs of a successful Tapis execution in the data catalog
+     *     operationId: registerTapisExecutionOutputs
+     *     tags:
+     *       - Tapis
+     *     security:
+     *       - BearerAuth: []
+     *       - oauth2: []
+     *     parameters:
+     *       - name: executionId
+     *         in: path
+     *         required: true
+     *         schema:
+     *           type: string
+     *     responses:
+     *       200:
+     *         description: Outputs registered successfully
+     *       400:
+     *         description: Invalid request or registration failed
+     *       500:
+     *         description: Server error
+     */
+    async function POST(req: Request<{ executionId: string }>, res: Response) {
         try {
             const success = await executionOutputsService.registerOutputs(
                 req.params.executionId,
@@ -39,30 +65,6 @@ export default function (executionOutputsService: ExecutionOutputsService) {
             });
         }
     }
-
-    POST.apiDoc = {
-        summary: "Register Tapis Execution Outputs",
-        description: "Register the outputs of a successful Tapis execution in the data catalog",
-        operationId: "registerTapisExecutionOutputs",
-        tags: ["Tapis"],
-        security: [
-            {
-                BearerAuth: [],
-                oauth2: []
-            }
-        ],
-        responses: {
-            "200": {
-                description: "Outputs registered successfully"
-            },
-            "400": {
-                description: "Invalid request or registration failed"
-            },
-            "500": {
-                description: "Server error"
-            }
-        }
-    };
 
     return exports;
 }
