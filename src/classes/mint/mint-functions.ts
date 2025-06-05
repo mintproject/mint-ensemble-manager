@@ -1,10 +1,4 @@
-import {
-    Thread,
-    MintPreferences,
-    ExecutionSummary,
-    Execution,
-    ThreadModelMap
-} from "./mint-types";
+import { Thread, MintPreferences, ExecutionSummary, Execution, ThreadModelMap } from "./mint-types";
 import {
     setupModelWorkflow,
     fetchWingsTemplate,
@@ -12,7 +6,7 @@ import {
     runModelExecutions,
     fetchWingsRunsStatuses,
     fetchWingsRunResults
-} from "../wings/wings-functions";
+} from "@/classes/wings/wings-functions";
 import {
     getModelInputBindings,
     getModelInputConfigurations,
@@ -26,7 +20,7 @@ import {
     getThread,
     setThreadModelExecutionSummary,
     getRegionDetails
-} from "../graphql/graphql_functions";
+} from "@/classes/graphql/graphql_functions";
 
 import fs from "fs-extra";
 

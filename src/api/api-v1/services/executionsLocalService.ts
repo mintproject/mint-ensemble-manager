@@ -6,7 +6,7 @@ import { createResponse } from "./util";
 import {
     saveAndRunExecutionsLocally,
     deleteExecutableCacheLocally
-} from "../../../classes/mint/mint-local-functions";
+} from "@/classes/mint/mint-local-functions";
 
 const executionsLocalService = {
     async submitExecution(threadmodel: any) {

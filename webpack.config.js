@@ -11,7 +11,11 @@ module.exports = {
     resolve: {
         extensions: [".js", ".json", ".ts", ".graphql"],
         alias: {
-            "@": path.resolve(__dirname, "src")
+            "@/api": path.resolve(__dirname, "src/api"),
+            "@/classes": path.resolve(__dirname, "src/classes"),
+            "@/config": path.resolve(__dirname, "src/config"),
+            "@/utils": path.resolve(__dirname, "src/utils"),
+            "@/interfaces": path.resolve(__dirname, "src/interfaces")
         }
     },
     entry: {

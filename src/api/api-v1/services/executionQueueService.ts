@@ -1,5 +1,5 @@
 import Queue from "bull";
-import { EXECUTION_QUEUE_NAME, REDIS_URL } from "../../../config/redis";
+import { EXECUTION_QUEUE_NAME, REDIS_URL } from "@/config/redis";
 import { createResponse } from "./util";
 
 // ./api-v1/services/executionsLocalService.js
