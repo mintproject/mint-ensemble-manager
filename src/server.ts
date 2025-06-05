@@ -31,6 +31,8 @@ import monitorsRoutes from "@/api/api-v1/paths/monitors";
 import registrationRoutes from "@/api/api-v1/paths/registration";
 import threadsRoutes from "@/api/api-v1/paths/threads";
 import apiDocComponents from "@/api/api-doc";
+import tapisRouter from "@/api/api-v1/paths/executionEngines/tapis";
+import v1ExecutionsTapisService from "@/api/api-v1/services/executionsTapisService";
 
 // Main Express Server
 const app = express();
@@ -47,13 +49,13 @@ app.use(cors());
 // Register routes
 app.use(`/${version}/executionQueue`, executionQueueRoutes(v1ExecutionQueueService));
 app.use(`/${version}/executions`, executionsRoutes(v1ExecutionsService));
-app.use(`/${version}/executions-local`, executionsLocalRoutes(v1ExecutionsLocalService));
+app.use(`/${version}/executionsLocal`, executionsLocalRoutes(v1ExecutionsLocalService));
 app.use(`/${version}/logs`, logsRoutes(v1LogsService));
-app.use(`/${version}/model-cache`, modelCacheRoutes(v1ModelCacheService));
+app.use(`/${version}/modelCache`, modelCacheRoutes(v1ModelCacheService));
 app.use(`/${version}/monitors`, monitorsRoutes(v1MonitorsService));
 app.use(`/${version}/registration`, registrationRoutes(v1RegistrationService));
 app.use(`/${version}/threads`, threadsRoutes(v1ThreadsService));
-
+app.use(`/${version}/executionEngines/tapis`, tapisRouter(v1ExecutionsTapisService));
 // Swagger-jsdoc setup
 const swaggerOptions = {
     definition: {
@@ -68,7 +70,7 @@ const swaggerOptions = {
     apis: ["./src/api/api-v1/paths/*.ts", "./src/api/api-v1/paths/*/*.ts", "./src/api/api-doc.ts"]
 };
 const swaggerSpec = swaggerJSDoc(swaggerOptions);
-app.use(`/${version}/api-docs`, swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+app.use(`/${version}/ui`, swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // Setup Error Handler
 const errorHandler: ErrorRequestHandler = (
@@ -78,7 +80,7 @@ const errorHandler: ErrorRequestHandler = (
 ) => {
     console.log(err);
     const status = err.status || 500;
-    res.status(status).json(err);
+    res.status(status).json({ message: err.message, error: err });
 };
 
 app.use(errorHandler);

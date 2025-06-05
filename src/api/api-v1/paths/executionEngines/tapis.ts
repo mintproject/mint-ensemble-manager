@@ -1,11 +1,10 @@
 // ./api/api-v1/paths/executionsLocal.ts
 
+import { Router } from "express";
 import { ExecutionsTapisService } from "@/api/api-v1/services/executionsTapisService";
-import { Response } from "express";
+
 export default function (executionsTapisService: ExecutionsTapisService) {
-    const operations = {
-        POST
-    };
+    const router = Router();
 
     /**
      * @swagger
@@ -34,23 +33,18 @@ export default function (executionsTapisService: ExecutionsTapisService) {
      *       default:
      *         description: An error occurred
      */
-    async function POST(req: any, res: Response) {
-        const threadmodel = req.body;
+    router.post("/", async (req, res) => {
         try {
             const response = await executionsTapisService.submitExecution(
-                threadmodel,
+                req.body,
                 req.headers.authorization
             );
-            if (response) {
-                res.status(202).json(response);
-            } else {
-                res.status(404).json({ error: "Thread not found" });
-            }
+            res.status(response.status).json(response.data);
         } catch (error) {
             console.log(error);
             res.status(500).json({ error: error.message });
         }
-    }
+    });
 
-    return operations;
+    return router;
 }
