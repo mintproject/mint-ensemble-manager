@@ -6,7 +6,8 @@ import {
     DataResource,
     MintPreferences,
     ModelParameter,
-    Wcm
+    Wcm,
+    Region
 } from "@/classes/mint/mint-types";
 import {
     Component,
@@ -28,7 +29,6 @@ import Queue from "bull";
 import { EXECUTION_QUEUE_NAME, REDIS_URL } from "@/config/redis";
 import { Md5 } from "ts-md5";
 import { getConfiguration } from "@/classes/mint/mint-functions";
-import { Region } from "@/classes/mint/mint-types";
 import { Readable } from "stream";
 
 const prefs = getConfiguration();
