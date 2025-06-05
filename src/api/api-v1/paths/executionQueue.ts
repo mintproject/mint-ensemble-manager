@@ -78,15 +78,5 @@ export default function (executionQueueService: ExecutionQueueService) {
         }
     });
 
-    // NOTE: We could also use a YAML string here.
-    router.get("/", async (req, res) => {
-        res.status(501).json({ result: "error", message: "Method not implemented" });
-    });
-
-    // NOTE: We could also use a YAML string here.
-    router.delete("/", async (req, res) => {
-        res.status(501).json({ result: "error", message: "Method not implemented" });
-    });
-
     return router;
 }
