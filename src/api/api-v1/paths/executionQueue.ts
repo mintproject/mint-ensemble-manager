@@ -1,6 +1,8 @@
 // ./api/api-v1/paths/executionsLocal.ts
 
-export default function (executionQueueService: any) {
+import { ExecutionQueueService } from "@/api/api-v1/services/executionQueueService";
+
+export default function (executionQueueService: ExecutionQueueService) {
     const operations = {
         GET,
         DELETE
