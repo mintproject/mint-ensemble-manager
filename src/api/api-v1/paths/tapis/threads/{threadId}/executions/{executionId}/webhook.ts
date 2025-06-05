@@ -1,13 +1,48 @@
 // ./api/api-v1/paths/executionsLocal.ts
 
-import { Response } from "express";
+import { Request, Response } from "express";
 import { JobsService } from "@/api/api-v1/services/tapis/jobsService";
+
 export default function (jobsService: JobsService) {
     const exports = {
         POST
     };
 
-    async function POST(req: any, res: Response) {
+    /**
+     * @swagger
+     * /tapis/threads/{threadId}/executions/{executionId}/webhook:
+     *   post:
+     *     summary: Webhook for Job Status Change
+     *     description: Webhook for Job Status Change. TAPIS will send a POST request to this endpoint when a job status changes.
+     *     operationId: tapisChangeJobStatus
+     *     tags: [Tapis]
+     *     parameters:
+     *       - name: threadId
+     *         in: path
+     *         required: true
+     *         schema:
+     *           type: string
+     *         description: Thread ID
+     *       - name: executionId
+     *         in: path
+     *         required: true
+     *         schema:
+     *           type: string
+     *         description: Execution ID
+     *     requestBody:
+     *       description: Job Status
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             $ref: '#/components/schemas/WebHookEvent'
+     *     responses:
+     *       200:
+     *         description: Log Details
+     *       default:
+     *         description: An error occurred
+     */
+    async function POST(req: Request, res: Response) {
         try {
             console.log("Received webhook event", JSON.stringify(req.body));
             const execution = await jobsService.webhookJobStatusChange(
