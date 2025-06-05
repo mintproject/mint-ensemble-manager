@@ -1,20 +1,8 @@
-import { Request, Response } from "express";
-import { ModelEnsemblesOutputsService } from "@/api/api-v1/services/tapis/modelEnsembles/outputs/modelEnsemblesOutputsService";
+import { Router } from "express";
+import modelEnsemblesOutputsService from "@/api/api-v1/services/tapis/modelEnsembles/outputs/modelEnsemblesOutputsService";
 
-export default function (modelEnsemblesOutputsService: ModelEnsemblesOutputsService) {
-    const exports = {
-        POST,
-        parameters: [
-            {
-                in: "path",
-                name: "id",
-                required: true,
-                schema: {
-                    type: "string"
-                }
-            }
-        ]
-    };
+export default function () {
+    const router = Router();
 
     /**
      * @swagger
@@ -40,7 +28,7 @@ export default function (modelEnsemblesOutputsService: ModelEnsemblesOutputsServ
      *       500:
      *         description: Server error
      */
-    async function POST(req: Request, res: Response) {
+    router.post("/:id/outputs", async (req, res) => {
         try {
             // Start the registration process asynchronously
             modelEnsemblesOutputsService.registerOutputs(req.params.id, req.headers.authorization);
@@ -55,7 +43,7 @@ export default function (modelEnsemblesOutputsService: ModelEnsemblesOutputsServ
                 message: error.message
             });
         }
-    }
+    });
 
-    return exports;
+    return router;
 }

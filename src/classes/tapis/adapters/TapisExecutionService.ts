@@ -1,4 +1,4 @@
-import { Apps, Jobs } from "@mfosorio/tapis-typescript";
+import { Apps, Jobs } from "@tapis/tapis-typescript";
 import { Execution, Execution_Result, Model, Region } from "@/classes/mint/mint-types";
 import { TapisComponent, TapisComponentSeed } from "@/classes/tapis/typing";
 import { IExecutionService, ExecutionJob } from "@/interfaces/IExecutionService";
@@ -128,15 +128,54 @@ export class TapisExecutionService implements IExecutionService {
             this.jobsClient.getJob({ jobUuid: jobId })
         );
         try {
+            if (job.result?.status === Jobs.JobStatusEnum.Failed) {
+                return {
+                    id: job.result?.uuid,
+                    status: Status.FAILURE,
+                    error: job.result?.lastMessage
+                };
+            }
             return {
                 id: job.result?.uuid,
-                status: TapisExecutionService.mapStatus(job.status),
-                result: job.result?.lastMessage,
-                error: job.result?.lastMessage
+                status: TapisExecutionService.mapJobStatusEnum(job.result?.status),
+                result: job.result?.lastMessage
             };
         } catch (error) {
             console.error("Error getting job status", error);
             throw error;
+        }
+    }
+
+    public static mapJobStatusEnum(tapisStatus: Jobs.JobStatusEnum): Status {
+        switch (tapisStatus) {
+            case Jobs.JobStatusEnum.Pending:
+                return Status.WAITING;
+            case Jobs.JobStatusEnum.ProcessingInputs:
+                return Status.WAITING;
+            case Jobs.JobStatusEnum.StagingInputs:
+                return Status.WAITING;
+            case Jobs.JobStatusEnum.StagingJob:
+                return Status.WAITING;
+            case Jobs.JobStatusEnum.SubmittingJob:
+                return Status.WAITING;
+            case Jobs.JobStatusEnum.Queued:
+                return Status.WAITING;
+            case Jobs.JobStatusEnum.Running:
+                return Status.RUNNING;
+            case Jobs.JobStatusEnum.Archiving:
+                return Status.RUNNING;
+            case Jobs.JobStatusEnum.Blocked:
+                return Status.WAITING;
+            case Jobs.JobStatusEnum.Paused:
+                return Status.WAITING;
+            case Jobs.JobStatusEnum.Finished:
+                return Status.SUCCESS;
+            case Jobs.JobStatusEnum.Cancelled:
+                return Status.FAILURE;
+            case Jobs.JobStatusEnum.Failed:
+                return Status.FAILURE;
+            default:
+                throw new Error("Unrecognized Tapis status: " + tapisStatus);
         }
     }
 

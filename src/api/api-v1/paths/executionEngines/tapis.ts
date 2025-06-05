@@ -1,9 +1,9 @@
 // ./api/api-v1/paths/executionsLocal.ts
 
 import { Router } from "express";
-import { ExecutionsTapisService } from "@/api/api-v1/services/executionsTapisService";
+import executionsTapisService from "@/api/api-v1/services/executionsTapisService";
 
-export default function (executionsTapisService: ExecutionsTapisService) {
+export default function () {
     const router = Router();
 
     /**
@@ -33,7 +33,7 @@ export default function (executionsTapisService: ExecutionsTapisService) {
      *       default:
      *         description: An error occurred
      */
-    router.post("/", async (req, res) => {
+    router.post("/tapis", async (req, res) => {
         try {
             const response = await executionsTapisService.submitExecution(
                 req.body,

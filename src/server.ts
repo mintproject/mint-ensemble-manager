@@ -31,8 +31,7 @@ import monitorsRoutes from "@/api/api-v1/paths/monitors";
 import registrationRoutes from "@/api/api-v1/paths/registration";
 import threadsRoutes from "@/api/api-v1/paths/threads";
 import apiDocComponents from "@/api/api-doc";
-import tapisRouter from "@/api/api-v1/paths/executionEngines/tapis";
-import v1ExecutionsTapisService from "@/api/api-v1/services/executionsTapisService";
+import tapisRouter from "@/api/api-v1/paths/tapis";
 
 // Main Express Server
 const app = express();
@@ -55,7 +54,7 @@ app.use(`/${version}/modelCache`, modelCacheRoutes(v1ModelCacheService));
 app.use(`/${version}/monitors`, monitorsRoutes(v1MonitorsService));
 app.use(`/${version}/registration`, registrationRoutes(v1RegistrationService));
 app.use(`/${version}/threads`, threadsRoutes(v1ThreadsService));
-app.use(`/${version}/executionEngines/tapis`, tapisRouter(v1ExecutionsTapisService));
+app.use(`/${version}/tapis`, tapisRouter());
 // Swagger-jsdoc setup
 const swaggerOptions = {
     definition: {
@@ -67,7 +66,7 @@ const swaggerOptions = {
         servers: [{ url: "http://localhost:3000/v1" }, { url: "https://ensemble.mint.isi.edu/v1" }],
         components: apiDocComponents.components
     },
-    apis: ["./src/api/api-v1/paths/*.ts", "./src/api/api-v1/paths/*/*.ts", "./src/api/api-doc.ts"]
+    apis: ["./src/api/api-v1/paths/*.ts", "./src/api/api-v1/paths/**/*.ts", "./src/api/api-doc.ts"]
 };
 const swaggerSpec = swaggerJSDoc(swaggerOptions);
 app.use(`/${version}/ui`, swaggerUi.serve, swaggerUi.setup(swaggerSpec));

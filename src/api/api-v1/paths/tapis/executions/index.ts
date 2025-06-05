@@ -1,21 +1,8 @@
-import { Response, Request } from "express";
-import { ExecutionOutputsService } from "@/api/api-v1/services/tapis/executionOutputsService";
+import { Router } from "express";
+import executionOutputsService from "@/api/api-v1/services/tapis/executionOutputsService";
 
-export default function (executionOutputsService: ExecutionOutputsService) {
-    const exports = {
-        POST,
-        parameters: [
-            {
-                in: "path",
-                name: "executionId",
-                required: true,
-                schema: {
-                    type: "string"
-                }
-            }
-        ]
-    };
-
+export default function () {
+    const router = Router();
     /**
      * @swagger
      * /tapis/executions/{executionId}/outputs:
@@ -42,7 +29,7 @@ export default function (executionOutputsService: ExecutionOutputsService) {
      *       500:
      *         description: Server error
      */
-    async function POST(req: Request<{ executionId: string }>, res: Response) {
+    router.post("/:executionId/outputs", async (req, res) => {
         try {
             const success = await executionOutputsService.registerOutputs(
                 req.params.executionId,
@@ -64,7 +51,7 @@ export default function (executionOutputsService: ExecutionOutputsService) {
                 message: error.message
             });
         }
-    }
+    });
 
-    return exports;
+    return router;
 }
