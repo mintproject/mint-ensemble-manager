@@ -50,16 +50,8 @@ module.exports = {
         new CopyWebpackPlugin({
             patterns: [
                 {
-                    from: "./src/api",
-                    to: "api"
-                },
-                {
-                    from: "./src/utils",
-                    to: "utils"
-                },
-                {
-                    from: "./src/config",
-                    to: "config"
+                    from: "./src/config/config.json",
+                    to: "config/config.json"
                 }
             ]
         })
