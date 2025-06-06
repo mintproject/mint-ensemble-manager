@@ -1,5 +1,6 @@
 import { Router } from "express";
 import executionOutputsService from "@/api/api-v1/services/tapis/executionOutputsService";
+import { NotFoundError } from "@/classes/common/errors";
 
 export default function () {
     const router = Router();
@@ -46,10 +47,15 @@ export default function () {
                 });
             }
         } catch (error) {
-            console.error(error);
-            res.status(500).json({
-                message: error.message
-            });
+            if (error instanceof NotFoundError) {
+                res.status(404).json({
+                    message: "Execution not found"
+                });
+            } else {
+                res.status(500).json({
+                    message: error.message
+                });
+            }
         }
     });
 

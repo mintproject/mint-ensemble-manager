@@ -8,6 +8,7 @@ import { getInputDatasets } from "@/classes/tapis/helpers";
 import { TapisJobService } from "@/classes/tapis/adapters/TapisJobService";
 import errorDecoder from "@/classes/tapis/utils/errorDecoder";
 import { TapisJobSubscriptionService } from "@/classes/tapis/adapters/TapisJobSubscriptionService";
+import { NotFoundError } from "@/classes/common/errors";
 import {
     getExecution,
     getModelOutputsByModelId,
@@ -20,6 +21,7 @@ import {
 } from "@/classes/graphql/graphql_functions";
 import { matchTapisOutputsToMintOutputs } from "@/classes/tapis/jobs";
 import { Status } from "@/interfaces/IExecutionService";
+
 export class TapisExecutionService implements IExecutionService {
     private appsClient: Apps.ApplicationsApi;
     private jobsClient: Jobs.JobsApi;
@@ -291,6 +293,9 @@ export class TapisExecutionService implements IExecutionService {
 
     private async updateExecutionResultsFromJob(executionId: string) {
         const execution = await getExecution(executionId);
+        if (execution === null) {
+            throw new NotFoundError("Execution not found");
+        }
         execution.results = await this.getExecutionResultsFromJob(execution.runid, execution);
         console.log("Registering execution ", executionId, execution.results.length);
         await updateExecutionStatusAndResultsv2(execution);
