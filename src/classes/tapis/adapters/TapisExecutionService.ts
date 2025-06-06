@@ -207,6 +207,9 @@ export class TapisExecutionService implements IExecutionService {
     /** Extra methods */
 
     async loadTapisApp(component: TapisComponent): Promise<Apps.TapisApp> {
+        if (component === undefined) {
+            throw new Error("Component is undefined");
+        }
         const { result: app } = await this.appsClient.getApp({
             appId: component.id,
             appVersion: component.version

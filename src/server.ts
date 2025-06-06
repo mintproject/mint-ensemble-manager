@@ -32,6 +32,7 @@ import registrationRoutes from "@/api/api-v1/paths/registration";
 import threadsRoutes from "@/api/api-v1/paths/threads";
 import apiDocComponents from "@/api/api-doc";
 import tapisRouter from "@/api/api-v1/paths/tapis";
+import executionEnginesRouter from "@/api/api-v1/paths/executionEngines/tapis";
 
 // Main Express Server
 const app = express();
@@ -54,6 +55,7 @@ app.use(`/${version}/modelCache`, modelCacheRoutes(v1ModelCacheService));
 app.use(`/${version}/monitors`, monitorsRoutes(v1MonitorsService));
 app.use(`/${version}/registration`, registrationRoutes(v1RegistrationService));
 app.use(`/${version}/threads`, threadsRoutes(v1ThreadsService));
+app.use(`/${version}/executionEngines`, executionEnginesRouter());
 app.use(`/${version}/tapis`, tapisRouter());
 // Swagger-jsdoc setup
 const swaggerOptions = {
@@ -73,15 +75,14 @@ app.use(`/${version}/ui`, swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // Setup Error Handler
 const errorHandler: ErrorRequestHandler = (
-    err: Error & { status?: number },
+    err: Error,
     req: Request,
-    res: Response
+    res: Response,
+    next: Function
 ) => {
-    console.log(err);
-    const status = err.status || 500;
-    res.status(status).json({ message: err.message, error: err });
+    console.error(err);
+    res.status(500).json({ message: err.message });
 };
-
 app.use(errorHandler);
 
 // Setup Queue
