@@ -1,11 +1,19 @@
-import { ProblemStatement } from "@/classes/mint/mint-types";
-import { getProblemStatements, getProblemStatement } from "@/classes/graphql/graphql_functions";
+import { ProblemStatement, ProblemStatementInfo } from "@/classes/mint/mint-types";
+import {
+    getProblemStatements,
+    getProblemStatement,
+    addProblemStatement
+} from "@/classes/graphql/graphql_functions";
 import { getTokenFromAuthorizationHeader } from "@/utils/authUtils";
 import { UnauthorizedError, InternalServerError } from "@/classes/common/errors";
 
 export interface ProblemStatementsService {
     getProblemStatements(authorizationHeader: string): Promise<ProblemStatement[]>;
     getProblemStatementById(id: string, authorizationHeader: string): Promise<ProblemStatement>;
+    createProblemStatement(
+        problemStatement: ProblemStatementInfo,
+        authorizationHeader: string
+    ): Promise<string>;
 }
 
 const problemStatementsService: ProblemStatementsService = {
@@ -28,6 +36,27 @@ const problemStatementsService: ProblemStatementsService = {
         } catch (error) {
             console.error("Error getting problem statement:", error);
             throw new InternalServerError("Error getting problem statement: " + error.message);
+        }
+    },
+
+    async createProblemStatement(
+        problemStatement: ProblemStatementInfo,
+        authorizationHeader: string
+    ) {
+        const access_token = getTokenFromAuthorizationHeader(authorizationHeader);
+        if (!access_token) {
+            throw new UnauthorizedError("Invalid authorization header");
+        }
+
+        try {
+            const id = await addProblemStatement(problemStatement, access_token);
+            if (!id) {
+                throw new InternalServerError("Failed to create problem statement");
+            }
+            return id;
+        } catch (error) {
+            console.error("Error creating problem statement:", error);
+            throw new InternalServerError("Error creating problem statement: " + error.message);
         }
     }
 };

@@ -1,5 +1,33 @@
 import { Router } from "express";
 import problemStatementsService from "@/api/api-v1/services/problemStatementsService";
+import { ProblemStatementInfo } from "@/classes/mint/mint-types";
+
+/**
+ * Interface for creating a new problem statement request
+ * Based on the OpenAPI/Swagger documentation
+ */
+interface CreateProblemStatementRequest {
+    name: string;
+    regionid: string;
+    dates: {
+        start_date: string; // ISO format date-time
+        end_date: string; // ISO format date-time
+    };
+    events?: Array<{
+        event: "CREATE" | "UPDATE" | "ADD_TASK" | "DELETE_TASK";
+        userid: string;
+        timestamp: string; // ISO format date-time
+        notes: string;
+    }>;
+    permissions?: Array<{
+        userid: string;
+        read: boolean;
+        write: boolean;
+        execute: boolean;
+        owner: boolean;
+    }>;
+    preview?: string[];
+}
 
 const problemStatementsRouter = (): Router => {
     const router = Router();
@@ -40,6 +68,79 @@ const problemStatementsRouter = (): Router => {
             const problemStatements =
                 await problemStatementsService.getProblemStatements(authorizationHeader);
             res.status(200).json(problemStatements);
+        } catch (error) {
+            res.status(500).json({ message: error.message });
+        }
+    });
+
+    /**
+     * @openapi
+     * /problemStatements:
+     *   post:
+     *     summary: Create a new problem statement
+     *     description: Creates a new problem statement with the provided information
+     *     security:
+     *       - BearerAuth: []
+     *         oauth2: []
+     *     tags:
+     *       - Problem Statements
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             $ref: '#/components/schemas/CreateProblemStatementRequest'
+     *     responses:
+     *       201:
+     *         description: Problem statement created successfully
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 id:
+     *                   type: string
+     *                   description: The ID of the created problem statement
+     *       400:
+     *         description: Invalid request body
+     *       401:
+     *         description: Unauthorized
+     *       403:
+     *         description: Forbidden
+     *       500:
+     *         description: Internal server error
+     */
+    router.post("/", async (req, res) => {
+        try {
+            const authorizationHeader = req.headers.authorization;
+            if (!authorizationHeader) {
+                return res.status(401).json({ message: "Authorization header is required" });
+            }
+
+            const problemStatement = req.body as CreateProblemStatementRequest;
+
+            // Convert the request to ProblemStatementInfo
+            const problemStatementInfo: ProblemStatementInfo = {
+                name: problemStatement.name,
+                regionid: problemStatement.regionid,
+                dates: {
+                    start_date: new Date(problemStatement.dates.start_date),
+                    end_date: new Date(problemStatement.dates.end_date)
+                },
+                events:
+                    problemStatement.events?.map((event) => ({
+                        ...event,
+                        timestamp: new Date(event.timestamp)
+                    })) || [],
+                permissions: problemStatement.permissions || [],
+                preview: problemStatement.preview
+            };
+
+            const id = await problemStatementsService.createProblemStatement(
+                problemStatementInfo,
+                authorizationHeader
+            );
+            res.status(201).json({ id });
         } catch (error) {
             res.status(500).json({ message: error.message });
         }

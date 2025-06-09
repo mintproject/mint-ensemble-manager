@@ -758,8 +758,13 @@ export const incrementThreadModelRegisteredRunsByExecutionId = (
 
 /* Update Functions */
 // Add ProblemStatement
-export const addProblemStatement = (problem_statement: ProblemStatementInfo): Promise<string> => {
-    const APOLLO_CLIENT = GraphQL.instance(KeycloakAdapter.getUser());
+export const addProblemStatement = (
+    problem_statement: ProblemStatementInfo,
+    access_token?: string
+): Promise<string> => {
+    const APOLLO_CLIENT = access_token
+        ? GraphQL.instanceUsingAccessToken(access_token)
+        : GraphQL.instance(KeycloakAdapter.getUser());
     const problemobj = problemStatementToGQL(problem_statement);
     return APOLLO_CLIENT.mutate({
         mutation: newProblemStatementGQL,
