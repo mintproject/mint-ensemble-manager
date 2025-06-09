@@ -193,7 +193,7 @@ export const problemStatementFromGQL = (problem: any): ProblemStatement => {
         tasks: {},
         preview: problem["preview"]
     } as ProblemStatement;
-    if (problem["tasks"]) {
+    if (problem["tasks"] && problem["tasks"].length > 0) {
         problem["tasks"].forEach((task: any) => {
             const fbtask = taskFromGQL(task);
             fbtask.problem_statement_id = problem["id"];

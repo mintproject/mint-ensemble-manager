@@ -27,16 +27,11 @@ const problemStatementsService: ProblemStatementsService = {
             throw new UnauthorizedError("Invalid authorization header");
         }
 
-        try {
-            const problemStatement = await getProblemStatement(id, access_token);
-            if (!problemStatement) {
-                throw new NotFoundError("Problem statement not found");
-            }
-            return problemStatement;
-        } catch (error) {
-            console.error("Error getting problem statement:", error);
-            throw new InternalServerError("Error getting problem statement: " + error.message);
+        const problemStatement = await getProblemStatement(id, access_token);
+        if (!problemStatement) {
+            throw new NotFoundError("Problem statement not found");
         }
+        return problemStatement;
     },
 
     async createProblemStatement(

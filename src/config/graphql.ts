@@ -5,8 +5,6 @@ import { User } from "../classes/mint/mint-types";
 import { KeycloakAdapter } from "./keycloak-adapter";
 import { getConfiguration } from "../classes/mint/mint-functions";
 
-const prefs = getConfiguration();
-
 export class GraphQL {
     static client: ApolloClient<NormalizedCacheObject>;
     static userId;
@@ -25,6 +23,7 @@ export class GraphQL {
     };
 
     static instanceUsingAccessToken = (access_token: string) => {
+        const prefs = getConfiguration();
         const protocol = prefs.graphql.enable_ssl ? "https://" : "http://";
         const uri = protocol + prefs.graphql.endpoint;
         return new ApolloClient({
