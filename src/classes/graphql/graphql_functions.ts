@@ -102,9 +102,12 @@ function getTokenFromAuthorizationHeader(authorizationHeader: string): string | 
 }
 
 export const getProblemStatement = async (
-    problem_statement_id: string
+    problem_statement_id: string,
+    access_token?: string
 ): Promise<ProblemStatement> => {
-    const APOLLO_CLIENT = GraphQL.instance(KeycloakAdapter.getUser());
+    const APOLLO_CLIENT = access_token
+        ? GraphQL.instanceUsingAccessToken(access_token)
+        : GraphQL.instance(KeycloakAdapter.getUser());
     return APOLLO_CLIENT.query({
         query: getProblemStatementGQL,
         variables: {

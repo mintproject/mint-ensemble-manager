@@ -188,8 +188,8 @@ export const problemStatementFromGQL = (problem: any): ProblemStatement => {
             start_date: new Date(problem["start_date"]),
             end_date: new Date(problem["end_date"])
         },
-        events: problem["events"].map(eventFromGQL),
-        permissions: problem["permissions"].map(permissionFromGQL),
+        events: "events" in problem ? problem["events"].map(eventFromGQL) : [],
+        permissions: "permissions" in problem ? problem["permissions"].map(permissionFromGQL) : [],
         tasks: {},
         preview: problem["preview"]
     } as ProblemStatement;
@@ -339,8 +339,8 @@ export const threadInfoFromGQL = (thread: any) => {
         driving_variables: thread.driving_variable_id != null ? [thread.driving_variable_id] : [],
         response_variables:
             thread.response_variable_id != null ? [thread.response_variable_id] : [],
-        events: thread["events"].map(eventFromGQL),
-        permissions: thread["permissions"].map(permissionFromGQL)
+        events: "events" in thread ? thread["events"].map(eventFromGQL) : [],
+        permissions: "permissions" in thread ? thread["permissions"].map(permissionFromGQL) : []
     } as ThreadInfo;
 };
 
