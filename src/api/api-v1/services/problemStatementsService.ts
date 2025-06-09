@@ -5,7 +5,7 @@ import {
     addProblemStatement
 } from "@/classes/graphql/graphql_functions";
 import { getTokenFromAuthorizationHeader } from "@/utils/authUtils";
-import { UnauthorizedError, InternalServerError } from "@/classes/common/errors";
+import { UnauthorizedError, InternalServerError, NotFoundError } from "@/classes/common/errors";
 
 export interface ProblemStatementsService {
     getProblemStatements(authorizationHeader: string): Promise<ProblemStatement[]>;
