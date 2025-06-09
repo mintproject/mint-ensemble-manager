@@ -30,7 +30,7 @@ const problemStatementsService: ProblemStatementsService = {
         try {
             const problemStatement = await getProblemStatement(id, access_token);
             if (!problemStatement) {
-                throw new InternalServerError("Problem statement not found");
+                throw new NotFoundError("Problem statement not found");
             }
             return problemStatement;
         } catch (error) {
