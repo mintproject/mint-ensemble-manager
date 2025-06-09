@@ -5,6 +5,8 @@ import { User } from "../classes/mint/mint-types";
 import { KeycloakAdapter } from "./keycloak-adapter";
 import { getConfiguration } from "../classes/mint/mint-functions";
 
+const prefs = getConfiguration();
+
 export class GraphQL {
     static client: ApolloClient<NormalizedCacheObject>;
     static userId;
@@ -20,6 +22,18 @@ export class GraphQL {
             cache: new InMemoryCache()
         });
         return GraphQL.client;
+    };
+
+    static instanceUsingAccessToken = (access_token: string) => {
+        const protocol = prefs.graphql.enable_ssl ? "https://" : "http://";
+        const uri = protocol + prefs.graphql.endpoint;
+        return new ApolloClient({
+            link: createHttpLink({
+                uri: uri,
+                headers: { Authorization: `Bearer ${access_token}` }
+            }),
+            cache: new InMemoryCache()
+        });
     };
 
     static getHTTPSLink() {
