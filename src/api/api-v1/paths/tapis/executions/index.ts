@@ -1,6 +1,6 @@
 import { Router } from "express";
 import executionOutputsService from "@/api/api-v1/services/tapis/executionOutputsService";
-import { NotFoundError } from "@/classes/common/errors";
+import { BadRequestError, NotFoundError } from "@/classes/common/errors";
 
 export default function () {
     const router = Router();
@@ -32,24 +32,19 @@ export default function () {
      */
     router.post("/:executionId/outputs", async (req, res) => {
         try {
-            const success = await executionOutputsService.registerOutputs(
+            const results = await executionOutputsService.registerOutputs(
                 req.params.executionId,
                 req.headers.authorization
             );
-
-            if (success) {
-                res.status(200).json({
-                    message: "Execution outputs registered successfully"
-                });
-            } else {
-                res.status(400).json({
-                    message: "Failed to register execution outputs"
-                });
-            }
+            res.status(200).json(results);
         } catch (error) {
             if (error instanceof NotFoundError) {
                 res.status(404).json({
                     message: "Execution not found"
+                });
+            } else if (error instanceof BadRequestError) {
+                res.status(400).json({
+                    message: "Execution is not successful"
                 });
             } else {
                 res.status(500).json({

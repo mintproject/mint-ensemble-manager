@@ -8,7 +8,7 @@ import { getInputDatasets } from "@/classes/tapis/helpers";
 import { TapisJobService } from "@/classes/tapis/adapters/TapisJobService";
 import errorDecoder from "@/classes/tapis/utils/errorDecoder";
 import { TapisJobSubscriptionService } from "@/classes/tapis/adapters/TapisJobSubscriptionService";
-import { NotFoundError } from "@/classes/common/errors";
+import { BadRequestError, NotFoundError } from "@/classes/common/errors";
 import {
     getExecution,
     getModelOutputsByModelId,
@@ -96,8 +96,8 @@ export class TapisExecutionService implements IExecutionService {
         return await Promise.all(promises);
     }
 
-    async registerExecutionOutputs(executionId: string): Promise<void> {
-        await this.updateExecutionResultsFromJob(executionId);
+    async registerExecutionOutputs(executionId: string): Promise<Execution_Result[]> {
+        return await this.updateExecutionResultsFromJob(executionId);
     }
 
     static async updateExecution(
@@ -291,14 +291,18 @@ export class TapisExecutionService implements IExecutionService {
         return matchTapisOutputsToMintOutputs(files, mintOutputs);
     }
 
-    private async updateExecutionResultsFromJob(executionId: string) {
+    private async updateExecutionResultsFromJob(executionId: string): Promise<Execution_Result[]> {
         const execution = await getExecution(executionId);
         if (execution === null) {
             throw new NotFoundError("Execution not found");
         }
+        if (execution.status !== Status.SUCCESS) {
+            throw new BadRequestError("Execution is not successful");
+        }
         execution.results = await this.getExecutionResultsFromJob(execution.runid, execution);
         console.log("Registering execution ", executionId, execution.results.length);
         await updateExecutionStatusAndResultsv2(execution);
+        return execution.results;
     }
 
     getJobOutputList = async (
