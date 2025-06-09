@@ -183,7 +183,6 @@ export const problemStatementUpdateToGQL = (problem_statement: ProblemStatementI
 export const problemStatementFromGQL = (problem: any): ProblemStatement => {
     const details = {
         id: problem["id"],
-        regionid: problem["region_id"],
         name: problem["name"],
         dates: {
             start_date: new Date(problem["start_date"]),
@@ -266,8 +265,8 @@ export const taskFromGQL = (task: any): Task => {
         threads: {},
         driving_variables: task.driving_variable_id != null ? [task.driving_variable_id] : [],
         response_variables: task.response_variable_id != null ? [task.response_variable_id] : [],
-        events: task["events"].map(eventFromGQL),
-        permissions: task["permissions"].map(permissionFromGQL)
+        events: "events" in task ? task["events"].map(eventFromGQL) : [],
+        permissions: "permissions" in task ? task["permissions"].map(permissionFromGQL) : []
     } as Task;
     if (task["threads"]) {
         task["threads"].forEach((thread: any) => {

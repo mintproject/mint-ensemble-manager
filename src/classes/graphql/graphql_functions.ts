@@ -25,6 +25,7 @@ import { GraphQL } from "../../config/graphql";
 import getProblemStatementGQL from "./queries/problem-statement/get.graphql";
 import getTaskGQL from "./queries/task/get.graphql";
 import getThreadGQL from "./queries/thread/get.graphql";
+import listProblemStatementsGQL from "./queries/problem-statement/list.graphql";
 
 import newProblemStatementGQL from "./queries/problem-statement/new.graphql";
 import newTaskGQL from "./queries/task/new.graphql";
@@ -91,6 +92,14 @@ import {
 import { Md5 } from "ts-md5";
 import { Execution_Result_Insert_Input } from "./graph_typing";
 import { KeycloakAdapter } from "@/config/keycloak-adapter";
+import { InternalServerError, UnauthorizedError } from "../common/errors";
+
+function getTokenFromAuthorizationHeader(authorizationHeader: string): string | null {
+    if (!authorizationHeader || !authorizationHeader.startsWith("Bearer ")) {
+        return null;
+    }
+    return authorizationHeader.split(" ")[1];
+}
 
 export const getProblemStatement = async (
     problem_statement_id: string
@@ -1100,4 +1109,36 @@ export const updateExecutionRunId = (executionId: string, runId: string) => {
         mutation: updateExecutionRunIdGQL,
         variables: { id: executionId, run_id: runId }
     });
+};
+
+export const getProblemStatements = async (
+    authorizationHeader: string
+): Promise<ProblemStatement[]> => {
+    const access_token = getTokenFromAuthorizationHeader(authorizationHeader);
+    if (!access_token) {
+        throw new UnauthorizedError("Invalid authorization header");
+    }
+
+    const APOLLO_CLIENT = GraphQL.instanceUsingAccessToken(access_token);
+    try {
+        const result = await APOLLO_CLIENT.query({
+            query: listProblemStatementsGQL,
+            fetchPolicy: "no-cache"
+        });
+
+        if (!result || (result.errors && result.errors.length > 0)) {
+            console.log("ERROR");
+            console.log(result);
+            return [];
+        }
+
+        const problems = result.data.problem_statement;
+        if (problems) {
+            return problems.map((problem) => problemStatementFromGQL(problem));
+        }
+        return [];
+    } catch (e) {
+        console.log(e);
+        throw new InternalServerError("Error getting problem statements " + e.message);
+    }
 };
