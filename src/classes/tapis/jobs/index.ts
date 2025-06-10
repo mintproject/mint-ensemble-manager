@@ -14,23 +14,20 @@ const matchTapisOutputsToMintOutputs = (
                     return output;
                 }
             });
-            if (!modelOutput) return undefined;
-            else {
-                // Transform the Tapis URL to the public portal URL
-                const publicUrl = file.url.replace("tapis://ls6", PORTAL_URL);
+            // Transform the Tapis URL to the public portal URL
+            const publicUrl = file.url.replace("tapis://ls6", PORTAL_URL);
 
-                const executionResult: Execution_Result = {
-                    resource: {
-                        name: file.name,
-                        url: publicUrl,
-                        id: getMd5Hash(publicUrl)
-                        // spatial_coverage: getSpatialCoverageGeometry(data["spatial_coverage"]),
-                        // time_period: {}
-                    },
-                    model_io: modelOutput.model_io
-                };
-                return executionResult;
-            }
+            const executionResult: Execution_Result = {
+                resource: {
+                    name: file.name,
+                    url: publicUrl,
+                    id: getMd5Hash(publicUrl)
+                    // spatial_coverage: getSpatialCoverageGeometry(data["spatial_coverage"]),
+                    // time_period: {}
+                },
+                model_io: modelOutput ? modelOutput.model_io : null
+            };
+            return executionResult;
         })
         .filter((result) => result !== undefined) as Execution_Result[];
 };
