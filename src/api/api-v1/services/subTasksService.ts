@@ -1,6 +1,6 @@
 import { Thread, ThreadInfo } from "@/classes/mint/mint-types";
 import {
-    addTaskWithThread,
+    addThread,
     getTask,
     getThread,
     setThreadModels
@@ -30,6 +30,11 @@ export interface SubTasksService {
         authorizationHeader: string
     ): Promise<string>;
     addModels(subtaskId: string, modelIds: string[], authorizationHeader: string): Promise<Thread>;
+    // addDataSets(
+    //     subtaskId: string,
+    //     dataSetIds: string[],
+    //     authorizationHeader: string
+    // ): Promise<Thread>;
 }
 
 const subTasksService: SubTasksService = {
@@ -113,11 +118,11 @@ const subTasksService: SubTasksService = {
         }
 
         try {
-            const ids = await addTaskWithThread(problemStatement, task, subtask);
-            if (!ids || ids.length < 2) {
+            const taskid = await addThread(task, subtask);
+            if (!taskid) {
                 throw new InternalServerError("Failed to create subtask");
             }
-            return ids[1]; // Return the thread ID
+            return taskid; // Return the thread ID
         } catch (error) {
             console.error("Error creating subtask:", error);
             throw new InternalServerError("Error creating subtask: " + error.message);
@@ -139,6 +144,29 @@ const subTasksService: SubTasksService = {
         }
         return await getThread(subtaskId);
     }
+
+    //     // Get the resources required for each model in the subtask
+    //     async findRequiredResources(subtaskId: string, authorizationHeader: string) {
+    //         const access_token = getTokenFromAuthorizationHeader(authorizationHeader);
+    //         if (!access_token) {
+    //             throw new UnauthorizedError("Invalid authorization header");
+    //         }
+    //         const subtask = await getThread(subtaskId);
+    //         if (!subtask) {
+    //             throw new NotFoundError("Subtask not found");
+    //         }
+    //         const requiredResources = [];
+    //         for (const model of Object.values(subtask.models)) {
+    //             const model_ensemble = subtask.model_ensembles[model.id];
+    //             for (const input of model.hasInput) {
+    //                 if (input.hasResource) {
+    //                     requiredResources.push(input.hasResource.id);
+    //                 }
+    //             }
+    //             for (const parameter of model.hasParameter) {
+    //         }
+    //         return requiredResources;
+    //     }
 };
 
 export default subTasksService;
