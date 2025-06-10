@@ -1,8 +1,15 @@
-import { ThreadInfo } from "@/classes/mint/mint-types";
-import { addTaskWithThread, getTask } from "@/classes/graphql/graphql_functions";
+import { Thread, ThreadInfo } from "@/classes/mint/mint-types";
+import {
+    addTaskWithThread,
+    getTask,
+    getThread,
+    setThreadModels
+} from "@/classes/graphql/graphql_functions";
 import { getTokenFromAuthorizationHeader } from "@/utils/authUtils";
 import { UnauthorizedError, InternalServerError, NotFoundError } from "@/classes/common/errors";
 import problemStatementsService from "./problemStatementsService";
+import { fetchModelConfigurationSetup } from "@/classes/mint/model-catalog-functions";
+import { ModelConfigurationSetup } from "@mintproject/modelcatalog_client/dist";
 
 export interface SubTasksService {
     getSubtasksByTaskId(
@@ -22,6 +29,7 @@ export interface SubTasksService {
         subtask: ThreadInfo,
         authorizationHeader: string
     ): Promise<string>;
+    addModels(subtaskId: string, modelIds: string[], authorizationHeader: string): Promise<Thread>;
 }
 
 const subTasksService: SubTasksService = {
@@ -114,6 +122,22 @@ const subTasksService: SubTasksService = {
             console.error("Error creating subtask:", error);
             throw new InternalServerError("Error creating subtask: " + error.message);
         }
+    },
+    async addModels(subtaskId: string, modelIds: string[], authorizationHeader: string) {
+        const access_token = getTokenFromAuthorizationHeader(authorizationHeader);
+        if (!access_token) {
+            throw new UnauthorizedError("Invalid authorization header");
+        }
+
+        const subtask = await getThread(subtaskId);
+        if (!subtask) {
+            throw new NotFoundError("Subtask not found");
+        }
+        for (const modelId of modelIds) {
+            const model: ModelConfigurationSetup = await fetchModelConfigurationSetup(modelId);
+            await setThreadModels([model], "Added models", subtask);
+        }
+        return await getThread(subtaskId);
     }
 };
 

@@ -210,6 +210,7 @@ const threadsService: ThreadsService = {
             model_ensembles[model.id].bindings,
             data
         );
+        const execution_summary: IdMap<ExecutionSummary> = {};
         execution_summary[model.id] = {
             total_runs: totalconfigs,
             submitted_runs: 0,
