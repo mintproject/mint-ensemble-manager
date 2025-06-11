@@ -286,7 +286,9 @@ export class TapisExecutionService implements IExecutionService {
         jobUuid: string,
         execution: Execution
     ): Promise<Execution_Result[]> {
-        const { result: files } = await this.getJobOutputList(jobUuid, "outputs");
+        const { result: files1 } = await this.getJobOutputList(jobUuid, "");
+        const { result: files2 } = await this.getJobOutputList(jobUuid, "outputs");
+        const files = [...files1, ...files2];
         const mintOutputs = await getModelOutputsByModelId(execution.modelid);
 
         if (mintOutputs.length === 0 && files.length === 0) {
