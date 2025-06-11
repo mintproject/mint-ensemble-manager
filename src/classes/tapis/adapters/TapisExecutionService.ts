@@ -321,9 +321,14 @@ export class TapisExecutionService implements IExecutionService {
         jobUuid: string,
         outputPath: string
     ): Promise<Jobs.RespGetJobOutputList> => {
-        return await errorDecoder<Jobs.RespGetJobOutputList>(() =>
-            this.jobsClient.getJobOutputList({ jobUuid: jobUuid, outputPath: outputPath })
-        );
+        try {
+            return await errorDecoder<Jobs.RespGetJobOutputList>(() =>
+                this.jobsClient.getJobOutputList({ jobUuid: jobUuid, outputPath: outputPath })
+            );
+        } catch (error) {
+            console.error("Error getting job output list", error);
+            return { result: [] };
+        }
     };
 
     getJobOutputDownloadFile = async (jobUuid: string, outputPath: string): Promise<Blob> => {
