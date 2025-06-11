@@ -288,6 +288,16 @@ export class TapisExecutionService implements IExecutionService {
     ): Promise<Execution_Result[]> {
         const { result: files } = await this.getJobOutputList(jobUuid, "");
         const mintOutputs = await getModelOutputsByModelId(execution.modelid);
+
+        if (mintOutputs.length === 0 && files.length === 0) {
+            throw new NotFoundError(
+                "No outputs found and no mint outputs found for model " + execution.modelid
+            );
+        } else if (mintOutputs.length === 0) {
+            throw new NotFoundError("No mint outputs found for model " + execution.modelid);
+        } else if (files.length === 0) {
+            throw new NotFoundError("No files found for model " + execution.modelid);
+        }
         return matchTapisOutputsToMintOutputs(files, mintOutputs);
     }
 

@@ -31,12 +31,15 @@ const matchTapisOutputsToMintOutputs = (
     files: Jobs.FileInfo[],
     mintOutputs: ModelOutput[]
 ): Execution_Result[] => {
+    console.log(files);
+    console.log(mintOutputs);
     const executionResults: Execution_Result[] = [];
     const filesForMatch: TapisFileForMatch[] = files.map((file) => ({
         name: file.name,
         extension: file.name.split(".").pop() || "",
         url: file.url
     }));
+
     const fuse = new Fuse(filesForMatch, fuseOptions);
     for (const mintOutput of mintOutputs) {
         const results = fuse.search(mintOutput.model_io.name);
@@ -68,6 +71,7 @@ const matchTapisOutputsToMintOutputs = (
     //     };
     //     executionResults.push(executionResult);
     // }
+    console.log(executionResults);
     return executionResults;
 };
 
