@@ -6,42 +6,6 @@ export default {
             owner: "863242",
             group: "820466",
             nativePermissions: "rw-------",
-            url: "tapis://cloud.data/home/mosorio/tapis-jobs-archive/2024-06-11Z/bae0f0be6dbee791f1841c20f9903afc-95a3d750-df92-4d2b-a479-b009ac9c3bbf-007/CBB",
-            lastModified: new Date("2024-06-11T17:00:24Z"),
-            name: "CBB",
-            path: "home/mosorio/tapis-jobs-archive/2024-06-11Z/bae0f0be6dbee791f1841c20f9903afc-95a3d750-df92-4d2b-a479-b009ac9c3bbf-007/CBB",
-            size: 580970880
-        },
-        {
-            mimeType: null,
-            type: "file",
-            owner: "863242",
-            group: "820466",
-            nativePermissions: "rw-------",
-            url: "tapis://cloud.data/home/mosorio/tapis-jobs-archive/2024-06-11Z/bae0f0be6dbee791f1841c20f9903afc-95a3d750-df92-4d2b-a479-b009ac9c3bbf-007/DDN",
-            lastModified: new Date("2024-06-11T17:00:09Z"),
-            name: "DDN",
-            path: "home/mosorio/tapis-jobs-archive/2024-06-11Z/bae0f0be6dbee791f1841c20f9903afc-95a3d750-df92-4d2b-a479-b009ac9c3bbf-007/DDN",
-            size: 83007360
-        },
-        {
-            mimeType: null,
-            type: "file",
-            owner: "863242",
-            group: "820466",
-            nativePermissions: "rw-------",
-            url: "tapis://cloud.data/home/mosorio/tapis-jobs-archive/2024-06-11Z/bae0f0be6dbee791f1841c20f9903afc-95a3d750-df92-4d2b-a479-b009ac9c3bbf-007/HDS",
-            lastModified: new Date("2024-06-11T17:00:09Z"),
-            name: "HDS",
-            path: "home/mosorio/tapis-jobs-archive/2024-06-11Z/bae0f0be6dbee791f1841c20f9903afc-95a3d750-df92-4d2b-a479-b009ac9c3bbf-007/HDS",
-            size: 83007360
-        },
-        {
-            mimeType: null,
-            type: "file",
-            owner: "863242",
-            group: "820466",
-            nativePermissions: "rw-------",
             url: "tapis://cloud.data/home/mosorio/tapis-jobs-archive/2024-06-11Z/bae0f0be6dbee791f1841c20f9903afc-95a3d750-df92-4d2b-a479-b009ac9c3bbf-007/LST",
             lastModified: new Date("2024-06-11T17:00:09Z"),
             name: "flame_length_00000051_06666634.tif",
@@ -71,18 +35,6 @@ export default {
             name: "tapisjob.sh",
             path: "home/mosorio/tapis-jobs-archive/2024-06-11Z/bae0f0be6dbee791f1841c20f9903afc-95a3d750-df92-4d2b-a479-b009ac9c3bbf-007/tapisjob.sh",
             size: 2295
-        },
-        {
-            mimeType: null,
-            type: "file",
-            owner: "863242",
-            group: "820466",
-            nativePermissions: "rw-------",
-            url: "tapis://cloud.data/home/mosorio/tapis-jobs-archive/2024-06-11Z/bae0f0be6dbee791f1841c20f9903afc-95a3d750-df92-4d2b-a479-b009ac9c3bbf-007/tmp.nam",
-            lastModified: new Date("2024-06-11T17:00:09Z"),
-            name: "tmp.nam",
-            path: "home/mosorio/tapis-jobs-archive/2024-06-11Z/bae0f0be6dbee791f1841c20f9903afc-95a3d750-df92-4d2b-a479-b009ac9c3bbf-007/tmp.nam",
-            size: 327
         },
         {
             mimeType: null,

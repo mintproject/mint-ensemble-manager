@@ -37,41 +37,37 @@ const matchTapisOutputsToMintOutputs = (
         extension: file.name.split(".").pop() || "",
         url: file.url
     }));
-    const filesMatched: string[] = [];
     const fuse = new Fuse(filesForMatch, fuseOptions);
     for (const mintOutput of mintOutputs) {
         const results = fuse.search(mintOutput.model_io.name);
         if (results.length > 0) {
-            results.forEach((result) => {
-                const publicUrl = result.item.url.replace(
-                    "tapis://ls6",
-                    "https://ptdatax.tacc.utexas.edu/workbench/data/tapis/private/cloud.data"
-                );
-                const executionResult: Execution_Result = {
-                    resource: {
-                        name: results[0].item.name,
-                        url: publicUrl,
-                        id: getMd5Hash(publicUrl)
-                    },
-                    model_io: mintOutput.model_io
-                };
-                executionResults.push(executionResult);
-                filesMatched.push(result.item.name);
-            });
+            const publicUrl = results[0].item.url.replace(
+                "tapis://ls6",
+                "https://ptdatax.tacc.utexas.edu/workbench/data/tapis/private/cloud.data"
+            );
+            const executionResult: Execution_Result = {
+                resource: {
+                    name: results[0].item.name,
+                    url: publicUrl,
+                    id: getMd5Hash(publicUrl)
+                },
+                model_io: mintOutput.model_io
+            };
+            executionResults.push(executionResult);
         }
     }
-    const filesNotMatched = filesForMatch.filter((file) => !filesMatched.includes(file.name));
-    for (const file of filesNotMatched) {
-        const executionResult: Execution_Result = {
-            resource: {
-                name: file.name,
-                url: file.url,
-                id: getMd5Hash(file.url)
-            },
-            model_io: null
-        };
-        executionResults.push(executionResult);
-    }
+    // const filesNotMatched = filesForMatch.filter((file) => !filesMatched.includes(file.name));
+    // for (const file of filesNotMatched) {
+    //     const executionResult: Execution_Result = {
+    //         resource: {
+    //             name: file.name,
+    //             url: file.url,
+    //             id: getMd5Hash(file.url)
+    //         },
+    //         model_io: null
+    //     };
+    //     executionResults.push(executionResult);
+    // }
     return executionResults;
 };
 
