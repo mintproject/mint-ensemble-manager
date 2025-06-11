@@ -564,11 +564,12 @@ export const updateExecutionStatusAndResultsv2 = (execution: Execution) => {
                         url: result.resource.url
                     }
                 },
-                model_io_id: result.model_io.id
+                model_io_id: result.model_io?.id
             };
             return resource;
         }
     );
+    console.log(resultsData);
 
     const variables = {
         id: execution.id,
