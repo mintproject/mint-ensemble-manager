@@ -16,7 +16,8 @@ import {
     Region,
     BoundingBox,
     ModelOutput,
-    ExecutionSummary
+    ExecutionSummary,
+    MintEvent
 } from "@/classes/mint/mint-types";
 import { ModelConfigurationSetup } from "@mintproject/modelcatalog_client";
 
@@ -30,6 +31,7 @@ import listProblemStatementsGQL from "./queries/problem-statement/list.graphql";
 import newProblemStatementGQL from "./queries/problem-statement/new.graphql";
 import newTaskGQL from "./queries/task/new.graphql";
 import newThreadGQL from "./queries/thread/new.graphql";
+import handleFailedConnectionEnsembleGQL from "./queries/execution/handle-failed-connection-ensemble.graphql";
 
 import updateProblemStatementGQL from "./queries/problem-statement/update.graphql";
 import updateTaskGQL from "./queries/task/update.graphql";
@@ -94,10 +96,13 @@ import { Md5 } from "ts-md5";
 import {
     Execution_Result_Insert_Input,
     Resource_Constraint,
-    Resource_Update_Column
+    Resource_Update_Column,
+    Thread_Model_Execution_Summary_Insert_Input,
+    Thread_Provenance_Insert_Input
 } from "./graph_typing";
 import { KeycloakAdapter } from "@/config/keycloak-adapter";
 import { InternalServerError, UnauthorizedError } from "../common/errors";
+import e from "@types/express";
 
 function getTokenFromAuthorizationHeader(authorizationHeader: string): string | null {
     if (!authorizationHeader || !authorizationHeader.startsWith("Bearer ")) {
@@ -746,6 +751,18 @@ export const decrementThreadModelSubmittedRuns = (thread_model_id: string) => {
         variables: {
             threadModelId: thread_model_id
         }
+    });
+};
+
+export const handleFailedConnectionEnsemble = (
+    thread_id: string,
+    event: Thread_Provenance_Insert_Input,
+    summaries: Thread_Model_Execution_Summary_Insert_Input[]
+) => {
+    const APOLLO_CLIENT = GraphQL.instance(KeycloakAdapter.getUser());
+    return APOLLO_CLIENT.mutate({
+        mutation: handleFailedConnectionEnsembleGQL,
+        variables: { threadId: thread_id, event: event, summaries: summaries }
     });
 };
 

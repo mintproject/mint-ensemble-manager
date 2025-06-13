@@ -18,7 +18,8 @@ import {
     updateExecutionStatusAndResultsv2,
     getThreadModelByThreadIdExecutionId,
     updateExecutionRunId,
-    decrementThreadModelSubmittedRuns
+    decrementThreadModelSubmittedRuns,
+    handleFailedConnectionEnsemble
 } from "@/classes/graphql/graphql_functions";
 import { matchTapisOutputsToMintOutputs } from "@/classes/tapis/jobs";
 import { Status } from "@/interfaces/IExecutionService";
@@ -118,9 +119,24 @@ export class TapisExecutionService implements IExecutionService {
 
             return results;
         } catch (error) {
-            executions.forEach(async () => {
-                await decrementThreadModelSubmittedRuns(threadModelId);
-            });
+            await handleFailedConnectionEnsemble(
+                threadId,
+                {
+                    event: "FAILED_CONNECTION_ENSEMBLE",
+                    userid: "SYSTEM",
+                    timestamp: new Date(),
+                    notes: "All jobs failed to submit"
+                },
+                [
+                    {
+                        total_runs: this.seeds.length,
+                        submitted_runs: 0,
+                        failed_runs: this.seeds.length,
+                        successful_runs: 0,
+                        thread_model_id: threadModelId
+                    }
+                ]
+            );
             console.error("Error submitting executions", error);
             throw error;
         }
