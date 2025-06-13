@@ -68,7 +68,6 @@ export class TapisExecutionService implements IExecutionService {
     ) {
         try {
             const app = await this.loadTapisApp(component);
-
             console.log("Submitting executions", executions);
             this.seeds = this.seedExecutions(executions, model, region, component);
             console.log("Seeds", JSON.stringify(this.seeds));
@@ -119,24 +118,29 @@ export class TapisExecutionService implements IExecutionService {
 
             return results;
         } catch (error) {
-            await handleFailedConnectionEnsemble(
-                threadId,
-                {
-                    event: "FAILED_CONNECTION_ENSEMBLE",
-                    userid: "SYSTEM",
-                    timestamp: new Date(),
-                    notes: "All jobs failed to submit"
-                },
-                [
+            try {
+                console.log("Handling failed connection ensemble");
+                await handleFailedConnectionEnsemble(
+                    threadId,
                     {
-                        total_runs: this.seeds.length,
-                        submitted_runs: 0,
-                        failed_runs: this.seeds.length,
-                        successful_runs: 0,
-                        thread_model_id: threadModelId
-                    }
-                ]
-            );
+                        event: "FAILED_CONNECTION_ENSEMBLE",
+                        userid: "SYSTEM",
+                        timestamp: new Date(),
+                        notes: "All jobs failed to submit"
+                    },
+                    [
+                        {
+                            total_runs: this.seeds.length,
+                            submitted_runs: 0,
+                            failed_runs: this.seeds.length,
+                            successful_runs: 0,
+                            thread_model_id: threadModelId
+                        }
+                    ]
+                );
+            } catch (error) {
+                console.error("Error handling failed connection ensemble", error);
+            }
             console.error("Error submitting executions", error);
             throw error;
         }
