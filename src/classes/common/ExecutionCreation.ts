@@ -2,6 +2,7 @@ import {
     deleteThreadModelExecutionIds,
     getExecutionHash,
     getRegionDetails,
+    handleFailedConnectionEnsemble,
     incrementThreadModelSubmittedRuns,
     incrementThreadModelSuccessfulRuns,
     listSuccessfulExecutionIds,
@@ -60,7 +61,24 @@ export class ExecutionCreation {
             }
             return true;
         } catch (error) {
-            console.error("Error preparing executions:", error);
+            await handleFailedConnectionEnsemble(
+                this.thread.id,
+                {
+                    event: "FAILED_CONNECTION_ENSEMBLE",
+                    userid: "SYSTEM",
+                    timestamp: new Date(),
+                    notes: "All jobs failed to submit"
+                },
+                [
+                    {
+                        total_runs: 0,
+                        submitted_runs: 0,
+                        failed_runs: 0,
+                        successful_runs: 0,
+                        thread_model_id: this.thread.model_ensembles[this.modelid].id
+                    }
+                ]
+            );
             throw error;
         }
     }
