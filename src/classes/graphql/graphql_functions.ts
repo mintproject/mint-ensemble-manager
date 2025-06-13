@@ -758,6 +758,12 @@ export const handleFailedConnectionEnsemble = (
     summaries: Thread_Model_Execution_Summary_Insert_Input[]
 ) => {
     const APOLLO_CLIENT = GraphQL.instance(KeycloakAdapter.getUser());
+    console.log("Handling failed connection ensemble", thread_id, event, summaries);
+
+    console.log(JSON.stringify(handleFailedConnectionEnsembleGQL, null, 2));
+    console.log(
+        JSON.stringify({ threadId: thread_id, event: event, summaries: summaries }, null, 2)
+    );
     return APOLLO_CLIENT.mutate({
         mutation: handleFailedConnectionEnsembleGQL,
         variables: { threadId: thread_id, event: event, summaries: summaries }
