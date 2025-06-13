@@ -52,6 +52,7 @@ import getRegionDetailsGQL from "./queries/region/get.graphql";
 
 import updateExecutionSummary from "./queries/execution/update-execution-summary.graphql";
 import incFailedRunsGQL from "./queries/execution/increment-failed-runs.graphql";
+import subtractSubmittedRunsGQL from "./queries/execution/subtract-submitted-runs.graphql";
 import incSuccessfulRunsGQL from "./queries/execution/increment-successful-runs.graphql";
 import incSubmittedRunsGQL from "./queries/execution/increment-submitted-runs.graphql";
 import toggleThreadModelExecutionSummaryPublishingGQL from "./queries/execution/toggle-summary-publishing.graphql";
@@ -734,6 +735,16 @@ export const incrementThreadModelFailedRuns = (thread_model_id: string, num: num
         variables: {
             threadModelId: thread_model_id,
             inc: num
+        }
+    });
+};
+
+export const decrementThreadModelSubmittedRuns = (thread_model_id: string) => {
+    const APOLLO_CLIENT = GraphQL.instance(KeycloakAdapter.getUser());
+    return APOLLO_CLIENT.mutate({
+        mutation: subtractSubmittedRunsGQL,
+        variables: {
+            threadModelId: thread_model_id
         }
     });
 };
