@@ -123,7 +123,7 @@ export class TapisExecutionService implements IExecutionService {
                 await handleFailedConnectionEnsemble(
                     threadId,
                     {
-                        event: "FAILED_CONNECTION_ENSEMBLE",
+                        event: "UPDATE",
                         userid: "SYSTEM",
                         timestamp: new Date(),
                         notes: "All jobs failed to submit"

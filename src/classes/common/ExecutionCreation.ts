@@ -64,7 +64,7 @@ export class ExecutionCreation {
             await handleFailedConnectionEnsemble(
                 this.thread.id,
                 {
-                    event: "FAILED_CONNECTION_ENSEMBLE",
+                    event: "UPDATE",
                     userid: "SYSTEM",
                     timestamp: new Date(),
                     notes: "All jobs failed to submit"
