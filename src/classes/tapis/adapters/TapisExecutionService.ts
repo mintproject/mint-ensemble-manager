@@ -17,7 +17,8 @@ import {
     updateExecutionStatus,
     updateExecutionStatusAndResultsv2,
     getThreadModelByThreadIdExecutionId,
-    updateExecutionRunId
+    updateExecutionRunId,
+    decrementThreadModelSubmittedRuns
 } from "@/classes/graphql/graphql_functions";
 import { matchTapisOutputsToMintOutputs } from "@/classes/tapis/jobs";
 import { Status } from "@/interfaces/IExecutionService";
@@ -61,39 +62,59 @@ export class TapisExecutionService implements IExecutionService {
         model: Model,
         region: Region,
         component: TapisComponent,
-        threadId: string
+        threadId: string,
+        threadModelId: string
     ) {
         const app = await this.loadTapisApp(component);
 
         console.log("Submitting executions", executions);
         this.seeds = this.seedExecutions(executions, model, region, component);
         console.log("Seeds", JSON.stringify(this.seeds));
-        const promises = this.seeds.map(async (seed) => {
-            console.log("Seed", JSON.stringify(seed));
-            const name = this.generateValidJobName(app, seed.execution.id);
-            const description = "Job for " + model.name + " execution " + seed.execution.id;
-            const jobRequest = this.jobService.createJobRequest(
-                app,
-                seed,
-                model,
-                name,
-                description
-            );
-            console.log("Job request", JSON.stringify(jobRequest));
-            const jobId = await this.submitJob(jobRequest);
-            console.log("Job id", jobId);
-            await updateExecutionRunId(seed.execution.id, jobId);
-            console.log("Updated execution run id", seed.execution.id, jobId);
-            const subscription = TapisJobSubscriptionService.createRequest(
-                seed.execution.id,
-                threadId
-            );
-            console.log("Subscription", JSON.stringify(subscription));
-            await this.jobSubscriptionService.submit(jobId, subscription);
-            console.log("Submitted subscription", jobId, subscription);
-            return jobId;
-        });
-        return await Promise.all(promises);
+
+        const results: string[] = [];
+        const errors: { executionId: string; error: Error }[] = [];
+
+        for (const seed of this.seeds) {
+            console.log("Processing seed", JSON.stringify(seed));
+            try {
+                const name = this.generateValidJobName(app, seed.execution.id);
+                const description = "Job for " + model.name + " execution " + seed.execution.id;
+                const jobRequest = this.jobService.createJobRequest(
+                    app,
+                    seed,
+                    model,
+                    name,
+                    description
+                );
+                console.log("Job request", JSON.stringify(jobRequest));
+                const jobId = await this.submitJob(jobRequest);
+                console.log("Job id", jobId);
+                await updateExecutionRunId(seed.execution.id, jobId);
+                console.log("Updated execution run id", seed.execution.id, jobId);
+                const subscription = TapisJobSubscriptionService.createRequest(
+                    seed.execution.id,
+                    threadId
+                );
+                console.log("Subscription", JSON.stringify(subscription));
+                await this.jobSubscriptionService.submit(jobId, subscription);
+                console.log("Submitted subscription", jobId, subscription);
+                results.push(jobId);
+            } catch (error) {
+                console.error(`Failed to submit job for execution ${seed.execution.id}:`, error);
+                await incrementThreadModelFailedRuns(threadModelId, 1);
+                await decrementThreadModelSubmittedRuns(threadModelId);
+                errors.push({ executionId: seed.execution.id, error });
+            }
+        }
+
+        if (errors.length > 0) {
+            console.warn("Some jobs failed to submit:", errors);
+        }
+        if (errors.length === this.seeds.length) {
+            throw new Error("All jobs failed to submit");
+        }
+
+        return results;
     }
 
     async registerExecutionOutputs(executionId: string): Promise<Execution_Result[]> {
