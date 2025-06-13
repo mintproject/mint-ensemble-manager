@@ -16,8 +16,7 @@ import {
     Region,
     BoundingBox,
     ModelOutput,
-    ExecutionSummary,
-    MintEvent
+    ExecutionSummary
 } from "@/classes/mint/mint-types";
 import { ModelConfigurationSetup } from "@mintproject/modelcatalog_client";
 
@@ -102,7 +101,6 @@ import {
 } from "./graph_typing";
 import { KeycloakAdapter } from "@/config/keycloak-adapter";
 import { InternalServerError, UnauthorizedError } from "../common/errors";
-import e from "@types/express";
 
 function getTokenFromAuthorizationHeader(authorizationHeader: string): string | null {
     if (!authorizationHeader || !authorizationHeader.startsWith("Bearer ")) {
