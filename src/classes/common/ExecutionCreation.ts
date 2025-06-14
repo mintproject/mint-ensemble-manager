@@ -22,6 +22,7 @@ import {
     ThreadModelMap
 } from "@/classes/mint/mint-types";
 import { TapisComponent } from "@/classes/tapis/typing";
+import { IExecutionService } from "@/interfaces/IExecutionService";
 
 const MAX_CONFIGURATIONS = 1000000;
 // Add interface for IO/Parameter details
@@ -43,16 +44,31 @@ export class ExecutionCreation {
     public model: Model;
     public component: TapisComponent;
     public token: string | undefined;
+    public executionService: IExecutionService;
 
-    constructor(thread: Thread, modelid: string, token?: string) {
+    constructor(
+        thread: Thread,
+        modelid: string,
+        executionService: IExecutionService,
+        token?: string
+    ) {
         this.thread = thread;
         this.modelid = modelid;
         this.executionToBeRun = [];
         this.token = token;
+        this.executionService = executionService;
+    }
+
+    private async verifyComponents(): Promise<void> {
+        for (const modelid in this.thread.model_ensembles) {
+            const component = await this.getModelDetails(this.thread.models[modelid]);
+            await this.executionService.verifyComponent(component);
+        }
     }
 
     public async prepareExecutions(): Promise<boolean> {
         try {
+            await this.verifyComponents();
             for (const pmodelid in this.thread.model_ensembles) {
                 if (!this.modelid || this.modelid === pmodelid) {
                     return await this.prepareModelExecutions(pmodelid);
