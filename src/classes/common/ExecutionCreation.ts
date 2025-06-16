@@ -68,18 +68,13 @@ export class ExecutionCreation {
     }
 
     public async prepareExecutions(): Promise<boolean> {
-        try {
-            await this.verifyComponents();
-            for (const pmodelid in this.thread.model_ensembles) {
-                if (!this.modelid || this.modelid === pmodelid) {
-                    return await this.prepareModelExecutions(pmodelid);
-                }
+        await this.verifyComponents();
+        for (const pmodelid in this.thread.model_ensembles) {
+            if (!this.modelid || this.modelid === pmodelid) {
+                return await this.prepareModelExecutions(pmodelid);
             }
-            return true;
-        } catch (error) {
-            console.error("Error preparing executions:", error);
-            throw error;
         }
+        return true;
     }
 
     public async prepareModelExecutions(modelid: string): Promise<boolean> {
@@ -201,17 +196,9 @@ export class ExecutionCreation {
         let comp: TapisComponent;
         const configuration = getConfiguration();
         if (configuration.execution_engine === "tapis") {
-            try {
-                comp = await this.loadComponentFromTapis(model.code_url);
-            } catch (e) {
-                throw new Error(`Error loading component ${model.code_url} error: ${e}`);
-            }
+            comp = await this.loadComponentFromTapis(model.code_url);
         } else {
-            try {
-                comp = await this.loadComponent(model.code_url);
-            } catch (e) {
-                throw new Error(`Error loading component ${model.code_url} error: ${e}`);
-            }
+            comp = await this.loadComponent(model.code_url);
         }
         comp.inputs = [];
         comp.outputs = [];
