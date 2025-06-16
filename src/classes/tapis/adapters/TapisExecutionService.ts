@@ -177,7 +177,7 @@ export class TapisExecutionService implements IExecutionService {
     async getLog(jobId: string): Promise<string> {
         try {
             const file = await this.getJobOutputDownloadFile(jobId, this.LOG_PATH);
-            return file.toString();
+            return await file.text();
         } catch (error) {
             const history = await this.getJobHistory(jobId);
             let log = "";

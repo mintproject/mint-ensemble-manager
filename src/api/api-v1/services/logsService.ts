@@ -3,11 +3,9 @@ import { Execution } from "@/classes/mint/mint-types";
 import { fetchWingsRunLog } from "@/classes/wings/wings-functions";
 import { fetchLocalRunLog } from "@/classes/localex/local-execution-functions";
 import { fetchMintConfig } from "@/classes/mint/mint-functions";
-import { createResponse } from "./util";
 import { getTokenFromAuthorizationHeader } from "@/utils/authUtils";
 import { TapisExecutionService } from "@/classes/tapis/adapters/TapisExecutionService";
-import { HttpError } from "@kubernetes/client-node/dist";
-import { NotFoundError } from "@/classes/common/errors";
+import { NotFoundError, UnauthorizedError } from "@/classes/common/errors";
 
 // ./api-v1/services/logsService.js
 export interface LogsService {
@@ -30,24 +28,19 @@ const logsService: LogsService = {
             throw new NotFoundError("Execution not found");
         }
         if (prefs.execution_engine == "wings") {
-            const log = await fetchWingsRunLog(execution.runid, prefs);
-            return log;
+            return await fetchWingsRunLog(execution.runid, prefs);
         } else if (prefs.execution_engine == "localex") {
-            const log = fetchLocalRunLog(execution_id, prefs);
-            return log;
+            return fetchLocalRunLog(execution_id, prefs);
         } else if (prefs.execution_engine == "tapis") {
-            const access_token = this.getAccessToken(authorizationHeader);
+            const access_token = getTokenFromAuthorizationHeader(authorizationHeader);
+            if (!access_token) {
+                throw new UnauthorizedError("Invalid authorization header");
+            }
             const tapisExecutionService = new TapisExecutionService(
                 access_token,
                 prefs.tapis.basePath
             );
-            if (!execution.runid) {
-                return createResponse(
-                    "failure",
-                    "Run ID is not set for this execution. Please try again later."
-                );
-            }
-            await tapisExecutionService.getLog(execution.runid);
+            return await tapisExecutionService.getLog(execution.runid);
         }
     }
 };
