@@ -23,6 +23,7 @@ import {
 } from "@/classes/mint/mint-types";
 import { TapisComponent } from "@/classes/tapis/typing";
 import { IExecutionService } from "@/interfaces/IExecutionService";
+import { HttpError } from "./errors";
 
 const MAX_CONFIGURATIONS = 1000000;
 // Add interface for IO/Parameter details
@@ -245,37 +246,46 @@ export class ExecutionCreation {
         if (response.ok) {
             const { result } = await response.json();
             return result as TapisComponent;
-        } else if (response.status === 401) {
-            throw new Error("Unauthorized");
+        } else if (response.status === 404) {
+            throw new HttpError(
+                404,
+                `Component not found: ${component_url} error: ${response.statusText}`
+            );
+        } else if (response.status === 403) {
+            throw new HttpError(403, `Forbidden: ${component_url} error: ${response.statusText}`);
         } else {
-            throw new Error(`Response status not ok: ${component_url}`);
+            throw new HttpError(
+                response.status,
+                `Response status not ok: ${component_url} error: ${response.statusText}`
+            );
         }
     }
 
     private async loadComponent(component_url: string): Promise<TapisComponent> {
-        try {
-            // If token is provided, use it to fetch the component
-            const response = await fetch(component_url, {
-                headers: {
-                    "X-Tapis-Token": `${this.token}`
-                }
-            });
-            if (response.ok) {
-                const data = await response.text();
-                const component = JSON.parse(data) as TapisComponent;
-                console.log(component);
-                if (component.id && component.version) {
-                    return component;
-                }
-                console.error(`Invalid component: ${component_url}`);
-                throw new Error("Invalid component");
+        // If token is provided, use it to fetch the component
+        const response = await fetch(component_url, {
+            headers: {
+                "X-Tapis-Token": `${this.token}`
             }
-            throw new Error(
+        });
+        if (response.ok) {
+            const data = await response.text();
+            const component = JSON.parse(data) as TapisComponent;
+            console.log(component);
+            if (component.id && component.version) {
+                return component;
+            }
+            console.error(`Invalid component: ${component_url}`);
+            throw new Error("Invalid component");
+        } else if (response.status === 404) {
+            throw new HttpError(404, `Component not found: ${component_url}`);
+        } else if (response.status === 403) {
+            throw new HttpError(403, `Forbidden: ${component_url}`);
+        } else {
+            throw new HttpError(
+                response.status,
                 `Response status not ok: ${component_url} error: ${response.statusText}`
             );
-        } catch (e) {
-            console.log(e);
-            throw Error(`Error loading component ${component_url} error: ${e}`);
         }
     }
 
