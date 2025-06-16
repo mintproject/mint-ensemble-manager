@@ -175,11 +175,11 @@ export class TapisExecutionService implements IExecutionService {
     }
 
     async getLog(jobId: string): Promise<string> {
+        const history = await this.getJobHistory(jobId);
         try {
             const file = await this.getJobOutputDownloadFile(jobId, this.LOG_PATH);
             return await file.text();
         } catch (error) {
-            const history = await this.getJobHistory(jobId);
             let log = "";
             for (const result of history.result) {
                 log += `[${result.created} - ${result.event}] ${result.eventDetail}\n`;
@@ -390,14 +390,9 @@ export class TapisExecutionService implements IExecutionService {
         jobUuid: string,
         outputPath: string
     ): Promise<Jobs.RespGetJobOutputList> => {
-        try {
-            return await errorDecoder<Jobs.RespGetJobOutputList>(() =>
-                this.jobsClient.getJobOutputList({ jobUuid: jobUuid, outputPath: outputPath })
-            );
-        } catch (error) {
-            console.error("Error getting job output list", error);
-            return { result: [] };
-        }
+        return await errorDecoder<Jobs.RespGetJobOutputList>(() =>
+            this.jobsClient.getJobOutputList({ jobUuid: jobUuid, outputPath: outputPath })
+        );
     };
 
     getJobOutputDownloadFile = async (jobUuid: string, outputPath: string): Promise<Blob> => {

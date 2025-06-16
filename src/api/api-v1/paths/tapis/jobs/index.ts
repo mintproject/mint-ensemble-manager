@@ -2,6 +2,7 @@
 
 import { Router } from "express";
 import jobsService from "@/api/api-v1/services/tapis/jobsService";
+import { HttpError } from "@/classes/common/errors";
 
 export default function () {
     const router = Router();
@@ -103,7 +104,11 @@ export default function () {
             const log = await jobsService.getLogs(req.params.id, req.headers.authorization);
             res.status(200).send(log);
         } catch (error) {
-            return res.status(500).send({ message: error.message });
+            if (error instanceof HttpError) {
+                return res.status(error.statusCode).send({ message: error.message });
+            } else {
+                return res.status(500).send({ message: error.message });
+            }
         }
     });
 
