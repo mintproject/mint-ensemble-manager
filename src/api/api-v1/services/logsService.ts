@@ -43,12 +43,7 @@ const logsService: LogsService = {
                         "Run ID is not set for this execution. Please try again later."
                     );
                 }
-                const response = await tapisExecutionService.getJobHistory(execution.runid);
-                let log = "";
-                for (const result of response.result) {
-                    log += `[${result.created} - ${result.event}] ${result.eventDetail}\n`;
-                }
-                return log;
+                await tapisExecutionService.getLog(execution.runid);
             }
         } catch (error) {
             console.log(error);
