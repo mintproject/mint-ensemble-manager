@@ -27,6 +27,8 @@ export interface IExecutionService {
         model: Model,
         region: Region,
         component: TapisComponent,
-        threadId: string
+        threadId: string,
+        threadModelId: string
     ): Promise<string[]>;
+    verifyComponent(component: TapisComponent): void;
 }

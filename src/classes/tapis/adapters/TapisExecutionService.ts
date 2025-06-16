@@ -17,12 +17,15 @@ import {
     updateExecutionStatus,
     updateExecutionStatusAndResultsv2,
     getThreadModelByThreadIdExecutionId,
-    updateExecutionRunId
+    updateExecutionRunId,
+    decrementThreadModelSubmittedRuns,
+    handleFailedConnectionEnsemble
 } from "@/classes/graphql/graphql_functions";
 import { matchTapisOutputsToMintOutputs } from "@/classes/tapis/jobs";
 import { Status } from "@/interfaces/IExecutionService";
 
 export class TapisExecutionService implements IExecutionService {
+    private readonly LOG_PATH = "tapisjob.out";
     private appsClient: Apps.ApplicationsApi;
     private jobsClient: Jobs.JobsApi;
     private subscriptionsClient: Jobs.SubscriptionsApi;
@@ -56,44 +59,96 @@ export class TapisExecutionService implements IExecutionService {
         this.jobSubscriptionService = new TapisJobSubscriptionService(this.subscriptionsClient);
     }
 
+    async verifyComponent(component: TapisComponent): Promise<void> {
+        await this.loadTapisApp(component);
+    }
+
     async submitExecutions(
         executions: Execution[],
         model: Model,
         region: Region,
         component: TapisComponent,
-        threadId: string
+        threadId: string,
+        threadModelId: string
     ) {
-        const app = await this.loadTapisApp(component);
+        try {
+            const app = await this.loadTapisApp(component);
+            console.log("Submitting executions", executions);
+            this.seeds = this.seedExecutions(executions, model, region, component);
+            console.log("Seeds", JSON.stringify(this.seeds));
 
-        console.log("Submitting executions", executions);
-        this.seeds = this.seedExecutions(executions, model, region, component);
-        console.log("Seeds", JSON.stringify(this.seeds));
-        const promises = this.seeds.map(async (seed) => {
-            console.log("Seed", JSON.stringify(seed));
-            const name = app.id + "-" + app.version + "-" + seed.execution.id;
-            const description = "Job for " + model.name + " execution " + seed.execution.id;
-            const jobRequest = this.jobService.createJobRequest(
-                app,
-                seed,
-                model,
-                name,
-                description
-            );
-            console.log("Job request", JSON.stringify(jobRequest));
-            const jobId = await this.submitJob(jobRequest);
-            console.log("Job id", jobId);
-            await updateExecutionRunId(seed.execution.id, jobId);
-            console.log("Updated execution run id", seed.execution.id, jobId);
-            const subscription = TapisJobSubscriptionService.createRequest(
-                seed.execution.id,
-                threadId
-            );
-            console.log("Subscription", JSON.stringify(subscription));
-            await this.jobSubscriptionService.submit(jobId, subscription);
-            console.log("Submitted subscription", jobId, subscription);
-            return jobId;
-        });
-        return await Promise.all(promises);
+            const results: string[] = [];
+            const errors: { executionId: string; error: Error }[] = [];
+
+            for (const seed of this.seeds) {
+                console.log("Processing seed", JSON.stringify(seed));
+                try {
+                    const name = this.generateValidJobName(app, seed.execution.id);
+                    const description = "Job for " + model.name + " execution " + seed.execution.id;
+                    const jobRequest = this.jobService.createJobRequest(
+                        app,
+                        seed,
+                        model,
+                        name,
+                        description
+                    );
+                    console.log("Job request", JSON.stringify(jobRequest));
+                    const jobId = await this.submitJob(jobRequest);
+                    console.log("Job id", jobId);
+                    await updateExecutionRunId(seed.execution.id, jobId);
+                    console.log("Updated execution run id", seed.execution.id, jobId);
+                    const subscription = TapisJobSubscriptionService.createRequest(
+                        seed.execution.id,
+                        threadId
+                    );
+                    console.log("Subscription", JSON.stringify(subscription));
+                    await this.jobSubscriptionService.submit(jobId, subscription);
+                    console.log("Submitted subscription", jobId, subscription);
+                    results.push(jobId);
+                } catch (error) {
+                    console.error(
+                        `Failed to submit job for execution ${seed.execution.id}:`,
+                        error
+                    );
+                    await decrementThreadModelSubmittedRuns(threadModelId);
+                    errors.push({ executionId: seed.execution.id, error });
+                }
+            }
+            if (errors.length > 0) {
+                console.warn("Some jobs failed to submit:", errors);
+            }
+            if (errors.length === this.seeds.length) {
+                throw new Error("All jobs failed to submit");
+            }
+
+            return results;
+        } catch (error) {
+            try {
+                console.log("Handling failed connection ensemble");
+                await handleFailedConnectionEnsemble(
+                    threadId,
+                    {
+                        event: "UPDATE",
+                        userid: "SYSTEM",
+                        timestamp: new Date(),
+                        notes: "All jobs failed to submit"
+                    },
+                    [
+                        {
+                            total_runs: this.seeds.length,
+                            submitted_runs: 0,
+                            failed_runs: this.seeds.length,
+                            successful_runs: 0,
+                            thread_model_id: threadModelId
+                        }
+                    ]
+                );
+            } catch (error) {
+                console.error("Error handling failed connection ensemble", error);
+            }
+            console.error("Error submitting executions", error);
+            throw error;
+        }
     }
 
     async registerExecutionOutputs(executionId: string): Promise<Execution_Result[]> {
@@ -117,6 +172,20 @@ export class TapisExecutionService implements IExecutionService {
             model_ensemble_id
         );
         return execution;
+    }
+
+    async getLog(jobId: string): Promise<string> {
+        const history = await this.getJobHistory(jobId);
+        try {
+            const file = await this.getJobOutputDownloadFile(jobId, this.LOG_PATH);
+            return await file.text();
+        } catch (error) {
+            let log = "";
+            for (const result of history.result) {
+                log += `[${result.created} - ${result.event}] ${result.eventDetail}\n`;
+            }
+            return log;
+        }
     }
 
     async getJobHistory(jobId: string): Promise<Jobs.RespJobHistory> {
@@ -286,8 +355,20 @@ export class TapisExecutionService implements IExecutionService {
         jobUuid: string,
         execution: Execution
     ): Promise<Execution_Result[]> {
-        const { result: files } = await this.getJobOutputList(jobUuid, "");
+        const { result: files1 } = await this.getJobOutputList(jobUuid, "");
+        const { result: files2 } = await this.getJobOutputList(jobUuid, "outputs");
+        const files = [...files1, ...files2];
         const mintOutputs = await getModelOutputsByModelId(execution.modelid);
+
+        if (mintOutputs.length === 0 && files.length === 0) {
+            throw new NotFoundError(
+                "No outputs found and no mint outputs found for model " + execution.modelid
+            );
+        } else if (mintOutputs.length === 0) {
+            throw new NotFoundError("No mint outputs found for model " + execution.modelid);
+        } else if (files.length === 0) {
+            throw new NotFoundError("No files found for model " + execution.modelid);
+        }
         return matchTapisOutputsToMintOutputs(files, mintOutputs);
     }
 
@@ -319,4 +400,31 @@ export class TapisExecutionService implements IExecutionService {
             this.jobsClient.getJobOutputDownload({ jobUuid: jobUuid, outputPath: outputPath })
         );
     };
+
+    private generateValidJobName(app: Apps.TapisApp, executionId: string): string {
+        const MAX_LENGTH = 64;
+        const SEPARATOR = "-";
+
+        // Start with the essential parts
+        const name = `${app.id}${SEPARATOR}${app.version}${SEPARATOR}${executionId}`;
+
+        // If we're under the limit, return as is
+        if (name.length <= MAX_LENGTH) {
+            return name;
+        }
+
+        // Calculate how much we need to trim
+        const excess = name.length - MAX_LENGTH;
+
+        // If executionId is long enough, trim it
+        if (executionId.length > excess) {
+            const trimmedExecutionId = executionId.slice(0, executionId.length - excess);
+            return `${app.id}${SEPARATOR}${app.version}${SEPARATOR}${trimmedExecutionId}`;
+        }
+
+        // If we still need to trim, start trimming from the app.id
+        const remainingExcess = excess - executionId.length;
+        const trimmedAppId = app.id.slice(0, app.id.length - remainingExcess);
+        return `${trimmedAppId}${SEPARATOR}${app.version}${SEPARATOR}${executionId}`;
+    }
 }
