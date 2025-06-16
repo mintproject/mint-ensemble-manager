@@ -6,7 +6,12 @@ import {
     setThreadModels
 } from "@/classes/graphql/graphql_functions";
 import { getTokenFromAuthorizationHeader } from "@/utils/authUtils";
-import { UnauthorizedError, InternalServerError, NotFoundError } from "@/classes/common/errors";
+import {
+    UnauthorizedError,
+    InternalServerError,
+    NotFoundError,
+    BadRequestError
+} from "@/classes/common/errors";
 import problemStatementsService from "./problemStatementsService";
 import { fetchModelConfigurationSetup } from "@/classes/mint/model-catalog-functions";
 import { ModelConfigurationSetup } from "@mintproject/modelcatalog_client/dist";
@@ -111,6 +116,17 @@ const subTasksService: SubTasksService = {
         const task = await getTask(taskId);
         if (!task) {
             throw new NotFoundError("Task not found");
+        }
+        if (task.driving_variables) {
+            subtask.driving_variables = task.driving_variables;
+        }
+        if (task.response_variables) {
+            subtask.response_variables = task.response_variables;
+        }
+        if (!subtask.driving_variables || !subtask.response_variables) {
+            throw new BadRequestError(
+                "Driving variables and response variables must be set in subtask"
+            );
         }
 
         if (task.problem_statement_id !== problemStatementId) {
