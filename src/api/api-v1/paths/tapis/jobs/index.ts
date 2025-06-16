@@ -73,5 +73,39 @@ export default function () {
         }
     });
 
+    /**
+     * @swagger
+     * /tapis/jobs/{id}/logs:
+     *   get:
+     *     summary: Get Job Logs
+     *     description: Get the logs of a job.
+     *     operationId: tapisGetJobLogs
+     *     tags: [Tapis]
+     *     security:
+     *       - BearerAuth: []
+     *       - oauth2: []
+     *     parameters:
+     *       - in: path
+     *         name: id
+     *         example: "9bc5bbfb-d76c-4d0b-87cc-f89e945a062e-007"
+     *     responses:
+     *       200:
+     *         description: Job Logs
+     *         content:
+     *           text/plain:
+     *             schema:
+     *               type: string
+     *       default:
+     *         description: An error occurred
+     */
+    router.get("/:id/logs", async (req, res) => {
+        try {
+            const log = await jobsService.getLogs(req.params.id, req.headers.authorization);
+            res.status(200).send(log);
+        } catch (error) {
+            return res.status(500).send({ message: error.message });
+        }
+    });
+
     return router;
 }
