@@ -203,13 +203,13 @@ export class ExecutionCreation {
             try {
                 comp = await this.loadComponentFromTapis(model.code_url);
             } catch (e) {
-                throw new Error(`Error loading component ${model.code_url}`);
+                throw new Error(`Error loading component ${model.code_url} error: ${e}`);
             }
         } else {
             try {
                 comp = await this.loadComponent(model.code_url);
             } catch (e) {
-                throw new Error(`Error loading component ${model.code_url}`);
+                throw new Error(`Error loading component ${model.code_url} error: ${e}`);
             }
         }
         comp.inputs = [];
@@ -270,10 +270,12 @@ export class ExecutionCreation {
                 console.error(`Invalid component: ${component_url}`);
                 throw new Error("Invalid component");
             }
-            throw new Error(`Response status not ok: ${component_url}`);
+            throw new Error(
+                `Response status not ok: ${component_url} error: ${response.statusText}`
+            );
         } catch (e) {
             console.log(e);
-            throw Error(`Error loading component ${component_url}`);
+            throw Error(`Error loading component ${component_url} error: ${e}`);
         }
     }
 
