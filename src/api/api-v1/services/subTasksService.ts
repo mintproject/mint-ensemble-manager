@@ -155,13 +155,11 @@ const subTasksService: SubTasksService = {
             throw new NotFoundError("Subtask not found");
         }
         for (const modelId of modelIds) {
-            const model: ModelConfigurationSetup = await fetchModelConfigurationSetup(modelId);
-            await setThreadModels([model], "Added models", subtask);
+            await setThreadModels([{ id: modelId }], "Added models", subtask);
         }
         return await getThread(subtaskId);
     }
 
-    //     // Get the resources required for each model in the subtask
     //     async findRequiredResources(subtaskId: string, authorizationHeader: string) {
     //         const access_token = getTokenFromAuthorizationHeader(authorizationHeader);
     //         if (!access_token) {
