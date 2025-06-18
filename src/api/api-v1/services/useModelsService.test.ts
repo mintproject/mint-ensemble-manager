@@ -182,4 +182,19 @@ describe("useModelsService", () => {
             BadRequestError
         );
     });
+
+    it("should throw BadRequestError if any input is left unbound after matching", async () => {
+        // Remove one input from the data fixture so it cannot be bound
+        const incompleteData = {
+            ...data,
+            data: data.data.slice(0, 3) // Remove the last input
+        };
+        const subtaskCopy = JSON.parse(JSON.stringify(subtask));
+        for (const input of inputSpecs) {
+            subtaskCopy.model_ensembles[modelW3Id].bindings[input.id] = [];
+        }
+        await expect(useModelsService.matchModel(incompleteData, subtaskCopy)).rejects.toThrow(
+            BadRequestError
+        );
+    });
 });
