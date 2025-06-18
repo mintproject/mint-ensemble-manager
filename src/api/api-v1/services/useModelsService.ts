@@ -25,7 +25,8 @@ const createDataSlice = (dataInput: DataInput, thread: Thread) => {
                 start_date: thread.dates.start_date,
                 end_date: thread.dates.end_date
             },
-            name: r.id
+            name: r.id,
+            selected: true
         })),
         time_period: thread.dates,
         name: dataInput.dataset.id,
