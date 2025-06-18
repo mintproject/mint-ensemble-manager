@@ -27,8 +27,8 @@ const createDataSlice = (dataInput: DataInput, thread: Thread) => {
     return dataslice;
 };
 
-const isInputUnbound = (input: DatasetSpecification) => {
-    return !input.hasFixedResource || input.hasFixedResource.length == 0;
+const hasInputHasFixedResource = (input: DatasetSpecification) => {
+    return input.hasFixedResource && input.hasFixedResource.length > 0;
 };
 
 const matchInput = (input: DatasetSpecification, data: AddDataRequest) => {
@@ -55,7 +55,10 @@ const validateThatAllInputsAreBound = (
     const modelInputs = model.hasInput;
     const w3id = convertApiUrlToW3Id(model.id);
     for (const input of modelInputs) {
-        if (thread.model_ensembles[w3id].bindings[input.id].length === 0) {
+        if (
+            !hasInputHasFixedResource(input) &&
+            thread.model_ensembles[w3id].bindings[input.id].length === 0
+        ) {
             throw new BadRequestError(`Input ${input.id} is not bound`);
         }
     }
@@ -69,9 +72,13 @@ const matchInputs = (
     const modelInputs = model.hasInput;
     const w3id = convertApiUrlToW3Id(model.id);
     for (const input of modelInputs) {
-        if (isInputUnbound(input)) {
+        if (!hasInputHasFixedResource(input)) {
             const dataslice = createBinding(input, data, thread);
-            thread.model_ensembles[w3id].bindings[input.id].push(dataslice.id);
+            if (thread.model_ensembles[w3id].bindings[input.id]) {
+                thread.model_ensembles[w3id].bindings[input.id].push(dataslice.id);
+            } else {
+                thread.model_ensembles[w3id].bindings[input.id] = [dataslice.id];
+            }
         }
     }
 };
