@@ -92,6 +92,32 @@ export const fetchModelConfiguration = async (url: string): Promise<ModelConfigu
     })) as ModelConfiguration;
 };
 
+export const fetchCustomModelConfigurationSetup = async (
+    url: string
+): Promise<ModelConfigurationSetup> => {
+    return (await rp.get({
+        url: url,
+        json: true
+    })) as ModelConfigurationSetup;
+};
+
+export const fetchCustomModelConfiguration = async (url: string): Promise<ModelConfiguration> => {
+    return (await rp.get({
+        url: url,
+        json: true
+    })) as ModelConfiguration;
+};
+
+export const fetchCustomModelConfigurationOrSetup = async (
+    url: string
+): Promise<ModelConfiguration | ModelConfigurationSetup> => {
+    try {
+        return await fetchCustomModelConfiguration(url);
+    } catch (error) {
+        return await fetchCustomModelConfigurationSetup(url);
+    }
+};
+
 export const convertApiUrlToW3Id = (url: string) => {
     const baseUrl = url.split("?")[0];
     const urlParts = baseUrl.split("/");
