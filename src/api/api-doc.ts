@@ -521,6 +521,67 @@ const SubtaskSchema = {
                 ]
             }
         }
+    },
+    AddParametersRequest: {
+        type: "object",
+        description: "A request to add parameters to a subtask",
+        properties: {
+            model_id: {
+                type: "string",
+                description:
+                    "The model id to use (browse here: https://dev.mint.isi.edu/ethiopia/models/explore. This is the model id of the model configuration setup or model configuration)",
+                example:
+                    "http://api.models.mint.local/v1.8.0/modelconfigurationsetups/c07a6f98-6339-4033-84b0-6cd7daca6284?username=mint%40isi.edu",
+                required: true
+            },
+            parameters: {
+                type: "array",
+                items: {
+                    type: "object",
+                    properties: {
+                        id: {
+                            type: "string",
+                            description: "Parameter ID of the model",
+                            example: "https://w3id.org/okn/i/mint/start_planting_day",
+                            required: true
+                        },
+                        value: {
+                            oneOf: [
+                                {
+                                    type: "string",
+                                    description: "Single parameter value"
+                                },
+                                {
+                                    type: "array",
+                                    items: {
+                                        type: "string"
+                                    },
+                                    description: "Multiple parameter values"
+                                }
+                            ],
+                            description: "Parameter value(s)",
+                            example: [100, 107, 114],
+                            required: true
+                        }
+                    }
+                },
+                description: "List of parameters to add to the subtask"
+            }
+        },
+        example: {
+            model_id:
+                "http://api.models.mint.local/v1.8.0/modelconfigurationsetups/c07a6f98-6339-4033-84b0-6cd7daca6284?username=mint%40isi.edu",
+            parameters: [
+                {
+                    id: "https://w3id.org/okn/i/mint/start_planting_day",
+                    value: [100, 107, 114]
+                },
+                {
+                    id: "https://w3id.org/okn/i/mint/nitrogen_application_rate",
+                    value: "150"
+                }
+            ]
+        }
     }
 };
 const ProblemStatementSchema = {
