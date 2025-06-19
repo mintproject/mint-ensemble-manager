@@ -95,11 +95,13 @@ app.use(`/${version}/modelBindings`, modelBindingsRouter());
 app.use(`/${version}/tapis`, tapisRouter());
 
 // Setup Error Handler
-const errorHandler: ErrorRequestHandler = (err: Error, req: Request, res: Response) => {
-    console.error(err);
-    res.status(500).json({ message: err.message });
-};
-app.use(errorHandler);
+app.use((err, req, res, next) => {
+    // format error
+    res.status(err.status || 500).json({
+        message: err.message,
+        errors: err.errors
+    });
+});
 
 // Setup Queue
 const executionQueue = new Queue(EXECUTION_QUEUE_NAME, REDIS_URL);
