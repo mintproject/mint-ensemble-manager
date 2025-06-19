@@ -331,8 +331,8 @@ const MintSchema = {
                 type: "array",
                 items: {
                     type: "object",
+                    required: ["id", "dataset"],
                     properties: {
-                        required: ["id", "dataset"],
                         id: {
                             type: "string",
                             description: "Input ID of the model",
@@ -462,7 +462,6 @@ const MintSchema = {
         }
     }
 };
-
 const TaskSchema = {
     Task: {
         type: "object",
@@ -699,7 +698,6 @@ const TaskSchema = {
         }
     }
 };
-
 const SubtaskSchema = {
     CreateSubtaskRequest: {
         type: "object",
@@ -867,8 +865,8 @@ const SubtaskSchema = {
         type: "object",
         description:
             "A request to setup a complete model configuration including the model (if not present), parameters, and data inputs in a single call.",
+        required: ["model_id"],
         properties: {
-            required: ["model_id"],
             model_id: {
                 type: "string",
                 description:
@@ -1102,7 +1100,6 @@ const ProblemStatementSchema = {
         }
     }
 };
-
 const TapisSchema = {
     ReqUpdateExecutionStatus: {
         type: "object",
@@ -1856,13 +1853,10 @@ const apiDocComponents = {
             },
             oauth2: {
                 type: "oauth2",
-                scopes: {
-                    "read:user": "Read access to user information",
-                    "write:user": "Write access to user information"
-                },
                 flows: {
                     implicit: {
-                        authorizationUrl: AUTHORIZATION_URL
+                        authorizationUrl: AUTHORIZATION_URL,
+                        scopes: {}
                     }
                 }
             }
