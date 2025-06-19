@@ -138,9 +138,8 @@ const getDataBindingsByModelId = async (model_id: string) => {
 };
 
 const useModelInputService = {
-    matchInputs,
-    matchModel: setInputBindings,
     getDataBindingsByModelId,
+    matchInputs,
     createDataSlice,
     hasInputHasFixedResource,
     findDataSpecificationByRequest,
