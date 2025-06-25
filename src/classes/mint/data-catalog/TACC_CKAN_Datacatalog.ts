@@ -1,4 +1,4 @@
-import { Dataset, MintPreferences } from "../mint-types";
+import { DataResource, Dataset, MintPreferences } from "../mint-types";
 import { IDataCatalog } from "./IDatacatalog";
 import CKAN, { Dataset as CKANDataset, Tag, Resource as CKANResource } from "@pkyeck/ckan-ts";
 
@@ -15,6 +15,24 @@ interface CreateDataset {
     }[];
     tags?: Tag[];
     resources?: CKANResource[];
+}
+
+interface CreateResource {
+    package_id: string;
+    url: string;
+    name?: string;
+    format?: string;
+    description?: string;
+    hash?: string;
+    resource_type?: string;
+    mimetype?: string;
+    mimetype_inner?: string;
+    cache_url?: string;
+    size?: number;
+    created?: string;
+    last_modified?: string;
+    cache_last_updated?: string;
+    upload?: unknown; // FieldStorage for multipart/form-data
 }
 
 interface CKANExtra {
@@ -102,6 +120,36 @@ export class TACC_CKAN_DataCatalog implements IDataCatalog {
         return this.transformCKANPackageResponse(dataset);
     }
 
+    async getResource(resourceId: string): Promise<DataResource> {
+        const resource: CKANResource = await this.parser.resource(resourceId);
+        return this.transformCKANResource(resource);
+    }
+
+    async registerResources(datasetId: string, resources: DataResource[]): Promise<void> {
+        // Create resources one by one as CKAN resource_create expects individual resource creation
+        for (const resource of resources) {
+            const resourceBody: CreateResource = {
+                package_id: datasetId,
+                url: resource.url,
+                name: resource.name,
+                format: resource.type
+                // Optional fields that can be added if available in DataResource
+                // hash: resource.hash,
+                // resource_type: resource.resource_type,
+                // mimetype: resource.mimetype,
+                // size: resource.size,
+                // created: resource.created,
+                // last_modified: resource.last_modified
+            };
+
+            await this.parser.action<CreateResource, CKANResource>(
+                "resource_create",
+                resourceBody,
+                "POST"
+            );
+        }
+    }
+
     async testConnection(): Promise<boolean> {
         try {
             const available = await this.parser.available();
@@ -143,6 +191,16 @@ export class TACC_CKAN_DataCatalog implements IDataCatalog {
                     selected: true
                 })) || [],
             spatial_coverage: this.extractSpatialCoverage(pkg as CKANPackageWithExtras)
+        };
+    }
+
+    private transformCKANResource(resource: CKANResource): DataResource {
+        return {
+            id: resource.id,
+            name: resource.name,
+            url: resource.url,
+            selected: true,
+            type: resource.format
         };
     }
 

@@ -1,4 +1,4 @@
-import { Dataset } from "../mint-types";
+import { DataResource, Dataset } from "../mint-types";
 
 export interface IDataCatalog {
     /**
@@ -14,7 +14,7 @@ export interface IDataCatalog {
     /**
      * Register resources for a dataset
      */
-    registerResources?(datasetId: string, resources: any[]): Promise<void>;
+    registerResources?(datasetId: string, resources: DataResource[]): Promise<void>;
 
     /**
      * Sync dataset metadata
