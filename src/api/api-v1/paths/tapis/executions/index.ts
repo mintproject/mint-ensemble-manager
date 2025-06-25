@@ -1,6 +1,8 @@
 import { Router } from "express";
 import executionOutputsService from "@/api/api-v1/services/tapis/executionOutputsService";
 import { BadRequestError, NotFoundError } from "@/classes/common/errors";
+import { TACC_CKAN_DataCatalog } from "@/classes/mint/data-catalog/TACC_CKAN_Datacatalog";
+import { getConfiguration } from "@/classes/mint/mint-functions";
 
 export default function () {
     const router = Router();
@@ -22,6 +24,15 @@ export default function () {
      *         required: true
      *         schema:
      *           type: string
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             type: object
+     *             properties:
+     *               datasetId:
+     *                 type: string
      *     responses:
      *       200:
      *         description: Outputs registered successfully
@@ -52,11 +63,20 @@ export default function () {
      *                   type: string
      */
     router.post("/:executionId/outputs", async (req, res) => {
+        const datasetId = req.body.datasetId;
         try {
-            await executionOutputsService.registerOutputs(
+            const results = await executionOutputsService.registerOutputs(
                 req.params.executionId,
                 req.headers.authorization
             );
+            if (datasetId && results.length > 0) {
+                const prefs = getConfiguration();
+                const ckan = new TACC_CKAN_DataCatalog(prefs);
+                await ckan.registerResources(
+                    datasetId,
+                    results.map((result) => result.resource)
+                );
+            }
             res.status(200).json({ message: "Outputs registered successfully" });
         } catch (error) {
             if (error instanceof NotFoundError) {
