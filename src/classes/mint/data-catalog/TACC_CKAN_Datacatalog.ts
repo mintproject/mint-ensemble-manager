@@ -103,8 +103,12 @@ export class TACC_CKAN_DataCatalog implements IDataCatalog {
     }
 
     async testConnection(): Promise<boolean> {
-        const available = await this.parser.available();
-        return available;
+        try {
+            const available = await this.parser.available();
+            return available;
+        } catch (error) {
+            throw new Error("Failed to connect to CKAN server");
+        }
     }
 
     private transformCKANPackageResponse(pkg: CKANDataset): Dataset {

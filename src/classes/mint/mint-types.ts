@@ -200,7 +200,7 @@ export interface Point {
 
 export interface Dataset extends IdNameObject {
     region: string;
-    variables: string[];
+    variables?: string[];
     datatype: string;
     time_period: DateRange;
     description: string;
