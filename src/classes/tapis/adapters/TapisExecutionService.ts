@@ -149,7 +149,15 @@ export class TapisExecutionService implements IExecutionService {
     }
 
     async registerExecutionOutputs(executionId: string): Promise<Execution_Result[]> {
-        return await this.updateExecutionResultsFromJob(executionId);
+        const execution = await getExecution(executionId);
+        if (execution === null) {
+            throw new NotFoundError("Execution not found");
+        }
+        if (execution.status !== Status.SUCCESS) {
+            throw new BadRequestError("Execution is not successful");
+        }
+        execution.results = await this.getExecutionResultsFromJob(execution.runid, execution);
+        return await this.updateExecutionResultsFromJob(execution);
     }
 
     static async updateExecution(
@@ -380,16 +388,7 @@ export class TapisExecutionService implements IExecutionService {
         return matchTapisOutputsToMintOutputs(files, mintOutputs);
     }
 
-    private async updateExecutionResultsFromJob(executionId: string): Promise<Execution_Result[]> {
-        const execution = await getExecution(executionId);
-        if (execution === null) {
-            throw new NotFoundError("Execution not found");
-        }
-        if (execution.status !== Status.SUCCESS) {
-            throw new BadRequestError("Execution is not successful");
-        }
-        execution.results = await this.getExecutionResultsFromJob(execution.runid, execution);
-        console.log("Registering execution ", executionId, execution.results.length);
+    private async updateExecutionResultsFromJob(execution: Execution): Promise<Execution_Result[]> {
         await updateExecutionStatusAndResultsv2(execution);
         return execution.results;
     }
