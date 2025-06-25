@@ -1,6 +1,8 @@
 import { DataResource, Dataset, MintPreferences } from "../mint-types";
 import { IDataCatalog } from "./IDatacatalog";
 import CKAN, { Dataset as CKANDataset, Tag, Resource as CKANResource } from "@pkyeck/ckan-ts";
+import http from "http";
+import https from "https";
 
 interface CreateDataset {
     name: string;
@@ -45,15 +47,39 @@ interface CKANPackageWithExtras extends CKANDataset {
 }
 
 export class TACC_CKAN_DataCatalog implements IDataCatalog {
-    private parser: CKAN;
+    private key: string;
+    private url: string;
 
     constructor(prefs: MintPreferences) {
-        this.parser = new CKAN(prefs.data_catalog_api, {
+        this.key = prefs.data_catalog_key || "";
+        this.url = prefs.data_catalog_api || "";
+    }
+
+    private async getParser(): Promise<CKAN> {
+        return new CKAN(this.url, {
             requestOptions: {
-                timeout: 10000,
                 headers: {
-                    Authorization: ` ${prefs.data_catalog_key}`
-                }
+                    Authorization: ` ${this.key}`,
+                    "Content-Type": "application/json",
+                    Connection: "close", // Force close connections
+                    "Cache-Control": "no-cache"
+                },
+                // Conservative HTTP agent settings
+                httpAgent: new http.Agent({
+                    keepAlive: false, // Don't reuse connections
+                    maxSockets: 1, // Only one socket at a time
+                    maxFreeSockets: 0, // Don't keep free sockets
+                    timeout: 60000, // 60 second timeout
+                    scheduling: "fifo" // First in, first out
+                }),
+                httpsAgent: new https.Agent({
+                    keepAlive: false,
+                    maxSockets: 1,
+                    maxFreeSockets: 0,
+                    timeout: 60000,
+                    scheduling: "fifo",
+                    rejectUnauthorized: process.env.NODE_ENV === "production" // Allow self-signed in dev
+                })
             }
         });
     }
@@ -63,6 +89,7 @@ export class TACC_CKAN_DataCatalog implements IDataCatalog {
     }
 
     async registerDataset(dataset: Dataset, owner_org?: string): Promise<string> {
+        const parser = await this.getParser();
         const tags = [];
         if (dataset.variables) {
             tags.push(
@@ -99,7 +126,7 @@ export class TACC_CKAN_DataCatalog implements IDataCatalog {
             //     } as CKANResource;
             // })
         };
-        const response = await this.parser.action<CreateDataset, CKANDataset>(
+        const response = await parser.action<CreateDataset, CKANDataset>(
             "package_create",
             ckan_dataset,
             "POST"
@@ -108,7 +135,8 @@ export class TACC_CKAN_DataCatalog implements IDataCatalog {
     }
 
     async deleteDataset(datasetId: string): Promise<void> {
-        await this.parser.action<{ id: string }, CKANDataset>(
+        const parser = await this.getParser();
+        await parser.action<{ id: string }, CKANDataset>(
             "package_delete",
             { id: datasetId },
             "POST"
@@ -116,12 +144,14 @@ export class TACC_CKAN_DataCatalog implements IDataCatalog {
     }
 
     async getDataset(datasetId: string): Promise<Dataset> {
-        const dataset: CKANDataset = await this.parser.dataset(datasetId);
+        const parser = await this.getParser();
+        const dataset: CKANDataset = await parser.dataset(datasetId);
         return this.transformCKANPackageResponse(dataset);
     }
 
     async getResource(resourceId: string): Promise<DataResource> {
-        const resource: CKANResource = await this.parser.resource(resourceId);
+        const parser = await this.getParser();
+        const resource: CKANResource = await parser.resource(resourceId);
         return this.transformCKANResource(resource);
     }
 
@@ -142,17 +172,16 @@ export class TACC_CKAN_DataCatalog implements IDataCatalog {
                 // last_modified: resource.last_modified
             };
 
-            await this.parser.action<CreateResource, CKANResource>(
-                "resource_create",
-                resourceBody,
-                "POST"
-            );
+            await (
+                await this.getParser()
+            ).action<CreateResource, CKANResource>("resource_create", resourceBody, "POST");
         }
     }
 
     async testConnection(): Promise<boolean> {
         try {
-            const available = await this.parser.available();
+            const parser = await this.getParser();
+            const available = await parser.available();
             return available;
         } catch (error) {
             throw new Error("Failed to connect to CKAN server");
@@ -181,15 +210,7 @@ export class TACC_CKAN_DataCatalog implements IDataCatalog {
             resource_count: pkg.resources?.length || 0,
             datatype: "",
             categories: pkg.tags?.map((t: Tag) => t.name) || [],
-            resources:
-                pkg.resources?.map((r: CKANResource) => ({
-                    id: r.id,
-                    name: r.name,
-                    url: r.url,
-                    time_period: null,
-                    spatial_coverage: null,
-                    selected: true
-                })) || [],
+            resources: pkg.resources?.map((r: CKANResource) => this.transformCKANResource(r)) || [],
             spatial_coverage: this.extractSpatialCoverage(pkg as CKANPackageWithExtras)
         };
     }
@@ -200,7 +221,9 @@ export class TACC_CKAN_DataCatalog implements IDataCatalog {
             name: resource.name,
             url: resource.url,
             selected: true,
-            type: resource.format
+            type: resource.format,
+            time_period: null,
+            spatial_coverage: null
         };
     }
 

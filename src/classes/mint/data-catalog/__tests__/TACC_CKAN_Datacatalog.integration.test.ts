@@ -110,6 +110,176 @@ describe("TACC_CKAN_DataCatalog Integration Tests", () => {
         }, 30000);
     });
 
+    describe("Resource Registration", () => {
+        const testResources = [
+            {
+                id: "test-resource-1",
+                name: "Temperature Data CSV",
+                url: "https://example.com/temperature-data.csv",
+                type: "CSV",
+                time_period: {
+                    start_date: new Date("2020-01-01"),
+                    end_date: new Date("2020-12-31")
+                },
+                spatial_coverage: null,
+                selected: true
+            },
+            {
+                id: "test-resource-2",
+                name: "Precipitation Data JSON",
+                url: "https://example.com/precipitation-data.json",
+                type: "JSON",
+                time_period: {
+                    start_date: new Date("2020-01-01"),
+                    end_date: new Date("2020-12-31")
+                },
+                spatial_coverage: null,
+                selected: true
+            },
+            {
+                id: "test-resource-3",
+                name: "Metadata XML",
+                url: "https://example.com/metadata.xml",
+                type: "XML",
+                time_period: {
+                    start_date: new Date("2020-01-01"),
+                    end_date: new Date("2020-12-31")
+                },
+                spatial_coverage: null,
+                selected: true
+            }
+        ];
+
+        it("should register multiple resources to a dataset successfully", async () => {
+            // Register resources to the existing dataset
+            await dataCatalog.registerResources(datasetId, testResources);
+
+            // Verify resources were registered by retrieving the dataset
+            const updatedDataset = await dataCatalog.getDataset(datasetId);
+
+            expect(updatedDataset.resources).toHaveLength(3);
+            expect(updatedDataset.resource_count).toBe(3);
+
+            // Verify each resource was registered correctly
+            const resourceNames = updatedDataset.resources.map((r) => r.name);
+            expect(resourceNames).toContain("Temperature Data CSV");
+            expect(resourceNames).toContain("Precipitation Data JSON");
+            expect(resourceNames).toContain("Metadata XML");
+
+            // Verify resource URLs
+            const resourceUrls = updatedDataset.resources.map((r) => r.url);
+            expect(resourceUrls).toContain("https://example.com/temperature-data.csv");
+            expect(resourceUrls).toContain("https://example.com/precipitation-data.json");
+            expect(resourceUrls).toContain("https://example.com/metadata.xml");
+
+            // Verify resource types
+            const resourceTypes = updatedDataset.resources.map((r) => r.type);
+            expect(resourceTypes).toContain("CSV");
+            expect(resourceTypes).toContain("JSON");
+            expect(resourceTypes).toContain("XML");
+        }, 30000);
+
+        it("should register a single resource successfully", async () => {
+            const singleResource = [
+                {
+                    id: "single-test-resource",
+                    name: "Single Test Resource",
+                    url: "https://example.com/single-resource.txt",
+                    type: "TXT",
+                    time_period: {
+                        start_date: new Date("2020-01-01"),
+                        end_date: new Date("2020-12-31")
+                    },
+                    spatial_coverage: null,
+                    selected: true
+                }
+            ];
+
+            await dataCatalog.registerResources(datasetId, singleResource);
+
+            // Verify the resource was registered
+            const updatedDataset = await dataCatalog.getDataset(datasetId);
+            const newResource = updatedDataset.resources.find(
+                (r) => r.name === "Single Test Resource"
+            );
+
+            expect(newResource).toBeDefined();
+            expect(newResource?.url).toBe("https://example.com/single-resource.txt");
+            expect(newResource?.type).toBe("TXT");
+        }, 30000);
+
+        it("should handle resource registration with minimal required fields", async () => {
+            const minimalResource = [
+                {
+                    id: "minimal-resource",
+                    name: "Minimal Resource",
+                    url: "https://example.com/minimal.txt",
+                    selected: true
+                }
+            ];
+
+            await dataCatalog.registerResources(datasetId, minimalResource);
+
+            // Verify the resource was registered
+            const updatedDataset = await dataCatalog.getDataset(datasetId);
+            const newResource = updatedDataset.resources.find((r) => r.name === "Minimal Resource");
+
+            expect(newResource).toBeDefined();
+            expect(newResource?.url).toBe("https://example.com/minimal.txt");
+        }, 30000);
+
+        it("should handle resource registration to non-existent dataset", async () => {
+            const testResource = [
+                {
+                    id: "test-resource",
+                    name: "Test Resource",
+                    url: "https://example.com/test.txt",
+                    selected: true
+                }
+            ];
+
+            await expect(
+                dataCatalog.registerResources("non-existent-dataset", testResource)
+            ).rejects.toThrow();
+        }, 30000);
+
+        it("should retrieve individual resource by ID", async () => {
+            // First register a resource
+            const testResource = [
+                {
+                    id: "individual-test-resource",
+                    name: "Individual Test Resource",
+                    url: "https://example.com/individual-resource.csv",
+                    type: "CSV",
+                    selected: true
+                }
+            ];
+
+            await dataCatalog.registerResources(datasetId, testResource);
+
+            // Get the dataset to find the resource ID
+            const dataset = await dataCatalog.getDataset(datasetId);
+            const resource = dataset.resources.find((r) => r.name === "Individual Test Resource");
+
+            expect(resource).toBeDefined();
+            expect(resource?.id).toBeDefined();
+
+            // Retrieve the individual resource by ID
+            const retrievedResource = await dataCatalog.getResource(resource!.id);
+
+            expect(retrievedResource).toBeDefined();
+            expect(retrievedResource.id).toBe(resource!.id);
+            expect(retrievedResource.name).toBe("Individual Test Resource");
+            expect(retrievedResource.url).toBe("https://example.com/individual-resource.csv");
+            expect(retrievedResource.type).toBe("CSV");
+            expect(retrievedResource.selected).toBe(true);
+        }, 30000);
+
+        it("should handle retrieving non-existent resource", async () => {
+            await expect(dataCatalog.getResource("non-existent-resource-id")).rejects.toThrow();
+        }, 30000);
+    });
+
     //     it("should transform CKAN dataset with temporal coverage", async () => {
     //         // This test verifies the transformation logic works correctly
     //         const dataset = await dataCatalog.getDataset("test-dataset-integration");
