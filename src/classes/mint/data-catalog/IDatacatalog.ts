@@ -1,4 +1,4 @@
-import { Dataset, DatasetSearchCriteria } from "../mint-types";
+import { Dataset } from "../mint-types";
 
 export interface IDataCatalog {
     /**

@@ -1,5 +1,5 @@
 import { TACC_CKAN_DataCatalog } from "../TACC_CKAN_Datacatalog";
-import { MintPreferences, Dataset, DatasetSearchCriteria } from "../../mint-types";
+import { MintPreferences, Dataset } from "../../mint-types";
 
 describe("TACC_CKAN_DataCatalog Integration Tests", () => {
     let dataCatalog: TACC_CKAN_DataCatalog;
