@@ -602,3 +602,15 @@ export interface WingsWcm {
     inputs: ModelIO[];
     outputs: ModelIO[];
 }
+
+export interface DatasetSearchCriteria {
+    modelId?: string;
+    inputId?: string;
+    variables?: string[];
+    dateRange?: DateRange;
+    region?: Region;
+    datasetIds?: string[];
+    categories?: string[];
+    limit?: number;
+    offset?: number;
+}
