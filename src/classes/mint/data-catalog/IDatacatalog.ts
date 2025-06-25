@@ -4,12 +4,7 @@ export interface IDataCatalog {
     /**
      * Register a dataset in the catalog
      */
-    registerDataset(dataset: Dataset, owner_org?: string): Promise<void>;
-
-    /**
-     * Find datasets based on search criteria
-     */
-    findDatasets(criteria: DatasetSearchCriteria): Promise<Dataset[]>;
+    registerDataset(dataset: Dataset, owner_org?: string): Promise<string>;
 
     /**
      * Get a specific dataset by ID with detailed information
@@ -17,14 +12,9 @@ export interface IDataCatalog {
     getDataset(datasetId: string): Promise<Dataset>;
 
     /**
-     * Register variables for a dataset
-     */
-    registerVariables?(dataset: Dataset): Promise<boolean>;
-
-    /**
      * Register resources for a dataset
      */
-    registerResources?(datasetId: string, resources: any[]): Promise<boolean>;
+    registerResources?(datasetId: string, resources: any[]): Promise<void>;
 
     /**
      * Sync dataset metadata
@@ -35,6 +25,9 @@ export interface IDataCatalog {
      * Get catalog type identifier
      */
     getCatalogType(): string;
+
+    /** Delete a dataset from the catalog */
+    deleteDataset(datasetId: string): Promise<void>;
 
     /**
      * Test connection to the catalog

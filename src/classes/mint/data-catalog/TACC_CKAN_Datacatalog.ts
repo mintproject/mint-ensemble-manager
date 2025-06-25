@@ -1,12 +1,6 @@
-import { HttpError } from "@/classes/common/errors";
-import { Dataset, DatasetSearchCriteria, MintPreferences } from "../mint-types";
+import { Dataset, MintPreferences } from "../mint-types";
 import { IDataCatalog } from "./IDatacatalog";
-import CKAN, {
-    Dataset as CKANDataset,
-    DatasetSearchOptions,
-    Tag,
-    Resource as CKANResource
-} from "@mfosorio/ckan-ts";
+import CKAN, { Dataset as CKANDataset, Tag, Resource as CKANResource } from "@pkyeck/ckan-ts";
 
 interface CreateDataset {
     name: string;
@@ -15,12 +9,21 @@ interface CreateDataset {
     owner_org: string;
     private: boolean;
     version: string;
-    extras: {
+    extras?: {
         key: string;
         value: string;
     }[];
-    tags: Tag[];
-    resources: CKANResource[];
+    tags?: Tag[];
+    resources?: CKANResource[];
+}
+
+interface CKANExtra {
+    key: string;
+    value: string;
+}
+
+interface CKANPackageWithExtras extends CKANDataset {
+    extras?: CKANExtra[];
 }
 
 export class TACC_CKAN_DataCatalog implements IDataCatalog {
@@ -29,6 +32,7 @@ export class TACC_CKAN_DataCatalog implements IDataCatalog {
     constructor(prefs: MintPreferences) {
         this.parser = new CKAN(prefs.data_catalog_api, {
             requestOptions: {
+                timeout: 10000,
                 headers: {
                     Authorization: ` ${prefs.data_catalog_key}`
                 }
@@ -40,7 +44,22 @@ export class TACC_CKAN_DataCatalog implements IDataCatalog {
         return "TACC_CKAN";
     }
 
-    async registerDataset(dataset: Dataset, owner_org?: string): Promise<void> {
+    async registerDataset(dataset: Dataset, owner_org?: string): Promise<string> {
+        const tags = [];
+        if (dataset.variables) {
+            tags.push(
+                ...dataset.variables.map((v) => {
+                    return { name: "stdvar." + v } as Tag;
+                })
+            );
+        }
+        if (dataset.categories) {
+            tags.push(
+                ...dataset.categories.map((c) => {
+                    return { name: c } as Tag;
+                })
+            );
+        }
         const ckan_dataset: CreateDataset = {
             name: dataset.name,
             title: dataset.name,
@@ -48,58 +67,34 @@ export class TACC_CKAN_DataCatalog implements IDataCatalog {
             owner_org: owner_org || "",
             private: false,
             version: dataset.version,
-            extras: [
-                {
-                    key: "spatial",
-                    value: dataset.spatial_coverage || ""
-                }
-            ],
-            tags: dataset.variables.map((v) => {
-                return { name: "stdvar." + v } as Tag;
-            }),
-            resources: dataset.resources.map((res) => {
-                return {
-                    name: res.name,
-                    url: res.url
-                } as CKANResource;
-            })
+            // extras: [
+            //     {
+            //         key: "spatial",
+            //         value: dataset.spatial_coverage || ""
+            //     }
+            // ],
+            tags: tags
+            // resources: dataset.resources.map((res) => {
+            //     return {
+            //         name: res.name,
+            //         url: res.url
+            //     } as CKANResource;
+            // })
         };
-        await this.parser.action<CreateDataset, CKANDataset>("package_create", ckan_dataset);
+        const response = await this.parser.action<CreateDataset, CKANDataset>(
+            "package_create",
+            ckan_dataset,
+            "POST"
+        );
+        return response.id;
     }
 
-    async findDatasets(criteria: DatasetSearchCriteria): Promise<Dataset[]> {
-        const searchParams: DatasetSearchOptions = {
-            limit: criteria.limit || 100,
-            offset: criteria.offset || 0
-        };
-
-        // Build query string
-        const queryParts: string[] = [];
-
-        if (criteria.datasetIds && criteria.datasetIds.length > 0) {
-            queryParts.push(`id:(${criteria.datasetIds.join(" OR ")})`);
-        }
-
-        if (criteria.variables && criteria.variables.length > 0) {
-            const tagQueries = criteria.variables.map((v) => `tags:"stdvar.${v}"`);
-            queryParts.push(`(${tagQueries.join(" OR ")})`);
-        }
-
-        if (criteria.categories && criteria.categories.length > 0) {
-            const categoryQueries = criteria.categories.map((c) => `tags:"${c}"`);
-            queryParts.push(`(${categoryQueries.join(" OR ")})`);
-        }
-
-        searchParams.filterQuery = queryParts.length > 0 ? queryParts.join(" AND ") : "*:*";
-
-        try {
-            const datasets: CKANDataset[] = await this.parser.searchDataset(
-                searchParams.filterQuery
-            );
-            return this.transformCKANSearchResponse(datasets, criteria.variables || []);
-        } catch (error) {
-            throw new HttpError(500, "CKAN dataset search failed");
-        }
+    async deleteDataset(datasetId: string): Promise<void> {
+        await this.parser.action<{ id: string }, CKANDataset>(
+            "package_delete",
+            { id: datasetId },
+            "POST"
+        );
     }
 
     async getDataset(datasetId: string): Promise<Dataset> {
@@ -112,24 +107,16 @@ export class TACC_CKAN_DataCatalog implements IDataCatalog {
         return available;
     }
 
-    private transformCKANSearchResponse(datasets: CKANDataset[], variables: string[]): Dataset[] {
-        if (!datasets) {
-            return [];
-        }
-        return datasets.map((pkg: CKANDataset) => this.transformCKANPackage(pkg, variables));
-    }
-
     private transformCKANPackageResponse(pkg: CKANDataset): Dataset {
-        return this.transformCKANPackage(pkg, []);
+        return this.transformCKANPackage(pkg);
     }
 
-    private transformCKANPackage(pkg: CKANDataset, variables: string[]): Dataset {
+    private transformCKANPackage(pkg: CKANDataset): Dataset {
         return {
             id: pkg.id,
             name: pkg.name,
             region: "",
-            variables: variables,
-            time_period: this.extractTemporalCoverage(pkg),
+            time_period: this.extractTemporalCoverage(pkg as CKANPackageWithExtras),
             description: pkg.notes || "",
             version: pkg.version || "",
             limitations: "",
@@ -151,15 +138,15 @@ export class TACC_CKAN_DataCatalog implements IDataCatalog {
                     spatial_coverage: null,
                     selected: true
                 })) || [],
-            spatial_coverage: this.extractSpatialCoverage(pkg)
+            spatial_coverage: this.extractSpatialCoverage(pkg as CKANPackageWithExtras)
         };
     }
 
     private extractTemporalCoverage(
-        pkg: any
+        pkg: CKANPackageWithExtras
     ): { start_date: Date | null; end_date: Date | null } | null {
         // Extract temporal coverage from CKAN extras if available
-        const spatialExtra = pkg.extras?.find((e: any) => e.key === "temporal_coverage");
+        const spatialExtra = pkg.extras?.find((e: CKANExtra) => e.key === "temporal_coverage");
         if (spatialExtra) {
             try {
                 const temporal = JSON.parse(spatialExtra.value);
@@ -174,8 +161,8 @@ export class TACC_CKAN_DataCatalog implements IDataCatalog {
         return null;
     }
 
-    private extractSpatialCoverage(pkg: any): string | undefined {
-        const spatialExtra = pkg.extras?.find((e: any) => e.key === "spatial");
+    private extractSpatialCoverage(pkg: CKANPackageWithExtras): string | undefined {
+        const spatialExtra = pkg.extras?.find((e: CKANExtra) => e.key === "spatial");
         return spatialExtra?.value;
     }
 }
