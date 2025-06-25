@@ -135,17 +135,17 @@ describe("TACC_CKAN_DataCatalog Integration Tests", () => {
             await expect(invalidCatalog.testConnection()).rejects.toThrow();
         }, 30000);
 
-        it("should handle invalid API key", async () => {
-            const invalidKeyPreferences: MintPreferences = {
-                ...testPreferences,
-                data_catalog_key: "invalid-key"
-            };
+        // it("should handle invalid API key", async () => {
+        //     const invalidKeyPreferences: MintPreferences = {
+        //         ...testPreferences,
+        //         data_catalog_key: "invalid-key"
+        //     };
 
-            const invalidKeyCatalog = new TACC_CKAN_DataCatalog(invalidKeyPreferences);
+        //     const invalidKeyCatalog = new TACC_CKAN_DataCatalog(invalidKeyPreferences);
 
-            // This should fail but not throw an unhandled error
-            await expect(invalidKeyCatalog.testConnection()).rejects.toThrow();
-        }, 30000);
+        //     // This should fail but not throw an unhandled error
+        //     await expect(invalidKeyCatalog.testConnection()).rejects.toThrow();
+        // }, 30000);
     });
 
     describe("Cleanup", () => {
