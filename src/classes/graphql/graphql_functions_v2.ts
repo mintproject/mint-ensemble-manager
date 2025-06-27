@@ -68,6 +68,10 @@ export const getTasksByProblemStatementId = async (
     return result.data.task;
 };
 
+export const getSubtask = async (subtask_id: string, access_token?: string): Promise<Thread> => {
+    return await getThread(subtask_id, access_token);
+};
+
 export const getThread = async (thread_id: string, access_token?: string): Promise<Thread> => {
     const APOLLO_CLIENT = access_token
         ? GraphQL.instanceUsingAccessToken(access_token)
