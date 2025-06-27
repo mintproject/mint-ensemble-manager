@@ -88,7 +88,7 @@ export class TACC_CKAN_DataCatalog implements IDataCatalog {
         return "TACC_CKAN";
     }
 
-    async registerDataset(dataset: Dataset, owner_org?: string): Promise<string> {
+    async registerDataset(dataset: Dataset, owner_org: string): Promise<string> {
         const parser = await this.getParser();
         const tags = [];
         if (dataset.variables) {
