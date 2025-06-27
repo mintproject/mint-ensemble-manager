@@ -162,14 +162,16 @@ export class TapisExecutionService implements IExecutionService {
     }
     async registerExecutionOutputs(
         executionId: string,
+        isPublic: boolean,
         datasetId: string
     ): Promise<Execution_Result[]> {
         const execution = await this.findExecution(executionId);
-        const results = await this.findExecutionResults(execution);
-        if (datasetId && results.length > 0) {
+        const results = await this.findExecutionResults(execution, isPublic);
+        if (results.length > 0) {
             const prefs = getConfiguration();
             const ckan = new TACC_CKAN_DataCatalog(prefs);
             for (let i = 0; i < results.length; i++) {
+                results[i].resource.name = results[i].resource.name + "'-" + executionId;
                 const idUrl = await ckan.registerResource(datasetId, results[i].resource);
                 results[i].resource.id = idUrl.id;
                 results[i].resource.url = idUrl.url;
@@ -178,8 +180,11 @@ export class TapisExecutionService implements IExecutionService {
         return await this.updateExecutionResultsFromJob(execution);
     }
 
-    async findExecutionResults(execution: Execution): Promise<Execution_Result[]> {
-        return await this.getExecutionResultsFromJob(execution.runid, execution);
+    async findExecutionResults(
+        execution: Execution,
+        isPublic: boolean
+    ): Promise<Execution_Result[]> {
+        return await this.getExecutionResultsFromJob(execution.runid, execution, isPublic);
     }
 
     static async updateExecution(
@@ -380,7 +385,8 @@ export class TapisExecutionService implements IExecutionService {
 
     private async getExecutionResultsFromJob(
         jobUuid: string,
-        execution: Execution
+        execution: Execution,
+        isPublic: boolean
     ): Promise<Execution_Result[]> {
         const files = [];
         try {
