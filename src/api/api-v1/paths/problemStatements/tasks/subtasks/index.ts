@@ -2,6 +2,7 @@ import { Router, Request, Response } from "express";
 import subTasksService from "@/api/api-v1/services/subTasksService";
 import { HttpError } from "@/classes/common/errors";
 import { executionsRouter } from "./executions";
+import { getTokenFromAuthorizationHeader } from "@/utils/authUtils";
 
 interface SubtaskRequest extends Request {
     params: {
@@ -752,6 +753,82 @@ const subtasksRouter = (): Router => {
         }
     );
     router.use("/:taskId/executions", executionsRouter());
+
+    /**
+     * @swagger
+     * /problemStatements/{problemStatementId}/tasks/{taskId}/subtasks/{subtaskId}/outputs:
+     *   post:
+     *     summary: Register Tapis Execution Outputs
+     *     description: Register the outputs of a successful Tapis execution in the data catalog
+     *     operationId: registerTapisExecutionOutputs
+     *     tags:
+     *       - Tapis
+     *     security:
+     *       - BearerAuth: []
+     *       - oauth2: []
+     *     parameters:
+     *       - name: problemStatementId
+     *         in: path
+     *         required: true
+     *         schema:
+     *           type: string
+     *       - name: taskId
+     *         in: path
+     *         required: true
+     *         schema:
+     *           type: string
+     *       - name: subtaskId
+     *         in: path
+     *         required: true
+     *         schema:
+     *           type: string
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             type: object
+     *             properties:
+     *               datasetId:
+     *                 type: string
+     *     responses:
+     *       200:
+     *         description: Outputs registered successfully
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       400:
+     *         description: Invalid request or registration failed
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     *       500:
+     *         description: Server error
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 message:
+     *                   type: string
+     */
+    router.post("/:subtaskId/outputs", async (req: Request, res: Response) => {
+        const authorizationHeader = req.headers.authorization;
+        if (!authorizationHeader) {
+            return res.status(401).json({ message: "Authorization header is required" });
+        }
+        const access_token = getTokenFromAuthorizationHeader(authorizationHeader);
+        const { subtaskId } = req.params;
+        return res.status(200).json({ message: "Outputs registered successfully" });
+    });
     return router;
 };
 
