@@ -211,7 +211,7 @@ export interface Dataset extends IdNameObject {
     is_cached?: boolean;
     resource_repr?: any;
     dataset_repr?: any;
-    resources: DataResource[];
+    resources?: DataResource[];
     resources_loaded?: boolean;
     resource_count?: number;
     spatial_coverage?: any;
