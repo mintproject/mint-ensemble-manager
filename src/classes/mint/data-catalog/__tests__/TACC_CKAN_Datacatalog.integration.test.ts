@@ -6,7 +6,7 @@ describe("TACC_CKAN_DataCatalog Integration Tests", () => {
     const testPreferences: MintPreferences = {
         data_catalog_api: "http://ckan.tacc.cloud:5000",
         data_catalog_key:
-            "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJqdGkiOiJ6OUwwc1BTVzZnN0pMRFJ6S2RrM0VoZ2dTMnNxWHQ4Y2pVa2NucDhkNE5VWkFKX2pZdDR5dDJsZFQwdUZCQlVNT0tXcmZYNmlDS3owbExTciIsImlhdCI6MTc1MDg1MTgxNH0.myxa8WPhxDp3BpVY3r4j466k1jYNK9ciEaX2cXI_dZY",
+            "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJqdGkiOiJNS2RlNS1INXZQSWtfakJmYWU3Q2hJUDdUbUVibEJHU3BMcVExUkJMempCc0ZKdTY4U1QteDJrTko0TFV0TkV3MkE4bDg3R0xhd19PRktJYyIsImlhdCI6MTc1MTAzMjM5OH0.Z6c0iQZDYCwCOgTGUzBKYlR-4Br4fE4U3E1dJljlACE",
         ensemble_manager_api: "http://localhost:3000",
         ingestion_api: "http://localhost:3001",
         visualization_url: "http://localhost:3002",
@@ -61,35 +61,11 @@ describe("TACC_CKAN_DataCatalog Integration Tests", () => {
             resource_count: 2,
             datatype: "climate",
             categories: ["climate", "test"],
-            resources: [
-                {
-                    id: "resource-1",
-                    name: "Temperature Data",
-                    url: "http://test.source.com/temperature.csv",
-                    time_period: {
-                        start_date: new Date("2020-01-01"),
-                        end_date: new Date("2020-12-31")
-                    },
-                    spatial_coverage: null,
-                    selected: true
-                },
-                {
-                    id: "resource-2",
-                    name: "Precipitation Data",
-                    url: "http://test.source.com/precipitation.csv",
-                    time_period: {
-                        start_date: new Date("2020-01-01"),
-                        end_date: new Date("2020-12-31")
-                    },
-                    spatial_coverage: null,
-                    selected: true
-                }
-            ],
             spatial_coverage: "Test Region"
         };
 
         it("should register a new dataset successfully", async () => {
-            datasetId = await dataCatalog.registerDataset(testDataset, "test-org");
+            datasetId = await dataCatalog.registerDataset(testDataset, "test");
             expect(datasetId).toBeDefined();
         }, 30000); // Increased timeout for network operations
     });
@@ -115,7 +91,7 @@ describe("TACC_CKAN_DataCatalog Integration Tests", () => {
             {
                 id: "test-resource-1",
                 name: "Temperature Data CSV",
-                url: "https://example.com/temperature-data.csv",
+                url: "tapis://ls6/test/temperature.csv",
                 type: "CSV",
                 time_period: {
                     start_date: new Date("2020-01-01"),
@@ -152,7 +128,7 @@ describe("TACC_CKAN_DataCatalog Integration Tests", () => {
 
         it("should register multiple resources to a dataset successfully", async () => {
             // Register resources to the existing dataset
-            await dataCatalog.registerResources(datasetId, testResources);
+            const resourceIds = await dataCatalog.registerResources(datasetId, testResources);
 
             // Verify resources were registered by retrieving the dataset
             const updatedDataset = await dataCatalog.getDataset(datasetId);

@@ -14,7 +14,7 @@ export interface IDataCatalog {
     /**
      * Register resources for a dataset
      */
-    registerResources?(datasetId: string, resources: DataResource[]): Promise<void>;
+    registerResources?(datasetId: string, resources: DataResource[]): Promise<string[]>;
 
     /**
      * Sync dataset metadata

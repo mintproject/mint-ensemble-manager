@@ -155,7 +155,7 @@ export class TACC_CKAN_DataCatalog implements IDataCatalog {
         return this.transformCKANResource(resource);
     }
 
-    async registerResources(datasetId: string, resources: DataResource[]): Promise<void> {
+    async registerResources(datasetId: string, resources: DataResource[]): Promise<string[]> {
         // Create resources one by one as CKAN resource_create expects individual resource creation
         for (const resource of resources) {
             const resourceBody: CreateResource = {
@@ -176,6 +176,7 @@ export class TACC_CKAN_DataCatalog implements IDataCatalog {
                 await this.getParser()
             ).action<CreateResource, CKANResource>("resource_create", resourceBody, "POST");
         }
+        return resources.map((r) => r.id);
     }
 
     async testConnection(): Promise<boolean> {
