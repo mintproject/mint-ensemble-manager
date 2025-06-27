@@ -1,6 +1,7 @@
 import { Router, Request, Response } from "express";
 import subTasksService from "@/api/api-v1/services/subTasksService";
 import { HttpError } from "@/classes/common/errors";
+import { executionsRouter } from "./executions";
 
 interface SubtaskRequest extends Request {
     params: {
@@ -750,6 +751,7 @@ const subtasksRouter = (): Router => {
             }
         }
     );
+    router.use("/:taskId/executions", executionsRouter());
     return router;
 };
 
