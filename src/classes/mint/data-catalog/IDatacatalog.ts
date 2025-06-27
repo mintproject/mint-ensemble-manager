@@ -1,5 +1,10 @@
 import { DataResource, Dataset } from "../mint-types";
 
+export interface IdUrl {
+    id: string;
+    url: string;
+}
+
 export interface IDataCatalog {
     /**
      * Register a dataset in the catalog
@@ -14,7 +19,7 @@ export interface IDataCatalog {
     /**
      * Register resources for a dataset
      */
-    registerResources?(datasetId: string, resources: DataResource[]): Promise<string[]>;
+    registerResources?(datasetId: string, resources: DataResource[]): Promise<IdUrl[]>;
 
     /**
      * Sync dataset metadata

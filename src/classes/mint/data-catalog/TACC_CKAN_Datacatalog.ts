@@ -1,5 +1,5 @@
 import { DataResource, Dataset, MintPreferences } from "../mint-types";
-import { IDataCatalog } from "./IDatacatalog";
+import { IDataCatalog, IdUrl } from "./IDatacatalog";
 import CKAN, { Dataset as CKANDataset, Tag, Resource as CKANResource } from "@pkyeck/ckan-ts";
 import http from "http";
 import https from "https";
@@ -155,28 +155,26 @@ export class TACC_CKAN_DataCatalog implements IDataCatalog {
         return this.transformCKANResource(resource);
     }
 
-    async registerResources(datasetId: string, resources: DataResource[]): Promise<string[]> {
+    async registerResource(datasetId: string, resource: DataResource): Promise<IdUrl> {
+        const resourceBody: CreateResource = {
+            package_id: datasetId,
+            url: resource.url,
+            name: resource.name,
+            format: resource.type
+        };
+        const response = await (
+            await this.getParser()
+        ).action<CreateResource, CKANResource>("resource_create", resourceBody, "POST");
+        return { id: response.id, url: response.url };
+    }
+    async registerResources(datasetId: string, resources: DataResource[]): Promise<IdUrl[]> {
         // Create resources one by one as CKAN resource_create expects individual resource creation
+        const idUrls: IdUrl[] = [];
         for (const resource of resources) {
-            const resourceBody: CreateResource = {
-                package_id: datasetId,
-                url: resource.url,
-                name: resource.name,
-                format: resource.type
-                // Optional fields that can be added if available in DataResource
-                // hash: resource.hash,
-                // resource_type: resource.resource_type,
-                // mimetype: resource.mimetype,
-                // size: resource.size,
-                // created: resource.created,
-                // last_modified: resource.last_modified
-            };
-
-            await (
-                await this.getParser()
-            ).action<CreateResource, CKANResource>("resource_create", resourceBody, "POST");
+            const idUrl = await this.registerResource(datasetId, resource);
+            idUrls.push(idUrl);
         }
-        return resources.map((r) => r.id);
+        return idUrls;
     }
 
     async testConnection(): Promise<boolean> {

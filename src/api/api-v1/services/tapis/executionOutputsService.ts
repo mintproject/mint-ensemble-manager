@@ -4,11 +4,19 @@ import { getConfiguration } from "@/classes/mint/mint-functions";
 import { Execution_Result } from "@/classes/mint/mint-types";
 
 export interface ExecutionOutputsService {
-    registerOutputs(executionId: string, authorization: string): Promise<Execution_Result[]>;
+    registerOutputs(
+        executionId: string,
+        authorization: string,
+        datasetId?: string
+    ): Promise<Execution_Result[]>;
 }
 
 const executionOutputsService: ExecutionOutputsService = {
-    async registerOutputs(executionId: string, authorization: string): Promise<Execution_Result[]> {
+    async registerOutputs(
+        executionId: string,
+        authorization: string,
+        datasetId?: string
+    ): Promise<Execution_Result[]> {
         const token = getTokenFromAuthorizationHeader(authorization);
         if (!token) {
             throw new Error("Unauthorized");
@@ -16,7 +24,7 @@ const executionOutputsService: ExecutionOutputsService = {
 
         const prefs = getConfiguration();
         const tapisExecution = new TapisExecutionService(token, prefs.tapis.basePath);
-        return await tapisExecution.registerExecutionOutputs(executionId);
+        return await tapisExecution.registerExecutionOutputs(executionId, datasetId);
     }
 };
 
