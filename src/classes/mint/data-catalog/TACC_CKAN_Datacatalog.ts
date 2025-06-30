@@ -162,10 +162,15 @@ export class TACC_CKAN_DataCatalog implements IDataCatalog {
             name: resource.name,
             format: resource.type
         };
-        const response = await (
-            await this.getParser()
-        ).action<CreateResource, CKANResource>("resource_create", resourceBody, "POST");
-        return { id: response.id, url: response.url };
+        try {
+            const response = await (
+                await this.getParser()
+            ).action<CreateResource, CKANResource>("resource_create", resourceBody, "POST");
+            return { id: response.id, url: response.url };
+        } catch (error) {
+            console.log("Error registering resource", error);
+            throw error;
+        }
     }
     async registerResources(datasetId: string, resources: DataResource[]): Promise<IdUrl[]> {
         // Create resources one by one as CKAN resource_create expects individual resource creation

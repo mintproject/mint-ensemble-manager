@@ -76,6 +76,7 @@ export const getThread = async (thread_id: string, access_token?: string): Promi
     const APOLLO_CLIENT = access_token
         ? GraphQL.instanceUsingAccessToken(access_token)
         : GraphQL.instance(KeycloakAdapter.getUser());
+
     const result: ApolloQueryResult<{ thread_by_pk: Thread }> = await APOLLO_CLIENT.query({
         query: getThreadGQL,
         variables: { id: thread_id }

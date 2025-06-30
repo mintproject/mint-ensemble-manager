@@ -752,7 +752,7 @@ const subtasksRouter = (): Router => {
             }
         }
     );
-    router.use("/:taskId/executions", executionsRouter());
+    router.use("/:subtaskId/executions", executionsRouter());
 
     /**
      * @swagger

@@ -171,12 +171,13 @@ export class TapisExecutionService implements IExecutionService {
             const prefs = getConfiguration();
             const ckan = new TACC_CKAN_DataCatalog(prefs);
             for (let i = 0; i < results.length; i++) {
-                results[i].resource.name = results[i].resource.name + "'-" + executionId;
+                results[i].resource.name = results[i].resource.name + "-" + executionId;
                 const idUrl = await ckan.registerResource(datasetId, results[i].resource);
                 results[i].resource.id = idUrl.id;
                 results[i].resource.url = idUrl.url;
             }
         }
+        execution.results = results;
         return await this.updateExecutionResultsFromJob(execution);
     }
 

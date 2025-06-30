@@ -19,7 +19,7 @@ interface ExecutionRequest extends Request {
     };
 }
 export const executionsRouter = (): Router => {
-    const router = Router();
+    const router = Router({ mergeParams: true });
     /**
      * @swagger
      * /problemStatements/{problemStatementId}/tasks/{taskId}/subtasks/{subtaskId}/executions/{executionId}/outputs:
@@ -98,14 +98,14 @@ export const executionsRouter = (): Router => {
         }
         const access_token = getTokenFromAuthorizationHeader(authorizationHeader);
         const { subtaskId, executionId } = req.params;
-        const subtaskRespose: GraphQLThread = await getSubtask(subtaskId, access_token);
-        if (!subtaskRespose) {
-            return res.status(404).json({ message: "Subtask not found" });
-        }
-        const subtask: Thread = threadFromGQL(subtaskRespose);
-        const datasetId = req.body.datasetId;
-
         try {
+            const subtaskRespose: GraphQLThread = await getSubtask(subtaskId, access_token);
+            if (!subtaskRespose) {
+                return res.status(404).json({ message: "Subtask not found" });
+            }
+            const subtask: Thread = threadFromGQL(subtaskRespose);
+            const datasetId = req.body.datasetId;
+
             await executionOutputsService.registerOutputs(
                 executionId,
                 access_token,

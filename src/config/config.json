@@ -1,9 +1,9 @@
 {
-    "data_catalog_api": "http://ckan.mint.cloud:5000",
+    "data_catalog_api": "http://ckan.tacc.cloud:5000",
     "data_catalog_type": "CKAN",
-    "data_catalog_key": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJqdGkiOiJ6OUwwc1BTVzZnN0pMRFJ6S2RrM0VoZ2dTMnNxWHQ4Y2pVa2NucDhkNE5VWkFKX2pZdDR5dDJsZFQwdUZCQlVNT0tXcmZYNmlDS3owbExTciIsImlhdCI6MTc1MDg1MTgxNH0.myxa8WPhxDp3BpVY3r4j466k1jYNK9ciEaX2cXI_dZY",
+    "data_catalog_key": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJqdGkiOiJQRzdKWlJQZUFpZERtMVVlOVgzdXZPVVdab3BrV0xjQ01xY0ppak9RWElRZ1pzRGpwSDY2Ym1pMm9UaUZwUG80YU1yNHBqaHgtTmk3aFJ0ZCIsImlhdCI6MTc1MTA0MDg1OX0.1mfb-BuigSihMGALNuXJR8jEB1Y3L9AKRhajtWtpcAY",
     "data_catalog_extra": {
-        "owner_organization_id": "21033e7d-484d-4974-9340-8c5755242c1f",
+        "owner_organization_id": "test",
         "owner_provenance_id": "9ef60317-5da5-4050-8bbc-7d6826fee49f"
     },
     "data_server_type": "Local",
