@@ -3,6 +3,11 @@ import subTasksService from "@/api/api-v1/services/subTasksService";
 import { HttpError } from "@/classes/common/errors";
 import { executionsRouter } from "./executions";
 import { getTokenFromAuthorizationHeader } from "@/utils/authUtils";
+import { ThreadInfo } from "@/classes/mint/mint-types";
+import { getThread } from "@/classes/graphql/graphql_functions_v2";
+import { Thread } from "@/classes/graphql/types";
+import executionOutputsService from "@/api/api-v1/services/tapis/executionOutputsService";
+import { threadFromGQL } from "@/classes/graphql/graphql_adapter";
 
 interface SubtaskRequest extends Request {
     params: {
@@ -827,6 +832,31 @@ const subtasksRouter = (): Router => {
         }
         const access_token = getTokenFromAuthorizationHeader(authorizationHeader);
         const { subtaskId } = req.params;
+        const datasetId = req.body.datasetId;
+
+        const subtaskGraphql: Thread = await getThread(subtaskId, access_token);
+        if (!subtaskGraphql) {
+            return res.status(404).json({ message: "Subtask not found" });
+        }
+
+        if (subtaskGraphql.thread_models.length === 0) {
+            return res.status(404).json({ message: "Thread models not found" });
+        }
+        const subtask = threadFromGQL(subtaskGraphql);
+
+        const thread_models = subtaskGraphql.thread_models;
+        for (const thread_model of thread_models) {
+            for (const execution of thread_model.executions) {
+                if (execution.execution.status === "SUCCESS") {
+                    await executionOutputsService.registerOutputs(
+                        execution.execution.id,
+                        access_token,
+                        subtask,
+                        datasetId
+                    );
+                }
+            }
+        }
         return res.status(200).json({ message: "Outputs registered successfully" });
     });
     return router;
