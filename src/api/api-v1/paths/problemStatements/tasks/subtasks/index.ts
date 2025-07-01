@@ -848,12 +848,17 @@ const subtasksRouter = (): Router => {
         for (const thread_model of thread_models) {
             for (const execution of thread_model.executions) {
                 if (execution.execution.status === "SUCCESS") {
-                    await executionOutputsService.registerOutputs(
-                        execution.execution.id,
-                        access_token,
-                        subtask,
-                        datasetId
-                    );
+                    try {
+                        await executionOutputsService.registerOutputs(
+                            execution.execution.id,
+                            access_token,
+                            subtask,
+                            req.headers.origin,
+                            datasetId
+                        );
+                    } catch (error) {
+                        console.error(error);
+                    }
                 }
             }
         }

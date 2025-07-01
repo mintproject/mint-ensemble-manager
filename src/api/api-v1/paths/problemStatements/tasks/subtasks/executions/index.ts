@@ -110,6 +110,7 @@ export const executionsRouter = (): Router => {
                 executionId,
                 access_token,
                 subtask,
+                req.headers.origin,
                 datasetId
             );
             res.status(200).json({ message: "Outputs registered successfully" });
