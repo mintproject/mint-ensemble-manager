@@ -16,11 +16,6 @@ export interface ExecutionOutputsService {
         subtask: Thread,
         ckan: TACC_CKAN_DataCatalog
     ): Promise<string>;
-    getOrCreateDataset(
-        executionId: string,
-        subtask: Thread,
-        ckan: TACC_CKAN_DataCatalog
-    ): Promise<string>;
 }
 
 const executionOutputsService: ExecutionOutputsService = {
@@ -58,19 +53,6 @@ const executionOutputsService: ExecutionOutputsService = {
         }
     },
 
-    async getOrCreateDataset(
-        executionId: string,
-        subtask: Thread,
-        ckan: TACC_CKAN_DataCatalog
-    ): Promise<string> {
-        const dataset = await ckan.getDataset(subtask.id);
-        if (dataset) {
-            return dataset.id;
-        } else {
-            return await this.createDataset(executionId, subtask, ckan);
-        }
-    },
-
     async registerOutputs(
         executionId: string,
         access_token: string,
@@ -82,7 +64,24 @@ const executionOutputsService: ExecutionOutputsService = {
         const tapisExecution = new TapisExecutionService(access_token, prefs.tapis.basePath);
         const ckan = new TACC_CKAN_DataCatalog(prefs);
         if (!datasetId) {
-            datasetId = await this.getOrCreateDataset(executionId, subtask, ckan);
+            datasetId = await ckan.registerDataset(
+                {
+                    name: subtask.id,
+                    description: "Outputs for " + subtask.name,
+                    region: subtask.regionid,
+                    datatype: "file",
+                    time_period: subtask.dates,
+                    version: "1.0.0",
+                    limitations: "None",
+                    source: {
+                        name: "Tapis",
+                        url: "https://tapis.org",
+                        type: "file"
+                    },
+                    resources: []
+                },
+                prefs.data_catalog_extra.owner_organization_id
+            );
         }
         return await tapisExecution.registerExecutionOutputs(executionId, isPublic, datasetId);
     }
