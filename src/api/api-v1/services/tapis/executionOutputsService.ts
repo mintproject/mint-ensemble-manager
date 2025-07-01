@@ -9,6 +9,7 @@ export interface ExecutionOutputsService {
         executionId: string,
         access_token: string,
         subtask: Thread,
+        origin?: string,
         datasetId?: string
     ): Promise<Execution_Result[]>;
     createDataset(
@@ -57,31 +58,14 @@ const executionOutputsService: ExecutionOutputsService = {
         executionId: string,
         access_token: string,
         subtask: Thread,
+        origin?: string,
         datasetId?: string
     ): Promise<Execution_Result[]> {
         const isPublic = this.isPublic(subtask);
         const prefs = getConfiguration();
         const tapisExecution = new TapisExecutionService(access_token, prefs.tapis.basePath);
-        const ckan = new TACC_CKAN_DataCatalog(prefs);
         if (!datasetId) {
-            datasetId = await ckan.registerDataset(
-                {
-                    name: subtask.id,
-                    description: "Outputs for " + subtask.name,
-                    region: subtask.regionid,
-                    datatype: "file",
-                    time_period: subtask.dates,
-                    version: "1.0.0",
-                    limitations: "None",
-                    source: {
-                        name: "Tapis",
-                        url: "https://tapis.org",
-                        type: "file"
-                    },
-                    resources: []
-                },
-                prefs.data_catalog_extra.owner_organization_id
-            );
+            datasetId = prefs.data_catalog_extra.default_dataset_id;
         }
         return await tapisExecution.registerExecutionOutputs(executionId, isPublic, datasetId);
     }
