@@ -99,7 +99,10 @@ export class TapisExecutionService implements IExecutionService {
         model: Model,
         threadId: string,
         threadModelId: string
-    ): Promise<{ submittedExecutions: { execution: Execution; jobId: string }[]; failedExecutions: { execution: Execution; error: Error }[] }> {
+    ): Promise<{
+        submittedExecutions: { execution: Execution; jobId: string }[];
+        failedExecutions: { execution: Execution; error: Error }[];
+    }> {
         const submittedExecutions: { execution: Execution; jobId: string }[] = [];
         const failedExecutions: { execution: Execution; error: Error }[] = [];
 
@@ -109,6 +112,7 @@ export class TapisExecutionService implements IExecutionService {
                 const jobId = await this.submitSingleExecution(app, seed, model, threadId);
                 submittedExecutions.push({ execution: seed.execution, jobId });
             } catch (error) {
+                console.error("Error submitting single execution", JSON.stringify(error));
                 await this.handleSingleExecutionFailure(seed, error, threadModelId);
                 failedExecutions.push({ execution: seed.execution, error });
             }
@@ -126,15 +130,15 @@ export class TapisExecutionService implements IExecutionService {
         const name = this.generateValidJobName(app, seed.execution.id);
         const description = "Job for " + model.name + " execution " + seed.execution.id;
         const jobRequest = this.jobService.createJobRequest(app, seed, model, name, description);
-        
+
         console.log("Job request", JSON.stringify(jobRequest));
         const jobId = await this.submitJob(jobRequest);
-        
+
         await updateExecutionRunId(seed.execution.id, jobId);
-        
+
         const subscription = TapisJobSubscriptionService.createRequest(seed.execution.id, threadId);
         await this.jobSubscriptionService.submit(jobId, subscription);
-        
+
         return jobId;
     }
 
@@ -144,7 +148,7 @@ export class TapisExecutionService implements IExecutionService {
         threadModelId: string
     ): Promise<void> {
         console.error(`Failed to submit job for execution ${seed.execution.id}:`, error);
-        
+
         // Mark the individual execution as failed
         try {
             await TapisExecutionService.updateExecutionStatusOnGraphQl(
@@ -158,11 +162,13 @@ export class TapisExecutionService implements IExecutionService {
                 statusUpdateError
             );
         }
-        
+
         await decrementThreadModelSubmittedRuns(threadModelId);
     }
 
-    private handleSubmissionResults(failedExecutions: { execution: Execution; error: Error }[]): void {
+    private handleSubmissionResults(
+        failedExecutions: { execution: Execution; error: Error }[]
+    ): void {
         if (failedExecutions.length > 0) {
             if (failedExecutions.length === this.seeds.length) {
                 throw new Error("All jobs failed to submit");
