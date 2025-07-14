@@ -19,6 +19,7 @@ import {
 import problemStatementsService from "./problemStatementsService";
 import {
     convertApiUrlToW3Id,
+    convertModelConfigurationW3IdToApiUrl,
     fetchModelConfiguration,
     fetchModelConfigurationSetup
 } from "@/classes/mint/model-catalog-functions";
@@ -436,7 +437,7 @@ const subTasksService: SubTasksService = {
                                 formattedInputs.push({
                                     id: input.id,
                                     dataset: {
-                                        id: input.id,
+                                        id: "YOUR_DATASET_ID",
                                         resources: []
                                     }
                                 });
@@ -445,7 +446,7 @@ const subTasksService: SubTasksService = {
                     }
 
                     bindings.push({
-                        model_id: modelId,
+                        model_id: await convertModelConfigurationW3IdToApiUrl(modelId),
                         parameters: formattedParameters,
                         inputs: formattedInputs
                     });

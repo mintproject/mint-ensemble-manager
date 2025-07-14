@@ -3983,8 +3983,8 @@
     },
     "/problemStatements/{problemStatementId}/tasks/{taskId}/subtasks/{subtaskId}/models": {
       "post": {
-        "summary": "Add models to a subtask",
-        "description": "Adds models to a subtask",
+        "summary": "Select model configurations for a subtask",
+        "description": "Select and add ModelConfiguration or ModelConfigurationSetup instances to use in this subtask for execution",
         "security": [
           {
             "BearerAuth": [],
@@ -4035,7 +4035,7 @@
         },
         "responses": {
           "200": {
-            "description": "Models added successfully",
+            "description": "Model configurations selected and added to subtask successfully",
             "content": {
               "application/json": {
                 "schema": {
@@ -4064,8 +4064,8 @@
     },
     "/problemStatements/{problemStatementId}/tasks/{taskId}/subtasks/{subtaskId}/data": {
       "post": {
-        "summary": "Add data to a subtask",
-        "description": "Adds data to a subtask",
+        "summary": "Select data for a subtask",
+        "description": "Select the data to use in the subtask per ModelConfiguration/ModelConfigurationSetup. You can obtain a blueprint from the blueprint endpoint to see available data inputs",
         "security": [
           {
             "BearerAuth": [],
@@ -4116,7 +4116,7 @@
         },
         "responses": {
           "200": {
-            "description": "Data added successfully",
+            "description": "Data selected and configured for subtask successfully",
             "content": {
               "application/json": {
                 "schema": {
@@ -4470,10 +4470,10 @@
         }
       }
     },
-    "/problemStatements/{problemStatementId}/tasks/{taskId}/subtasks/{subtaskId}/bindings": {
+    "/problemStatements/{problemStatementId}/tasks/{taskId}/subtasks/{subtaskId}/blueprint": {
       "get": {
-        "summary": "Get all bindings (parameters and inputs) for a subtask",
-        "description": "Returns all parameter and data bindings for all models in a subtask",
+        "summary": "Get blueprint (parameters and inputs) for a subtask",
+        "description": "Returns the complete model configuration blueprint for all models in a subtask",
         "security": [
           {
             "BearerAuth": [],
@@ -4514,7 +4514,7 @@
         ],
         "responses": {
           "200": {
-            "description": "All bindings for the subtask",
+            "description": "Complete blueprint for the subtask",
             "content": {
               "application/json": {
                 "schema": {
