@@ -524,22 +524,38 @@ curl -X POST "https://ensemble-manager.mint.tacc.utexas.edu/v1/problemStatements
   -d '{
     "model_id": "http://api.models.mint.local/v1.8.0/modelconfigurations/f87802e0-b60f-4c9e-97fd-75fad348b7ee?username=mint@isi.edu",
     "parameters": [
-      {
-        "id": "https://w3id.org/okn/i/mint/a46a3d56-207e-4f47-a157-00b299b3536b",
-        "value": "Teff"
-      },
-      {
-        "id": "https://w3id.org/okn/i/mint/d4b84b70-01ee-4f14-a1fc-357f45af5c1d",
-        "value": ["100", "107", "114"]
-      },
-      {
-        "id": "https://w3id.org/okn/i/mint/e2cd6662-06f2-4d51-a2ab-111e9b84f7df",
-        "value": ["0", "150", "300"]
-      },
-      {
-        "id": "https://w3id.org/okn/i/mint/02cbd74e-40d4-49b9-9ea2-033dd0f461e0",
-        "value": "0.25"
-      }
+        {
+            "id": "https://w3id.org/okn/i/mint/768babb7-2685-4a16-b1ee-23623b225c47",
+            "value": "FALSE"
+        },
+        {
+            "id": "https://w3id.org/okn/i/mint/e2cd6662-06f2-4d51-a2ab-111e9b84f7df",
+            "value": "0"
+        },
+        {
+            "id": "https://w3id.org/okn/i/mint/02cbd74e-40d4-49b9-9ea2-033dd0f461e0",
+            "value": "0.05"
+        },
+        {
+            "id": "https://w3id.org/okn/i/mint/a46a3d56-207e-4f47-a157-00b299b3536b",
+            "value": "Maize"
+        },
+        {
+            "id": "https://w3id.org/okn/i/mint/a7607d91-a832-4f05-85f0-4b9e481ac8e1",
+            "value": "2017"
+        },
+        {
+            "id": "https://w3id.org/okn/i/mint/886ebf8c-6f0b-453d-a36c-fc8678c74109",
+            "value": "2000"
+        },
+        {
+            "id": "https://w3id.org/okn/i/mint/6dff2c27-b5b6-4e07-836e-c0075d41d333",
+            "value": "149"
+        },
+        {
+            "id": "https://w3id.org/okn/i/mint/d4b84b70-01ee-4f14-a1fc-357f45af5c1d",
+            "value": "100"
+        }
     ]
   }'
 ```
@@ -547,25 +563,40 @@ curl -X POST "https://ensemble-manager.mint.tacc.utexas.edu/v1/problemStatements
 **Copy-paste ready request body:**
 
 ```json
-// 6. Configure Parameters
 {
     "model_id": "http://api.models.mint.local/v1.8.0/modelconfigurations/f87802e0-b60f-4c9e-97fd-75fad348b7ee?username=mint@isi.edu",
     "parameters": [
         {
-            "id": "https://w3id.org/okn/i/mint/a46a3d56-207e-4f47-a157-00b299b3536b",
-            "value": "Teff"
-        },
-        {
-            "id": "https://w3id.org/okn/i/mint/d4b84b70-01ee-4f14-a1fc-357f45af5c1d",
-            "value": ["100", "107", "114"]
+            "id": "https://w3id.org/okn/i/mint/768babb7-2685-4a16-b1ee-23623b225c47",
+            "value": "FALSE"
         },
         {
             "id": "https://w3id.org/okn/i/mint/e2cd6662-06f2-4d51-a2ab-111e9b84f7df",
-            "value": ["0", "150", "300"]
+            "value": "0"
         },
         {
             "id": "https://w3id.org/okn/i/mint/02cbd74e-40d4-49b9-9ea2-033dd0f461e0",
-            "value": "0.25"
+            "value": "0.05"
+        },
+        {
+            "id": "https://w3id.org/okn/i/mint/a46a3d56-207e-4f47-a157-00b299b3536b",
+            "value": "Maize"
+        },
+        {
+            "id": "https://w3id.org/okn/i/mint/a7607d91-a832-4f05-85f0-4b9e481ac8e1",
+            "value": "2017"
+        },
+        {
+            "id": "https://w3id.org/okn/i/mint/886ebf8c-6f0b-453d-a36c-fc8678c74109",
+            "value": "2000"
+        },
+        {
+            "id": "https://w3id.org/okn/i/mint/6dff2c27-b5b6-4e07-836e-c0075d41d333",
+            "value": "149"
+        },
+        {
+            "id": "https://w3id.org/okn/i/mint/d4b84b70-01ee-4f14-a1fc-357f45af5c1d",
+            "value": "100"
         }
     ]
 }
@@ -589,7 +620,7 @@ curl -X POST "https://ensemble-manager.mint.tacc.utexas.edu/v1/problemStatements
           "resources": [
             {
               "id": "weather-soil-resource-id",
-              "url": "https://data.mint.isi.edu/files/cycles-weather-soil/oromia_2000_2017.tar.gz"
+              "url": "https://data.mint.isi.edu/files/cycles-input-data/oromia/weather-soil/Arsi_Amigna_7.884865046N_40.19527054E.zip"
             }
           ]
         }
@@ -601,7 +632,7 @@ curl -X POST "https://ensemble-manager.mint.tacc.utexas.edu/v1/problemStatements
           "resources": [
             {
               "id": "crops-config-resource-id",
-              "url": "https://data.mint.isi.edu/files/cycles-crops/teff_crops.zip"
+              "url": "https://raw.githubusercontent.com/mintproject/MINT-WorkflowDomain/master/WINGSWorkflowComponents/cycles-0.10.2-beta-collection/data/crops-horn-of-africa.crop"
             }
           ]
         }
@@ -624,7 +655,7 @@ curl -X POST "https://ensemble-manager.mint.tacc.utexas.edu/v1/problemStatements
                 "resources": [
                     {
                         "id": "weather-soil-resource-id",
-                        "url": "https://data.mint.isi.edu/files/cycles-weather-soil/oromia_2000_2017.tar.gz"
+                        "url": "https://data.mint.isi.edu/files/cycles-input-data/oromia/weather-soil/Arsi_Amigna_7.884865046N_40.19527054E.zip"
                     }
                 ]
             }
@@ -636,7 +667,7 @@ curl -X POST "https://ensemble-manager.mint.tacc.utexas.edu/v1/problemStatements
                 "resources": [
                     {
                         "id": "crops-config-resource-id",
-                        "url": "https://data.mint.isi.edu/files/cycles-crops/teff_crops.zip"
+                        "url": "https://raw.githubusercontent.com/mintproject/MINT-WorkflowDomain/master/WINGSWorkflowComponents/cycles-0.10.2-beta-collection/data/crops-horn-of-africa.crop"
                     }
                 ]
             }
