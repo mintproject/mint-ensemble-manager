@@ -4470,6 +4470,146 @@
         }
       }
     },
+    "/problemStatements/{problemStatementId}/tasks/{taskId}/subtasks/{subtaskId}/bindings": {
+      "get": {
+        "summary": "Get all bindings (parameters and inputs) for a subtask",
+        "description": "Returns all parameter and data bindings for all models in a subtask",
+        "security": [
+          {
+            "BearerAuth": [],
+            "oauth2": []
+          }
+        ],
+        "tags": [
+          "Subtasks"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "problemStatementId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The problem statement ID"
+          },
+          {
+            "in": "path",
+            "name": "taskId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The task ID"
+          },
+          {
+            "in": "path",
+            "name": "subtaskId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The subtask ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "All bindings for the subtask",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "model_id": {
+                        "type": "string",
+                        "description": "The model identifier",
+                        "example": "https://w3id.org/okn/i/mint/c07a6f98-6339-4033-84b0-6cd7daca6284"
+                      },
+                      "parameters": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string",
+                              "description": "Parameter identifier",
+                              "example": "https://w3id.org/okn/i/mint/ds_flow"
+                            },
+                            "value": {
+                              "type": "string",
+                              "description": "Parameter value",
+                              "example": "150"
+                            }
+                          }
+                        }
+                      },
+                      "inputs": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string",
+                              "description": "Input identifier",
+                              "example": "https://w3id.org/okn/i/mint/ce32097e-641d-42af-b3f1-477a24cf015a"
+                            },
+                            "dataset": {
+                              "type": "object",
+                              "properties": {
+                                "id": {
+                                  "type": "string",
+                                  "description": "Dataset identifier",
+                                  "example": "18400624-423c-42b5-ad56-6c73322584bd"
+                                },
+                                "resources": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "object",
+                                    "properties": {
+                                      "id": {
+                                        "type": "string",
+                                        "description": "Resource identifier",
+                                        "example": "9c7b25c4-8cea-4965-a07a-d9b3867f18a9"
+                                      },
+                                      "url": {
+                                        "type": "string",
+                                        "description": "Resource URL",
+                                        "example": "https://ckan.tacc.utexas.edu/dataset/18400624-423c-42b5-ad56-6c73322584bd/resource/9c7b25c4-8cea-4965-a07a-d9b3867f18a9/download/barton_springs_2001_2010average.wel"
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Default error response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/problemStatements/{problemStatementId}/tasks/{taskId}/subtasks/{subtaskId}/outputs": {
       "post": {
         "summary": "Publish all executions for a subtask",

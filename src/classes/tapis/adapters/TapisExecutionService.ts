@@ -9,6 +9,13 @@ import { TapisJobService } from "@/classes/tapis/adapters/TapisJobService";
 import errorDecoder from "@/classes/tapis/utils/errorDecoder";
 import { TapisJobSubscriptionService } from "@/classes/tapis/adapters/TapisJobSubscriptionService";
 import { BadRequestError, NotFoundError } from "@/classes/common/errors";
+
+interface SerializableError {
+    message: string;
+    stack?: string;
+    name: string;
+    cause?: unknown;
+}
 import {
     getExecution,
     getModelOutputsByModelId,
@@ -101,10 +108,10 @@ export class TapisExecutionService implements IExecutionService {
         threadModelId: string
     ): Promise<{
         submittedExecutions: { execution: Execution; jobId: string }[];
-        failedExecutions: { execution: Execution; error: Error }[];
+        failedExecutions: { execution: Execution; error: SerializableError }[];
     }> {
         const submittedExecutions: { execution: Execution; jobId: string }[] = [];
-        const failedExecutions: { execution: Execution; error: Error }[] = [];
+        const failedExecutions: { execution: Execution; error: SerializableError }[] = [];
 
         for (const seed of this.seeds) {
             console.log("Processing seed", JSON.stringify(seed));
@@ -114,7 +121,16 @@ export class TapisExecutionService implements IExecutionService {
             } catch (error) {
                 console.error("Error submitting single execution", JSON.stringify(error));
                 await this.handleSingleExecutionFailure(seed, error, threadModelId);
-                failedExecutions.push({ execution: seed.execution, error });
+                
+                // Create a serializable error object
+                const serializableError: SerializableError = {
+                    message: error instanceof Error ? error.message : String(error),
+                    stack: error instanceof Error ? error.stack : undefined,
+                    name: error instanceof Error ? error.name : 'Error',
+                    ...(error instanceof Error && (error as any).cause && { cause: (error as any).cause })
+                };
+                
+                failedExecutions.push({ execution: seed.execution, error: serializableError });
             }
         }
 
@@ -147,7 +163,13 @@ export class TapisExecutionService implements IExecutionService {
         error: Error,
         threadModelId: string
     ): Promise<void> {
-        console.error(`Failed to submit job for execution ${seed.execution.id}:`, error);
+        console.error(`Failed to submit job for execution ${seed.execution.id}:`, {
+            message: error.message,
+            stack: error.stack,
+            name: error.name,
+            executionId: seed.execution.id,
+            modelId: seed.execution.modelid
+        });
 
         // Mark the individual execution as failed
         try {
@@ -167,7 +189,7 @@ export class TapisExecutionService implements IExecutionService {
     }
 
     private handleSubmissionResults(
-        failedExecutions: { execution: Execution; error: Error }[]
+        failedExecutions: { execution: Execution; error: SerializableError }[]
     ): void {
         if (failedExecutions.length > 0) {
             if (failedExecutions.length === this.seeds.length) {
@@ -447,7 +469,8 @@ export class TapisExecutionService implements IExecutionService {
     private async getExecutionResultsFromJob(
         jobUuid: string,
         execution: Execution,
-        isPublic: boolean
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        _isPublic: boolean
     ): Promise<Execution_Result[]> {
         const outputFolders = [
             "",

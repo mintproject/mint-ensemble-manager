@@ -106,6 +106,22 @@ export interface SubTasksService {
         model_id: string,
         authorizationHeader: string
     ): Promise<DatasetSpecification[]>;
+    getBlueprint(
+        subtaskId: string,
+        authorizationHeader: string
+    ): Promise<
+        Array<{
+            model_id: string;
+            parameters: Array<{ id: string; value: string }>;
+            inputs: Array<{
+                id: string;
+                dataset: {
+                    id: string;
+                    resources: Array<{ id: string; url: string }>;
+                };
+            }>;
+        }>
+    >;
 }
 
 const subTasksService: SubTasksService = {
@@ -362,6 +378,91 @@ const subTasksService: SubTasksService = {
         return await useModelsService.getModelParametersByModelId(model_id);
     },
 
+    async getBlueprint(subtaskId: string, authorizationHeader: string) {
+        const access_token = getTokenFromAuthorizationHeader(authorizationHeader);
+        if (!access_token) {
+            throw new UnauthorizedError("Invalid authorization header");
+        }
+
+        const subtask = await getThread(subtaskId);
+        if (!subtask) {
+            throw new NotFoundError("Subtask not found");
+        }
+
+        const bindings: Array<{
+            model_id: string;
+            parameters: Array<{ id: string; value: string }>;
+            inputs: Array<{
+                id: string;
+                dataset: {
+                    id: string;
+                    resources: Array<{ id: string; url: string }>;
+                };
+            }>;
+        }> = [];
+
+        if (subtask.model_ensembles) {
+            for (const modelId of Object.keys(subtask.model_ensembles)) {
+                const model = await getModel(modelId);
+                if (!model) {
+                    throw new NotFoundError("Model not found");
+                }
+
+                try {
+                    const formattedParameters: Array<{ id: string; value: string }> = [];
+
+                    if (model.input_parameters && Array.isArray(model.input_parameters)) {
+                        for (const param of model.input_parameters) {
+                            if (param && param.id) {
+                                formattedParameters.push({
+                                    id: param.id,
+                                    value: param.default || ""
+                                });
+                            }
+                        }
+                    }
+
+                    const formattedInputs: Array<{
+                        id: string;
+                        dataset: {
+                            id: string;
+                            resources: Array<{ id: string; url: string }>;
+                        };
+                    }> = [];
+
+                    if (model.input_files && Array.isArray(model.input_files)) {
+                        for (const input of model.input_files) {
+                            if (input && input.id) {
+                                formattedInputs.push({
+                                    id: input.id,
+                                    dataset: {
+                                        id: input.id,
+                                        resources: []
+                                    }
+                                });
+                            }
+                        }
+                    }
+
+                    bindings.push({
+                        model_id: modelId,
+                        parameters: formattedParameters,
+                        inputs: formattedInputs
+                    });
+                } catch (error) {
+                    console.warn(`Failed to get bindings for model ${modelId}:`, error);
+                    bindings.push({
+                        model_id: modelId,
+                        parameters: [],
+                        inputs: []
+                    });
+                }
+            }
+        }
+
+        return bindings;
+    },
+
     async submitSubtask(subtaskId: string, model_id: string, authorizationHeader: string) {
         const w3id = convertApiUrlToW3Id(model_id);
         const access_token = getTokenFromAuthorizationHeader(authorizationHeader);
@@ -387,7 +488,7 @@ const subTasksService: SubTasksService = {
         // Collect all executions
 
         let submissionResult: SubmissionResult = { submittedExecutions: [], failedExecutions: [] };
-        
+
         if (executionCreation.executionToBeRun.length > 0) {
             submissionResult = await executionService.submitExecutions(
                 executionCreation.executionToBeRun,
@@ -398,9 +499,15 @@ const subTasksService: SubTasksService = {
                 subtask.model_ensembles[w3id].id
             );
             if (submissionResult.failedExecutions.length > 0) {
-                console.warn("Some executions failed to submit:", submissionResult.failedExecutions);
+                console.warn(
+                    "Some executions failed to submit:",
+                    submissionResult.failedExecutions
+                );
             }
-            console.log("Successfully submitted executions:", submissionResult.submittedExecutions.length);
+            console.log(
+                "Successfully submitted executions:",
+                submissionResult.submittedExecutions.length
+            );
         } else {
             console.log("No executions to run");
         }
