@@ -1,4 +1,4 @@
-import { Thread, ThreadInfo, Execution } from "@/classes/mint/mint-types";
+import { Thread, ThreadInfo, Execution, ModelParameter } from "@/classes/mint/mint-types";
 import {
     addThread,
     insertModel,
@@ -109,11 +109,12 @@ export interface SubTasksService {
     ): Promise<DatasetSpecification[]>;
     getBlueprint(
         subtaskId: string,
-        authorizationHeader: string
+        authorizationHeader: string,
+        detailed?: boolean
     ): Promise<
         Array<{
             model_id: string;
-            parameters: Array<{ id: string; value: string }>;
+            parameters: Array<{ id: string; value: string } | ModelParameter>;
             inputs: Array<{
                 id: string;
                 dataset: {
@@ -379,7 +380,7 @@ const subTasksService: SubTasksService = {
         return await useModelsService.getModelParametersByModelId(model_id);
     },
 
-    async getBlueprint(subtaskId: string, authorizationHeader: string) {
+    async getBlueprint(subtaskId: string, authorizationHeader: string, detailed: boolean = false) {
         const access_token = getTokenFromAuthorizationHeader(authorizationHeader);
         if (!access_token) {
             throw new UnauthorizedError("Invalid authorization header");
@@ -392,7 +393,7 @@ const subTasksService: SubTasksService = {
 
         const bindings: Array<{
             model_id: string;
-            parameters: Array<{ id: string; value: string }>;
+            parameters: Array<{ id: string; value: string } | ModelParameter>;
             inputs: Array<{
                 id: string;
                 dataset: {
@@ -410,15 +411,22 @@ const subTasksService: SubTasksService = {
                 }
 
                 try {
-                    const formattedParameters: Array<{ id: string; value: string }> = [];
+                    const formattedParameters: Array<
+                        { id: string; value: string } | ModelParameter
+                    > = [];
 
                     if (model.input_parameters && Array.isArray(model.input_parameters)) {
                         for (const param of model.input_parameters) {
                             if (param && param.id) {
-                                formattedParameters.push({
-                                    id: param.id,
-                                    value: param.default || ""
-                                });
+                                if (detailed) {
+                                    formattedParameters.push(param);
+                                } else {
+                                    const basicParam = {
+                                        id: param.id,
+                                        value: param.value || param.default || ""
+                                    };
+                                    formattedParameters.push(basicParam);
+                                }
                             }
                         }
                     }
@@ -445,11 +453,12 @@ const subTasksService: SubTasksService = {
                         }
                     }
 
-                    bindings.push({
+                    const binding = {
                         model_id: await convertModelConfigurationW3IdToApiUrl(modelId),
                         parameters: formattedParameters,
                         inputs: formattedInputs
-                    });
+                    };
+                    bindings.push(binding);
                 } catch (error) {
                     console.warn(`Failed to get bindings for model ${modelId}:`, error);
                     bindings.push({

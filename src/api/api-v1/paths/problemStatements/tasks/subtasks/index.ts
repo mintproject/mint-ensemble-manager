@@ -784,6 +784,13 @@ const subtasksRouter = (): Router => {
      *         schema:
      *           type: string
      *         description: The subtask ID
+     *       - in: query
+     *         name: detailed
+     *         required: false
+     *         schema:
+     *           type: boolean
+     *           default: false
+     *         description: If true, returns full ModelParameter details. If false, returns basic info (id, value) only.
      *     responses:
      *       200:
      *         description: Complete blueprint for the subtask
@@ -800,17 +807,11 @@ const subtasksRouter = (): Router => {
      *                     example: "https://w3id.org/okn/i/mint/c07a6f98-6339-4033-84b0-6cd7daca6284"
      *                   parameters:
      *                     type: array
+     *                     description: Returns BasicModelParameter (id, value) by default, or full ModelParameter when detailed=true
      *                     items:
-     *                       type: object
-     *                       properties:
-     *                         id:
-     *                           type: string
-     *                           description: Parameter identifier
-     *                           example: "https://w3id.org/okn/i/mint/ds_flow"
-     *                         value:
-     *                           type: string
-     *                           description: Parameter value
-     *                           example: "150"
+     *                       anyOf:
+     *                         - $ref: '#/components/schemas/BasicModelParameter'
+     *                         - $ref: '#/components/schemas/ModelParameter'
      *                   inputs:
      *                     type: array
      *                     items:
@@ -853,7 +854,7 @@ const subtasksRouter = (): Router => {
     router.get(
         "/:subtaskId/blueprint",
         async (
-            req: Request<{ subtaskId: string }>,
+            req: Request<{ subtaskId: string }, unknown, unknown, { detailed?: string | boolean }>,
             res: Response
         ) => {
             const authorizationHeader = req.headers.authorization;
@@ -861,10 +862,13 @@ const subtasksRouter = (): Router => {
                 return res.status(401).json({ message: "Authorization header is required" });
             }
             const { subtaskId } = req.params;
+            const { detailed } = req.query;
+            const isDetailed = detailed === true || detailed === "true";
             try {
                 const blueprint = await subTasksService.getBlueprint(
                     subtaskId,
-                    authorizationHeader
+                    authorizationHeader,
+                    isDetailed
                 );
                 res.status(200).json(blueprint);
             } catch (error) {
