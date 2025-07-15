@@ -294,10 +294,15 @@ GET /problemStatements/{problemStatementId}/tasks/{taskId}/subtasks/{subtaskId}
 **Get Blueprint for a Subtask**
 
 ```http
-GET /problemStatements/{problemStatementId}/tasks/{taskId}/subtasks/{subtaskId}/blueprint
+GET /problemStatements/{problemStatementId}/tasks/{taskId}/subtasks/{subtaskId}/blueprint?detailed={boolean}
 ```
 
 This endpoint returns the complete model configuration blueprint for all models in a subtask, showing available parameters and data inputs.
+
+**Query Parameters:**
+- `detailed` (optional, boolean, default: false): Controls the level of parameter detail returned
+  - `false` or omitted: Returns basic parameter info (id, value) only
+  - `true`: Returns full ModelParameter details including type, description, min, max, etc.
 
 ## Programmatic Workflow Guide
 
@@ -447,10 +452,18 @@ curl -X GET "https://ensemble-manager.mint.tacc.utexas.edu/v1/problemStatements/
   -H "Authorization: Bearer $JWT_TOKEN"
 ```
 
+**For detailed parameter information (including type, description, min/max values):**
+
+```bash
+curl -X GET "https://ensemble-manager.mint.tacc.utexas.edu/v1/problemStatements/{problemStatementId}/tasks/{taskId}/subtasks/{subtaskId}/blueprint?detailed=true" \
+  -H "Authorization: Bearer $JWT_TOKEN"
+```
+
 **Copy-paste ready:**
 
 ```
 // 5. Get Blueprint - No request body needed (GET request)
+// Add ?detailed=true for full parameter details
 ```
 
 **Example Blueprint Response:**
@@ -685,10 +698,18 @@ curl -X GET "https://ensemble-manager.mint.tacc.utexas.edu/v1/problemStatements/
   -H "Authorization: Bearer $JWT_TOKEN"
 ```
 
+**For detailed verification with full parameter information:**
+
+```bash
+curl -X GET "https://ensemble-manager.mint.tacc.utexas.edu/v1/problemStatements/{problemStatementId}/tasks/{taskId}/subtasks/{subtaskId}/blueprint?detailed=true" \
+  -H "Authorization: Bearer $JWT_TOKEN"
+```
+
 **Copy-paste ready:**
 
 ```
 // 8. Verify Configuration - No request body needed (GET request)
+// Add ?detailed=true for full parameter details
 ```
 
 #### 9. Submit for Execution
@@ -796,6 +817,8 @@ curl -X POST "https://ensemble-manager.mint.tacc.utexas.edu/v1/problemStatements
 -   Always call the `/blueprint` endpoint after adding models
 -   The blueprint shows you exactly what parameters and inputs are available
 -   Use blueprint information to guide your parameter and data configuration
+-   Use `?detailed=true` to get comprehensive parameter metadata (type, description, min/max values, etc.)
+-   Default blueprint returns basic parameter info (id, value) for faster responses
 
 #### Parameter Values
 
