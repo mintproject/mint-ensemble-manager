@@ -1090,7 +1090,10 @@
         "description": "A Subtask creation request definition",
         "required": [
           "name",
-          "dates"
+          "dates",
+          "driving_variables",
+          "response_variables",
+          "regionid"
         ],
         "properties": {
           "name": {

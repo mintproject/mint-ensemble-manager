@@ -40,7 +40,11 @@ import { getConfiguration } from "@/classes/mint/mint-functions";
 import { MockExecutionService } from "@/classes/common/__tests__/mocks/MockExecutionService";
 import { ExecutionCreation } from "@/classes/common/ExecutionCreation";
 import { DatasetSpecification } from "@mintproject/modelcatalog_client/dist";
-import { getThread as getThreadV2 } from "@/classes/graphql/graphql_functions_v2";
+import {
+    getThread as getThreadV2,
+    checkVariableExistsById as checkVariableExistsByIdV2,
+    checkRegionExistsById as checkRegionExistsByIdV2
+} from "@/classes/graphql/graphql_functions_v2";
 
 function getExecutionEngineService(
     executionEngine: string,
@@ -124,6 +128,8 @@ export interface SubTasksService {
             }>;
         }>
     >;
+    checkVariableExistsByName(variableName: string, authorizationHeader: string): Promise<boolean>;
+    checkRegionExistsById(regionId: string, authorizationHeader: string): Promise<boolean>;
 }
 
 const subTasksService: SubTasksService = {
@@ -205,6 +211,34 @@ const subTasksService: SubTasksService = {
 
         if (task.problem_statement_id !== problemStatementId) {
             throw new NotFoundError("Task not found in the specified problem statement");
+        }
+
+        // Validate driving variables exist
+        if (subtask.driving_variables && subtask.driving_variables.length > 0) {
+            for (const variableName of subtask.driving_variables) {
+                const exists = await checkVariableExistsByIdV2(variableName, access_token);
+                if (!exists) {
+                    throw new BadRequestError(`Driving variable '${variableName}' does not exist`);
+                }
+            }
+        }
+
+        // Validate response variables exist
+        if (subtask.response_variables && subtask.response_variables.length > 0) {
+            for (const variableName of subtask.response_variables) {
+                const exists = await checkVariableExistsByIdV2(variableName, access_token);
+                if (!exists) {
+                    throw new BadRequestError(`Response variable '${variableName}' does not exist`);
+                }
+            }
+        }
+
+        // Validate region exists
+        if (subtask.regionid) {
+            const regionExists = await checkRegionExistsByIdV2(subtask.regionid, access_token);
+            if (!regionExists) {
+                throw new BadRequestError(`Region '${subtask.regionid}' does not exist`);
+            }
         }
 
         subtask.events = [
@@ -528,6 +562,27 @@ const subTasksService: SubTasksService = {
             executions: executionCreation.executionToBeRun,
             submissionResult
         };
+    },
+
+    async checkVariableExistsByName(
+        variableName: string,
+        authorizationHeader: string
+    ): Promise<boolean> {
+        const access_token = getTokenFromAuthorizationHeader(authorizationHeader);
+        if (!access_token) {
+            throw new UnauthorizedError("Invalid authorization header");
+        }
+
+        return await checkVariableExistsByIdV2(variableName, access_token);
+    },
+
+    async checkRegionExistsById(regionId: string, authorizationHeader: string): Promise<boolean> {
+        const access_token = getTokenFromAuthorizationHeader(authorizationHeader);
+        if (!access_token) {
+            throw new UnauthorizedError("Invalid authorization header");
+        }
+
+        return await checkRegionExistsByIdV2(regionId, access_token);
     }
 };
 

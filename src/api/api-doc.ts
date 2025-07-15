@@ -1020,7 +1020,7 @@ const SubtaskSchema = {
     CreateSubtaskRequest: {
         type: "object",
         description: "A Subtask creation request definition",
-        required: ["name", "dates"],
+        required: ["name", "dates", "driving_variables", "response_variables", "regionid"],
         properties: {
             name: {
                 description: "The name of the subtask",
