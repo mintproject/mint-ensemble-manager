@@ -300,9 +300,10 @@ GET /problemStatements/{problemStatementId}/tasks/{taskId}/subtasks/{subtaskId}/
 This endpoint returns the complete model configuration blueprint for all models in a subtask, showing available parameters and data inputs.
 
 **Query Parameters:**
-- `detailed` (optional, boolean, default: false): Controls the level of parameter detail returned
-  - `false` or omitted: Returns basic parameter info (id, value) only
-  - `true`: Returns full ModelParameter details including type, description, min, max, etc.
+
+-   `detailed` (optional, boolean, default: false): Controls the level of parameter detail returned
+    -   `false` or omitted: Returns basic parameter info (id, value) only
+    -   `true`: Returns full ModelParameter details including type, description, min, max, etc.
 
 ## Programmatic Workflow Guide
 
@@ -344,7 +345,6 @@ curl -X POST "https://ensemble-manager.mint.tacc.utexas.edu/v1/problemStatements
 **Copy-paste ready request body:**
 
 ```json
-// 1. Create Problem Statement
 {
     "name": "Ethiopia Agricultural Productivity Analysis 2024",
     "regionid": "ethiopia",
@@ -376,7 +376,6 @@ curl -X POST "https://ensemble-manager.mint.tacc.utexas.edu/v1/problemStatements
 **Copy-paste ready request body:**
 
 ```json
-// 2. Create Task
 {
     "name": "Crop Yield Analysis",
     "dates": {
@@ -407,7 +406,6 @@ curl -X POST "https://ensemble-manager.mint.tacc.utexas.edu/v1/problemStatements
 **Copy-paste ready request body:**
 
 ```json
-// 3. Create Subtask
 {
     "name": "Cycles Agricultural Analysis",
     "dates": {
@@ -435,7 +433,6 @@ curl -X POST "https://ensemble-manager.mint.tacc.utexas.edu/v1/problemStatements
 **Copy-paste ready request body:**
 
 ```json
-// 4. Add Models
 {
     "modelIds": [
         "http://api.models.mint.local/v1.8.0/modelconfigurations/f87802e0-b60f-4c9e-97fd-75fad348b7ee?username=mint@isi.edu"
@@ -457,13 +454,6 @@ curl -X GET "https://ensemble-manager.mint.tacc.utexas.edu/v1/problemStatements/
 ```bash
 curl -X GET "https://ensemble-manager.mint.tacc.utexas.edu/v1/problemStatements/{problemStatementId}/tasks/{taskId}/subtasks/{subtaskId}/blueprint?detailed=true" \
   -H "Authorization: Bearer $JWT_TOKEN"
-```
-
-**Copy-paste ready:**
-
-```
-// 5. Get Blueprint - No request body needed (GET request)
-// Add ?detailed=true for full parameter details
 ```
 
 **Example Blueprint Response:**
@@ -657,7 +647,6 @@ curl -X POST "https://ensemble-manager.mint.tacc.utexas.edu/v1/problemStatements
 **Copy-paste ready request body:**
 
 ```json
-// 7. Bind Data
 {
     "model_id": "http://api.models.mint.local/v1.8.0/modelconfigurations/f87802e0-b60f-4c9e-97fd-75fad348b7ee?username=mint@isi.edu",
     "data": [
@@ -728,7 +717,6 @@ curl -X POST "https://ensemble-manager.mint.tacc.utexas.edu/v1/problemStatements
 **Copy-paste ready request body:**
 
 ```json
-// 9. Submit for Execution
 {
     "model_id": "http://api.models.mint.local/v1.8.0/modelconfigurations/f87802e0-b60f-4c9e-97fd-75fad348b7ee?username=mint@isi.edu"
 }
@@ -774,7 +762,6 @@ curl -X POST "https://ensemble-manager.mint.tacc.utexas.edu/v1/problemStatements
 **Copy-paste ready request body:**
 
 ```json
-// Alternative: One-Step Setup
 {
     "model_id": "http://api.models.mint.local/v1.8.0/modelconfigurations/f87802e0-b60f-4c9e-97fd-75fad348b7ee?username=mint@isi.edu",
     "parameters": [
