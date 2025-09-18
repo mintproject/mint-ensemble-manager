@@ -1,7 +1,7 @@
 import { Apps, Jobs } from "@tapis/tapis-typescript";
 import { Execution, Execution_Result, Model, Region } from "@/classes/mint/mint-types";
 import { TapisComponent, TapisComponentSeed } from "@/classes/tapis/typing";
-import { IExecutionService, ExecutionJob, SubmissionResult } from "@/interfaces/IExecutionService";
+import { IExecutionService, ExecutionJob, SubmissionResult, SchedulingParameters } from "@/interfaces/IExecutionService";
 import apiGenerator from "@/classes/tapis/utils/apiGenerator";
 import { getInputsParameters } from "@/classes/tapis/helpers";
 import { getInputDatasets } from "@/classes/tapis/helpers";
@@ -78,7 +78,8 @@ export class TapisExecutionService implements IExecutionService {
         region: Region,
         component: TapisComponent,
         threadId: string,
-        threadModelId: string
+        threadModelId: string,
+        schedulingParameters?: SchedulingParameters
     ): Promise<SubmissionResult> {
         try {
             const app = await this.loadTapisApp(component);
@@ -90,7 +91,8 @@ export class TapisExecutionService implements IExecutionService {
                 app,
                 model,
                 threadId,
-                threadModelId
+                threadModelId,
+                schedulingParameters
             );
 
             this.handleSubmissionResults(failedExecutions);
@@ -105,7 +107,8 @@ export class TapisExecutionService implements IExecutionService {
         app: Apps.TapisApp,
         model: Model,
         threadId: string,
-        threadModelId: string
+        threadModelId: string,
+        schedulingParameters?: SchedulingParameters
     ): Promise<{
         submittedExecutions: { execution: Execution; jobId: string }[];
         failedExecutions: { execution: Execution; error: Error }[];
@@ -116,7 +119,7 @@ export class TapisExecutionService implements IExecutionService {
         for (const seed of this.seeds) {
             console.log("Processing seed", JSON.stringify(seed));
             try {
-                const jobId = await this.submitSingleExecution(app, seed, model, threadId);
+                const jobId = await this.submitSingleExecution(app, seed, model, threadId, schedulingParameters);
                 submittedExecutions.push({ execution: seed.execution, jobId });
             } catch (error) {
                 console.error("Error submitting single execution", JSON.stringify(error));
@@ -142,11 +145,12 @@ export class TapisExecutionService implements IExecutionService {
         app: Apps.TapisApp,
         seed: TapisComponentSeed,
         model: Model,
-        threadId: string
+        threadId: string,
+        schedulingParameters?: SchedulingParameters
     ): Promise<string> {
         const name = this.generateValidJobName(app, seed.execution.id);
         const description = "Job for " + model.name + " execution " + seed.execution.id;
-        const jobRequest = this.jobService.createJobRequest(app, seed, model, name, description);
+        const jobRequest = this.jobService.createJobRequest(app, seed, model, name, description, schedulingParameters);
 
         console.log("Job request", JSON.stringify(jobRequest));
         const jobId = await this.submitJob(jobRequest);

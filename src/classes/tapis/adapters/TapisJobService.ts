@@ -1,6 +1,7 @@
 import { Apps, Jobs } from "@tapis/tapis-typescript";
 import { DataResource, Model } from "@/classes/mint/mint-types";
 import { TapisComponentSeed } from "@/classes/tapis/typing";
+import { SchedulingParameters, DEFAULT_SCHEDULING_PARAMETERS } from "@/interfaces/IExecutionService";
 
 export class TapisJobService {
     private static readonly ALLOCATION = "PT2050-DataX";
@@ -28,7 +29,8 @@ export class TapisJobService {
         seed: TapisComponentSeed,
         model: Model,
         name: string,
-        description: string
+        description: string,
+        schedulingParameters?: SchedulingParameters
     ): Jobs.ReqSubmitJob => {
         const jobFileInputs = this.createJobFileInputsFromSeed(seed, app, model);
         const jobParameterSet: Jobs.JobParameterSet = {
@@ -45,15 +47,21 @@ export class TapisJobService {
             envVariables: []
         };
 
+        const effectiveSchedulingParams = {
+            ...DEFAULT_SCHEDULING_PARAMETERS,
+            ...schedulingParameters
+        };
+
         const request: Jobs.ReqSubmitJob = {
             name: name,
             description: description,
             appId: app.id,
             appVersion: app.version,
             fileInputs: jobFileInputs,
-            nodeCount: app.jobAttributes?.nodeCount || 1,
-            coresPerNode: app.jobAttributes?.coresPerNode || 1,
-            maxMinutes: 60,
+            nodeCount: effectiveSchedulingParams.nodeCount || app.jobAttributes?.nodeCount || DEFAULT_SCHEDULING_PARAMETERS.nodeCount,
+            coresPerNode: effectiveSchedulingParams.coresPerNode || app.jobAttributes?.coresPerNode || DEFAULT_SCHEDULING_PARAMETERS.coresPerNode,
+            memoryMB: effectiveSchedulingParams.memoryMB,
+            maxMinutes: effectiveSchedulingParams.maxMinutes,
             archiveSystemId: "ls6",
             archiveSystemDir:
                 "HOST_EVAL($WORK)/tapis-jobs-archive/${JobCreateDate}/${JobName}-${JobUUID}",

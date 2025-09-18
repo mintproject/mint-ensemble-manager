@@ -23,6 +23,20 @@ export interface SubmissionResult {
     failedExecutions: { execution: Execution; error: Error }[];
 }
 
+export interface SchedulingParameters {
+    coresPerNode?: number;
+    memoryMB?: number;
+    maxMinutes?: number;
+    nodeCount?: number;
+}
+
+export const DEFAULT_SCHEDULING_PARAMETERS: SchedulingParameters = {
+    coresPerNode: 1,
+    memoryMB: 10000,
+    maxMinutes: 60,
+    nodeCount: 1
+};
+
 /**
  * Interface defining the contract for execution service adapters
  */
@@ -33,7 +47,8 @@ export interface IExecutionService {
         region: Region,
         component: TapisComponent,
         threadId: string,
-        threadModelId: string
+        threadModelId: string,
+        schedulingParameters?: SchedulingParameters
     ): Promise<SubmissionResult>;
     verifyComponent(component: TapisComponent): void;
 }

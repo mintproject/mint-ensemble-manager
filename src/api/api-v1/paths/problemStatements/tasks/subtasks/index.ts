@@ -617,7 +617,37 @@ const subtasksRouter = (): Router => {
      *       content:
      *         application/json:
      *           schema:
-     *             $ref: '#/components/schemas/SubmitSubtaskRequest'
+     *             type: object
+     *             required:
+     *               - model_id
+     *             properties:
+     *               model_id:
+     *                 type: string
+     *                 description: The model ID to submit
+     *               schedulingParameters:
+     *                 type: object
+     *                 description: Optional scheduling parameters for job execution
+     *                 properties:
+     *                   coresPerNode:
+     *                     type: integer
+     *                     minimum: 1
+     *                     description: Number of cores per node (default: 1)
+     *                     example: 2
+     *                   memoryMB:
+     *                     type: integer
+     *                     minimum: 1
+     *                     description: Memory in MB (default: 10000)
+     *                     example: 16000
+     *                   maxMinutes:
+     *                     type: integer
+     *                     minimum: 1
+     *                     description: Maximum runtime in minutes (default: 60)
+     *                     example: 120
+     *                   nodeCount:
+     *                     type: integer
+     *                     minimum: 1
+     *                     description: Number of nodes (default: 1)
+     *                     example: 1
      *     responses:
      *       200:
      *         description: Subtask submitted successfully
@@ -643,6 +673,12 @@ const subtasksRouter = (): Router => {
                 unknown,
                 {
                     model_id: string;
+                    schedulingParameters?: {
+                        coresPerNode?: number;
+                        memoryMB?: number;
+                        maxMinutes?: number;
+                        nodeCount?: number;
+                    };
                 }
             >,
             res: Response
@@ -652,12 +688,13 @@ const subtasksRouter = (): Router => {
                 return res.status(401).json({ message: "Authorization header is required" });
             }
             const { subtaskId } = req.params;
-            const { model_id } = req.body;
+            const { model_id, schedulingParameters } = req.body;
             try {
                 const result = await subTasksService.submitSubtask(
                     subtaskId,
                     model_id,
-                    authorizationHeader
+                    authorizationHeader,
+                    schedulingParameters
                 );
                 res.status(200).json(result);
             } catch (error) {

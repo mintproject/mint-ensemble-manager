@@ -34,7 +34,7 @@ import {
     SetupModelConfigurationAndBindingsRequest
 } from "../paths/problemStatements/tasks/subtasks";
 import useModelsService from "./useModelsService";
-import { IExecutionService, SubmissionResult } from "@/interfaces/IExecutionService";
+import { IExecutionService, SubmissionResult, SchedulingParameters } from "@/interfaces/IExecutionService";
 import { TapisExecutionService } from "@/classes/tapis/adapters/TapisExecutionService";
 import { getConfiguration } from "@/classes/mint/mint-functions";
 import { MockExecutionService } from "@/classes/common/__tests__/mocks/MockExecutionService";
@@ -76,7 +76,8 @@ export interface SubTasksService {
     submitSubtask(
         subtaskId: string,
         model_id: string,
-        authorizationHeader: string
+        authorizationHeader: string,
+        schedulingParameters?: SchedulingParameters
     ): Promise<{ thread: Thread; executions: Execution[]; submissionResult: SubmissionResult }>;
     getSubtasksByTaskId(
         problemStatementId: string,
@@ -507,7 +508,7 @@ const subTasksService: SubTasksService = {
         return bindings;
     },
 
-    async submitSubtask(subtaskId: string, model_id: string, authorizationHeader: string) {
+    async submitSubtask(subtaskId: string, model_id: string, authorizationHeader: string, schedulingParameters?: SchedulingParameters) {
         const w3id = convertApiUrlToW3Id(model_id);
         const access_token = getTokenFromAuthorizationHeader(authorizationHeader);
         if (!access_token) {
@@ -540,7 +541,8 @@ const subTasksService: SubTasksService = {
                 executionCreation.threadRegion,
                 executionCreation.component,
                 subtask.id,
-                subtask.model_ensembles[w3id].id
+                subtask.model_ensembles[w3id].id,
+                schedulingParameters
             );
             if (submissionResult.failedExecutions.length > 0) {
                 console.warn(

@@ -6,16 +6,17 @@ import { getTokenFromAuthorizationHeader } from "@/utils/authUtils";
 import { NotFoundError } from "@/classes/common/errors";
 import { threadFromGQL } from "@/classes/graphql/graphql_adapter";
 import { getThread } from "@/classes/graphql/graphql_functions_v2";
-import { SubmissionResult } from "@/interfaces/IExecutionService";
+import { SubmissionResult, SchedulingParameters } from "@/interfaces/IExecutionService";
 
 export interface ExecutionsTapisService {
-    submitExecution(threadmodel: ModelThread, token: string): Promise<SubmissionResult>;
+    submitExecution(threadmodel: ModelThread, token: string, schedulingParameters?: SchedulingParameters): Promise<SubmissionResult>;
 }
 
 const executionsTapisService = {
     async submitExecution(
         threadmodel: ModelThread,
-        authorization: string
+        authorization: string,
+        schedulingParameters?: SchedulingParameters
     ): Promise<SubmissionResult> {
         const token = getTokenFromAuthorizationHeader(authorization);
         if (!token) {
@@ -48,7 +49,8 @@ const executionsTapisService = {
                     executionCreation.threadRegion,
                     executionCreation.component,
                     thread.id,
-                    threadModelId
+                    threadModelId,
+                    schedulingParameters
                 );
                 if (submissionResult.failedExecutions.length > 0) {
                     console.warn(
