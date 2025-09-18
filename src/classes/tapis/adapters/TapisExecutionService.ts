@@ -188,7 +188,11 @@ export class TapisExecutionService implements IExecutionService {
     ): void {
         if (failedExecutions.length > 0) {
             if (failedExecutions.length === this.seeds.length) {
-                throw new Error("All jobs failed to submit");
+                const all_messages = failedExecutions.forEach((fe) => {
+                    console.error(`Execution ${fe.execution.id} failed: ${fe.error.message}`);
+                    return fe.error.message;
+                });
+                throw new Error("All jobs failed to submit - " + all_messages);
             } else {
                 console.warn("Some jobs failed to submit:", failedExecutions);
             }
