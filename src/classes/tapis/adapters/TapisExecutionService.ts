@@ -122,7 +122,6 @@ export class TapisExecutionService implements IExecutionService {
                 console.error("Error submitting single execution", JSON.stringify(error));
                 await this.handleSingleExecutionFailure(seed, error, threadModelId);
 
-                // Create a serializable error object
                 const serializableError: SerializableError = {
                     message: error instanceof Error ? error.message : String(error),
                     stack: error instanceof Error ? error.stack : undefined,
@@ -178,6 +177,7 @@ export class TapisExecutionService implements IExecutionService {
                 `Failed to update execution status for ${seed.execution.id}:`,
                 statusUpdateError
             );
+            throw statusUpdateError;
         }
 
         await decrementThreadModelSubmittedRuns(threadModelId);
