@@ -88,7 +88,9 @@ export class TapisJobService {
                 (parameter) => parameter.name === parameterSet.name
             );
             if (!modelParameter) {
-                throw new Error(`Model parameter not found for ${parameterSet.name}`);
+                throw new Error(
+                    `Tapis Job Input Parameter value ${parameterSet.name} could not be found. Tapis job ${app.id} requires this parameter. The model ${model.name} has the following parameters: ${model.input_parameters.map((p) => p.name).join(", ")}`
+                );
             }
             return {
                 name: parameterSet.name,
