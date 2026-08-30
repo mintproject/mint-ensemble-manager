@@ -1,5 +1,9 @@
 # mint-ensemble-manager
 
+> **This repository is read-only history.** The code moved to
+> [`mintproject/monorepo`](https://github.com/mintproject/monorepo), in the
+> `mint-ensemble-manager/` directory. Open issues and pull requests there.
+
 Ensemble Manager for MINT
 
 ## API Documentation
